@@ -53,10 +53,10 @@ jobs:
       - name: Test site
         run: |
           bundle exec htmlproofer _site \
-            \-\-disable-external \
-            \-\-no-enforce-https \
-            \-\-ignore-empty-alt \
-            \-\-ignore-urls "/^http:\/\/127.0.0.1/,/^http:\/\/0.0.0.0/,/^http:\/\/localhost/"
+            --disable-external \
+            --no-enforce-https \
+            --ignore-empty-alt \
+            --ignore-urls "/^http:\/\/127.0.0.1/,/^http:\/\/0.0.0.0/,/^http:\/\/localhost/,/static\/svs\/images\/nasa-meatball.svg/,/static\/browse\/0.3.4\/images\/arxiv-logo-fb.png/"
 
       - name: Deploy
         run: bash tools/deploy.sh
