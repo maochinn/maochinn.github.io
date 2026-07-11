@@ -29,8 +29,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -65,6 +63,11 @@ jobs:
         run: bundle exec jekyll b -d site/dist/medium --config _config.yml,_config.astro.yml
         env:
           JEKYLL_ENV: "production"
+
+      # RSS 訂閱者與搜尋引擎抓的是 root 的 feed/sitemap/robots；
+      # Jekyll 版都搬去 /medium/ 了，把它們複製一份回 root（內容連結指向 /medium/，仍有效）
+      - name: Keep root feed/sitemap/robots alive
+        run: cp site/dist/medium/feed.xml site/dist/medium/sitemap.xml site/dist/medium/robots.txt site/dist/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

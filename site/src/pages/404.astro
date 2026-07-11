@@ -1,0 +1,29 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="404">
+  <div class="nf">
+    <h1>404</h1>
+    <p>這一頁不存在，或是已經搬家了。</p>
+    <p>
+      <a href="/">回首頁</a> · <a href="/medium/">Medium 鏡像</a> ·
+      <a href="/search/">搜尋</a>
+    </p>
+  </div>
+</Layout>
+
+<style>
+  .nf {
+    text-align: center;
+    padding: 4rem 1rem;
+  }
+  .nf h1 {
+    font-size: 4rem;
+    color: var(--pink, #ed2553);
+    margin-bottom: 0.5rem;
+  }
+  .nf a {
+    color: var(--pink, #ed2553);
+  }
+</style>
