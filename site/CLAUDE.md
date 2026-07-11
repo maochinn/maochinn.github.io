@@ -3,8 +3,13 @@
 booru / 同人誌檔案庫式的個人作品集 + 部落格。tag 篩選、封面牆、多頁圖集閱讀器，
 視覺復刻 nhentai 式深灰 + 粉紅（#ed2553）風格。圖集與 Medium 同步文章共用同一套 tag。
 
-- 舊作品集來源：`../WebTest`（僅讀取，不修改）
-- 部落格來源：`../maochinn.github.io`（medium-to-jekyll-starter 備份，僅讀取，不修改）
+本目錄是 maochinn.github.io repo 的 `site/`（上層是 Chirpy + ZMediumToMarkdown，
+**上游檔案一字不動**；部署細節見 docs/MIGRATION.md）：
+
+- 部落格來源：上層 repo 的 `_posts/`（import 腳本預設 `JEKYLL_DIR=..`）
+- 舊作品集來源：WebTest 專案（repo 外；重策展圖集時用 `WEBTEST_DIR` 指到它的 img/，
+  找不到就跳過圖集匯入——圖集已隨 repo，日常不需要）
+- `Workspace\website\maochinn-site\` 是收編前的舊工作區，已降級為備份
 
 ## 環境
 
@@ -68,7 +73,8 @@ characters[] / tags[] / rating(all|r15|r18) / fav / featured / cover / pages[]`
 
 ## 注意事項
 
-- `../maochinn.github.io` 的 working tree 在 Windows 上不完整（Medium 圖檔名含 `*`
-  無法 checkout），匯入腳本是直接從 git HEAD tree 抽 blob，不要依賴其 working tree
+- 上層 repo 的 `assets/` 在 Windows working tree 不完整（Medium 圖檔名含 `*`
+  無法 checkout；本地 clone 用 sparse-checkout 排除 assets），匯入腳本是直接從
+  git HEAD tree 抽 blob，不要依賴 working tree
 - 內容編輯後 dev server 會熱更新；`meta.yaml` 改動偶爾需要重啟
 - 部署 GitHub Pages 前注意：站內含 R18 內容，GitHub Pages 使用條款對成人內容有限制

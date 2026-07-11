@@ -10,7 +10,8 @@ import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
-const OLD_SITE = path.resolve(ROOT, '..', 'WebTest', 'img');
+// 重策展圖集時把 WEBTEST_DIR 指到 WebTest/img（收編後預設位置不存在，會自動跳過圖集匯入）
+const OLD_SITE = path.resolve(ROOT, process.env.WEBTEST_DIR ?? '../WebTest/img');
 // 收編後文章就在同一個 repo（site/ 的上一層）；本地備份工作區用 JEKYLL_DIR 指回舊 clone
 const JEKYLL = path.resolve(ROOT, process.env.JEKYLL_DIR ?? '..');
 const GALLERIES = path.join(ROOT, 'src', 'content', 'galleries');

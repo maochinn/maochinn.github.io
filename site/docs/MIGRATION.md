@@ -1,6 +1,18 @@
 # 收編 maochinn.github.io 遷移計畫
 
-（狀態：規劃完成，待執行。2026-07-11 制定，冷啟動後從「執行步驟」開始。）
+（狀態：**已完成並上線**，2026-07-11 cutover。本文件保留作歷史紀錄與 rollback 指南。）
+
+執行時與計畫的出入：
+- Pages 當時其實是 **legacy（gh-pages branch）模式**，非計畫假設的 Actions 模式；
+  cutover 前已用 API 切成 workflow 模式。**rollback 除了 revert merge commit，
+  還要把 Pages build_type 切回 legacy**（gh-pages branch 仍留著）
+- 根目錄 Chirpy 的 `.gitignore` 全域忽略 `package-lock.json`，
+  `site/package-lock.json` 是 `git add -f` 硬加進去的（CI 的 npm ci 需要）
+- cutover 前 code review 追加保命包：舊 `/posts/<id>/`、`/archives/`、`/categories/`
+  轉向頁 + 404 頁 + root feed/sitemap/robots 由 CI 從 /medium/ 複製回 root +
+  `sw.min.js` stub 解除舊 Chirpy PWA service worker + checkout 改淺 clone
+- 已知未處理：Pages artifact 2.09GB（Medium 圖在 root 與 /medium/ 各一份，
+  低於 10GB 硬限制、超過 1GB 軟限制），去重待日後改連結設計再處理
 
 ## 目標架構
 
