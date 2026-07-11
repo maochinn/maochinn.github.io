@@ -1,0 +1,369 @@
+<title>STUDIO MAOCHINN — mockup</title>
+<style>
+  :root{
+    --bg:#0d0d0d; --panel:#1f1f1f; --card:#262626; --line:#333;
+    --accent:#ed2553; --accent-hi:#ff3a68;
+    --ink:#ffffff; --mut:#8f8f8f; --chip:#3c3c3c; --chip-hi:#555;
+    --sans:"Noto Sans TC","Microsoft JhengHei","PingFang TC",system-ui,sans-serif;
+  }
+  /* 刻意單主題：這個美學沒有淺色版 */
+  :root[data-theme="light"]{ --bg:#0d0d0d; }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit}
+
+  /* ---------- header ---------- */
+  header{background:var(--panel);border-bottom:1px solid #000;padding:0 16px;position:sticky;top:0;z-index:50}
+  .hwrap{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:18px;height:58px}
+  .logo{font-weight:900;font-size:24px;letter-spacing:-.5px;cursor:pointer;white-space:nowrap}
+  .logo b{color:var(--accent);font-weight:900}
+  .logo small{display:block;font-size:9px;font-weight:400;color:var(--mut);letter-spacing:2px;margin-top:-4px}
+  nav{display:flex;gap:2px;flex-wrap:wrap}
+  nav a{padding:6px 12px;color:#ccc;font-weight:700;font-size:14px;border-radius:3px;cursor:pointer}
+  nav a:hover,nav a.on{background:var(--accent);color:#fff}
+  .search{margin-left:auto;display:flex;min-width:0;flex:0 1 380px}
+  .search input{flex:1;min-width:0;background:#111;border:1px solid var(--line);border-right:0;color:var(--ink);
+    padding:8px 12px;font-size:14px;border-radius:3px 0 0 3px;outline:none}
+  .search input:focus{border-color:var(--accent)}
+  .search input::placeholder{color:#666}
+  .search button{background:var(--accent);border:0;color:#fff;padding:0 16px;border-radius:0 3px 3px 0;cursor:pointer;font-size:16px}
+  .search button:hover{background:var(--accent-hi)}
+
+  main{max-width:1180px;margin:0 auto;padding:22px 16px 60px}
+  .view{display:none}
+  .view.on{display:block}
+
+  h2.sec{font-size:20px;font-weight:900;margin:26px 0 14px;display:flex;align-items:baseline;gap:10px}
+  h2.sec span{color:var(--mut);font-size:12px;font-weight:400;letter-spacing:2px;text-transform:uppercase}
+  h2.sec .clear{margin-left:auto;font-size:12px;color:var(--accent);cursor:pointer;font-weight:700}
+
+  /* ---------- cover grid ---------- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(172px,1fr));gap:10px}
+  .g-card{background:var(--card);border-radius:3px;overflow:hidden;cursor:pointer;position:relative;
+    transition:transform .12s ease}
+  .g-card:hover{transform:translateY(-3px)}
+  .g-card:hover .cap{color:var(--accent-hi)}
+  .cover{aspect-ratio:320/456;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+  .cover .glyph{font-size:64px;font-weight:900;color:rgba(255,255,255,.9);text-shadow:0 4px 24px rgba(0,0,0,.55);user-select:none}
+  .cover .sub{position:absolute;bottom:8px;right:10px;font-size:10px;letter-spacing:1.5px;color:rgba(255,255,255,.65);
+    text-transform:uppercase;font-weight:700}
+  .badge{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.72);color:#fff;font-size:11px;font-weight:700;
+    padding:2px 7px;border-radius:2px;letter-spacing:.5px}
+  .badge.pink{background:var(--accent)}
+  .pages-badge{position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,.72);color:#ddd;font-size:11px;
+    padding:2px 7px;border-radius:2px}
+  .cap{padding:8px 9px 10px;font-weight:700;font-size:13px;line-height:1.35;color:#fff;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  /* R15 遮罩 */
+  .g-card.masked .cover>*{filter:blur(0px)}
+  .g-card.masked .coverart{filter:blur(18px) saturate(.7)}
+  .mask{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:6px;background:rgba(13,13,13,.35);z-index:2}
+  .mask b{background:var(--accent);padding:3px 10px;border-radius:2px;font-size:12px;letter-spacing:1px}
+  .mask i{font-style:normal;font-size:11px;color:#ddd;text-shadow:0 1px 4px #000}
+  .coverart{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+
+  /* ---------- pagination ---------- */
+  .pager{display:flex;justify-content:center;gap:4px;margin:34px 0 6px}
+  .pager a{min-width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(--panel);
+    border-radius:3px;font-weight:700;font-size:14px;color:#ccc;cursor:pointer;padding:0 8px}
+  .pager a.cur{background:var(--accent);color:#fff}
+  .pager a:hover:not(.cur){background:var(--chip-hi)}
+  .pager a.dots{background:none;cursor:default;color:var(--mut)}
+
+  /* ---------- gallery detail ---------- */
+  .detail{display:flex;gap:26px;flex-wrap:wrap}
+  .d-cover{flex:0 0 300px;max-width:100%}
+  .d-cover .cover{border-radius:3px;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+  .d-info{flex:1;min-width:280px}
+  .d-info h1{margin:0 0 2px;font-size:22px;line-height:1.3;font-weight:900;text-wrap:balance}
+  .d-info .alt{color:var(--mut);font-size:14px;margin:0 0 4px}
+  .gid{color:var(--mut);font-size:13px;margin-bottom:16px}
+  .meta{display:flex;flex-direction:column;gap:7px;margin-bottom:18px}
+  .mrow{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+  .mrow>span{color:var(--mut);font-size:13px;min-width:52px}
+  .chips{display:flex;gap:5px;flex-wrap:wrap}
+  .chip{background:var(--chip);border-radius:3px;padding:3px 9px;font-size:13px;font-weight:700;color:#eee;cursor:pointer;
+    display:inline-flex;gap:5px;align-items:baseline}
+  .chip:hover{background:var(--chip-hi)}
+  .chip em{font-style:normal;font-weight:400;color:#aaa;font-size:11px}
+  .btns{display:flex;gap:8px;margin:4px 0 8px;flex-wrap:wrap}
+  .btn{border:0;border-radius:3px;padding:10px 20px;font-size:15px;font-weight:700;cursor:pointer}
+  .btn.pink{background:var(--accent);color:#fff}
+  .btn.pink:hover{background:var(--accent-hi)}
+  .btn.grey{background:var(--chip);color:#eee}
+  .btn.grey:hover{background:var(--chip-hi)}
+  .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;margin-top:26px}
+  .thumb{aspect-ratio:320/456;border-radius:3px;overflow:hidden;cursor:pointer;position:relative;
+    display:flex;align-items:center;justify-content:center}
+  .thumb:hover{outline:2px solid var(--accent)}
+  .thumb b{font-size:26px;color:rgba(255,255,255,.85);text-shadow:0 2px 10px rgba(0,0,0,.6)}
+  .thumb i{position:absolute;bottom:5px;right:7px;font-style:normal;font-size:11px;color:rgba(255,255,255,.7)}
+
+  /* ---------- reader ---------- */
+  #v-reader{position:fixed;inset:0;background:#000;z-index:100;display:none;flex-direction:column}
+  #v-reader.on{display:flex}
+  .r-top{background:var(--panel);display:flex;align-items:center;gap:14px;padding:10px 16px;font-weight:700}
+  .r-top .back{cursor:pointer;color:var(--accent);font-weight:900;white-space:nowrap}
+  .r-top .rt{flex:1;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#ddd}
+  .r-top .pg{color:var(--mut);font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .r-stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .r-page{height:min(92%,900px);aspect-ratio:320/456;border-radius:2px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:10px;box-shadow:0 0 60px rgba(0,0,0,.8)}
+  .r-page b{font-size:72px;color:rgba(255,255,255,.9);text-shadow:0 4px 30px rgba(0,0,0,.5)}
+  .r-page span{color:rgba(255,255,255,.65);font-size:13px;letter-spacing:2px}
+  .r-zone{position:absolute;top:0;bottom:0;width:34%;cursor:pointer;z-index:2}
+  .r-zone.l{left:0}.r-zone.r{right:0}
+  .r-zone:hover{background:linear-gradient(90deg,rgba(237,37,83,.10),transparent)}
+  .r-zone.r:hover{background:linear-gradient(-90deg,rgba(237,37,83,.10),transparent)}
+  .r-bot{background:var(--panel);padding:8px 16px;display:flex;justify-content:center;gap:6px;font-size:12px;color:var(--mut)}
+
+  footer{border-top:1px solid var(--line);margin-top:50px;padding:22px 16px 30px;text-align:center;color:var(--mut);font-size:12px;line-height:2}
+  footer b{color:#ccc}
+  footer .wink{color:#555}
+
+  .empty{padding:60px 0;text-align:center;color:var(--mut)}
+  .empty b{color:var(--accent)}
+
+  @media (prefers-reduced-motion: reduce){
+    .g-card{transition:none}
+  }
+  @media (max-width:640px){
+    .hwrap{flex-wrap:wrap;height:auto;padding:8px 0}
+    .search{flex:1 1 100%;order:3;margin:0 0 8px}
+  }
+</style>
+
+<header>
+  <div class="hwrap">
+    <div class="logo" onclick="go('home')">mao<b>chinn</b><small>STUDIO&nbsp;MAOCHINN</small></div>
+    <nav>
+      <a class="on" data-nav="home" onclick="go('home')">首頁</a>
+      <a onclick="alert('之後接 Medium 同步的 109 篇文章，與作品共用同一套 tag')">部落格</a>
+      <a onclick="alert('保留舊站的 WebGL2 虛擬藝廊，當作彩蛋頁面')">虛擬藝廊</a>
+      <a onclick="randomGallery()" title="手氣不錯">隨機 🎲</a>
+    </nav>
+    <div class="search">
+      <input id="q" placeholder='搜尋，例：tag:"狂三" -tag:"練習"' onkeydown="if(event.key==='Enter')doSearch()">
+      <button onclick="doSearch()" aria-label="搜尋">🔍</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ============ home ============ -->
+  <section id="v-home" class="view on">
+    <div id="filterbar"></div>
+    <h2 class="sec" id="hot-h">熱門作品 <span>popular now</span></h2>
+    <div class="grid" id="hot"></div>
+    <h2 class="sec" id="new-h">最新上傳 <span>new uploads</span></h2>
+    <div class="grid" id="new"></div>
+    <div class="pager" id="pager">
+      <a>‹</a><a class="cur">1</a><a>2</a><a>3</a><a>4</a><a class="dots">…</a><a>17</a><a>›</a>
+    </div>
+  </section>
+
+  <!-- ============ gallery detail ============ -->
+  <section id="v-g" class="view"></section>
+</main>
+
+<!-- ============ reader ============ -->
+<div id="v-reader">
+  <div class="r-top">
+    <span class="back" onclick="closeReader()">‹ 返回</span>
+    <span class="rt" id="r-title"></span>
+    <span class="pg" id="r-pg"></span>
+  </div>
+  <div class="r-stage">
+    <div class="r-zone l" onclick="flip(-1)" title="上一頁"></div>
+    <div class="r-page" id="r-page"><b></b><span></span></div>
+    <div class="r-zone r" onclick="flip(1)" title="下一頁"></div>
+  </div>
+  <div class="r-bot">← → 鍵盤翻頁 · 點擊左右側翻頁</div>
+</div>
+
+<footer>
+  <b>maochinn.github.io</b> — 收錄作品 12 · 標籤 23 · 文章 109（示意資料）<br>
+  全站靜態生成 · 無伺服器 · 無資料庫 · GitHub Pages 免費託管<br>
+  <span class="wink">本站不含任何本子，僅含本子的靈魂。懂的人都懂。</span>
+</footer>
+
+<script>
+/* ---------------- data：取自舊站真實作品名 ---------------- */
+const PAL={
+  kurumi:["#8c0f2e","#1a0308","狂"], seiden:["#3d0a0a","#0d0202","誕"],
+  jeanne:["#4a3a10","#120d02","貞"], shuten:["#5c1030","#160208","酒"],
+  oz:["#2a1a4a","#0a0512","奧"], nb:["#3a3a42","#0e0e10","2B"],
+  ruby:["#6e1220","#180305","Ru"], miku:["#0e5c5c","#021414","初"],
+  laplace:["#0e3c6e","#020a14","乘"], hallow:["#5c3a0e","#140d02","萬"],
+  felice:["#0e5c38","#02140c","費"], warfare:["#46102e","#0f0208","戰"]
+};
+const G=[
+ {id:391825,key:"kurumi", t:'[STUDIO MAOCHINN (帽捲)] 狂三 (デート・ア・ライブ) [中文] [DL版]',
+  alt:"Kurumi Tokisaki", tags:["狂三","插畫","電繪"], chars:["時崎狂三"], parody:"Date A Live",
+  cat:"創作", pages:14, fav:3939, hot:1},
+ {id:177013,key:"seiden", t:'[STUDIO MAOCHINN (帽捲)] 狂三毛衣 (デート・ア・ライブ) [R15] [DL版]',
+  alt:"Kurumi Sweater — 就決定是這個編號了", tags:["狂三","插畫","R15"], chars:["時崎狂三"], parody:"Date A Live",
+  cat:"創作", pages:18, fav:8181, hot:1, r15:1},
+ {id:284460,key:"jeanne", t:'(C97) [STUDIO MAOCHINN] 黑貞德 (Fate/Grand Order)',
+  alt:"Jeanne d'Arc (Alter)", tags:["FGO","插畫","電繪"], chars:["黑貞德"], parody:"Fate/Grand Order",
+  cat:"創作", pages:12, fav:2454, hot:1},
+ {id:265918,key:"shuten", t:'(C96) [STUDIO MAOCHINN] 酒吞童子 (Fate/Grand Order)',
+  alt:"Shuten Douji", tags:["FGO","插畫"], chars:["酒吞童子"], parody:"Fate/Grand Order",
+  cat:"創作", pages:10, fav:1926},
+ {id:308524,key:"oz", t:'[STUDIO MAOCHINN (帽捲)] 奧茲魔女 (魔法使いの約束)',
+  alt:"Oz the Witch", tags:["插畫","電繪","同人"], chars:["奧茲"], parody:"魔法使的約定",
+  cat:"創作", pages:8, fav:1204},
+ {id:228922,key:"nb", t:'[STUDIO MAOCHINN (帽捲)] 2B (NieR:Automata) [フルカラー]',
+  alt:"YoRHa No.2 Type B", tags:["尼爾","插畫","全彩"], chars:["2B"], parody:"NieR:Automata",
+  cat:"創作", pages:16, fav:2789, hot:1},
+ {id:246810,key:"ruby", t:'[STUDIO MAOCHINN (帽捲)] Ruby (RWBY) [習作]',
+  alt:"Ruby Rose", tags:["RWBY","練習"], chars:["Ruby"], parody:"RWBY",
+  cat:"練習", pages:6, fav:610},
+ {id:100039,key:"miku", t:'[STUDIO MAOCHINN (帽捲)] miku 10th Anniversary (VOCALOID)',
+  alt:"初音ミク 10 週年賀圖", tags:["初音","插畫","賀圖"], chars:["初音未來"], parody:"VOCALOID",
+  cat:"創作", pages:10, fav:3901, hot:1},
+ {id:135790,key:"laplace", t:'[STUDIO MAOCHINN (帽捲)] 乘龍 (Pokémon) [塗鴉]',
+  alt:"Lapras", tags:["寶可夢","塗鴉"], chars:["乘龍"], parody:"Pokémon",
+  cat:"塗鴉", pages:5, fav:404},
+ {id:201710,key:"hallow", t:'(秋季例大祭) [STUDIO MAOCHINN] 2017 萬聖節-狂三 (デート・ア・ライブ)',
+  alt:"Halloween Kurumi 2017", tags:["狂三","萬聖節","插畫"], chars:["時崎狂三"], parody:"Date A Live",
+  cat:"創作", pages:9, fav:1717},
+ {id:222333,key:"felice", t:'[合作] 費莉斯設定稿 (原創企劃) [設定資料集]',
+  alt:"Felice — character sheet", tags:["原創","合作","設定稿"], chars:["費莉斯"], parody:"原創",
+  cat:"合作", pages:20, fav:842},
+ {id:230230,key:"warfare", t:'[合作] Local Warfare 美術設定 (世大運企劃)',
+  alt:"Local Warfare design works", tags:["原創","合作","設定稿"], chars:["—"], parody:"原創",
+  cat:"合作", pages:24, fav:523},
+];
+const fmt=n=>n.toLocaleString("en-US");
+const grad=k=>`radial-gradient(140% 90% at 30% 12%, ${PAL[k][0]}, ${PAL[k][1]} 78%)`;
+
+/* ---------------- render home ---------------- */
+let activeFilter=null;
+function card(g){
+  const masked=g.r15?` masked`:"";
+  return `<div class="g-card${masked}" onclick="openG(${g.id})">
+    <div class="cover">
+      <div class="coverart" style="background:${grad(g.key)}">
+        <span class="glyph">${PAL[g.key][2]}</span>
+        <span class="sub">studio maochinn</span>
+      </div>
+      ${g.r15?'<div class="mask"><b>R15</b><i>點擊確認顯示</i></div>':""}
+      <span class="badge${g.cat==="創作"?" pink":""}">${g.cat}</span>
+      <span class="pages-badge">${g.pages}P</span>
+    </div>
+    <div class="cap">${g.t}</div>
+  </div>`;
+}
+function renderHome(){
+  const f=activeFilter;
+  const list=f? G.filter(g=>g.tags.includes(f)||g.chars.includes(f)||g.parody===f||g.cat===f) : G;
+  const fb=document.getElementById("filterbar");
+  const hotH=document.getElementById("hot-h"), hot=document.getElementById("hot"),
+        newH=document.getElementById("new-h"), nw=document.getElementById("new"),
+        pager=document.getElementById("pager");
+  if(f){
+    fb.innerHTML=`<h2 class="sec">tag:「${f}」 <span>${list.length} 件作品</span><span class="clear" onclick="clearFilter()">✕ 清除篩選</span></h2>`;
+    hotH.style.display="none"; hot.style.display="none"; newH.style.display="none"; pager.style.display="none";
+    nw.innerHTML=list.length?list.map(card).join(""):`<div class="empty">沒有符合 <b>${f}</b> 的作品</div>`;
+  }else{
+    fb.innerHTML="";
+    hotH.style.display=""; hot.style.display=""; newH.style.display=""; pager.style.display="";
+    hot.innerHTML=G.filter(g=>g.hot).map(card).join("");
+    nw.innerHTML=G.map(card).join("");
+  }
+}
+function filterTag(t){activeFilter=t;go("home");renderHome();window.scrollTo({top:0})}
+function clearFilter(){activeFilter=null;renderHome()}
+function doSearch(){
+  const q=document.getElementById("q").value.trim();
+  const m=q.match(/tag:"?([^"\s]+)"?/);
+  filterTag(m?m[1]:q||null);
+}
+
+/* ---------------- gallery detail ---------------- */
+let cur=null;
+function openG(id){
+  cur=G.find(g=>g.id===id);
+  const g=cur;
+  const chip=(t,n)=>`<span class="chip" onclick="filterTag('${t}')">${t} <em>${n||""}</em></span>`;
+  const cnt=t=>G.filter(x=>x.tags.includes(t)).length;
+  document.getElementById("v-g").innerHTML=`
+  <div class="detail">
+    <div class="d-cover"><div class="cover" style="background:${grad(g.key)}">
+      <span class="glyph">${PAL[g.key][2]}</span><span class="sub">studio maochinn</span>
+    </div></div>
+    <div class="d-info">
+      <h1>${g.t}</h1>
+      <p class="alt">${g.alt}</p>
+      <div class="gid">#${g.id}</div>
+      <div class="meta">
+        <div class="mrow"><span>系列</span><div class="chips">${chip(g.parody, G.filter(x=>x.parody===g.parody).length)}</div></div>
+        <div class="mrow"><span>角色</span><div class="chips">${g.chars.map(c=>chip(c,G.filter(x=>x.chars.includes(c)).length)).join("")}</div></div>
+        <div class="mrow"><span>標籤</span><div class="chips">${g.tags.map(t=>chip(t,cnt(t))).join("")}</div></div>
+        <div class="mrow"><span>作者</span><div class="chips">${chip("maochinn",G.length)}</div></div>
+        <div class="mrow"><span>分類</span><div class="chips">${chip(g.cat,G.filter(x=>x.cat===g.cat).length)}</div></div>
+        <div class="mrow"><span>頁數</span><div class="chips"><span class="chip" style="cursor:default">${g.pages} pages</span></div></div>
+      </div>
+      <div class="btns">
+        <button class="btn pink" onclick="openReader(0)">▶ 開始閱讀</button>
+        <button class="btn pink" onclick="this.textContent='♥ 已收藏 ('+fmt(${g.fav+1})+')'">♥ 收藏 (${fmt(g.fav)})</button>
+        <button class="btn grey" onclick="alert('之後可連到相關的 Medium 技術文章——文章與作品共用 tag')">📄 相關文章</button>
+      </div>
+    </div>
+  </div>
+  <div class="thumbs">
+    ${Array.from({length:g.pages},(_,i)=>`
+      <div class="thumb" style="background:${grad(g.key)};filter:brightness(${.75+.5*((i*37%10)/10)})" onclick="openReader(${i})">
+        <b>${i+1}</b><i>${i+1}</i>
+      </div>`).join("")}
+  </div>`;
+  go("g"); window.scrollTo({top:0});
+}
+function randomGallery(){openG(G[Math.floor(Math.random()*G.length)].id)}
+
+/* ---------------- reader ---------------- */
+let rp=0;
+function openReader(p){
+  rp=p; renderPage();
+  document.getElementById("r-title").textContent=cur.t;
+  document.getElementById("v-reader").classList.add("on");
+  document.body.style.overflow="hidden";
+}
+function renderPage(){
+  const el=document.getElementById("r-page");
+  el.style.background=grad(cur.key);
+  el.style.filter=`brightness(${.75+.5*((rp*37%10)/10)})`;
+  el.querySelector("b").textContent=rp+1;
+  el.querySelector("span").textContent=`第 ${rp+1} 頁 · ${cur.alt}`;
+  document.getElementById("r-pg").textContent=`${rp+1} / ${cur.pages}`;
+}
+function flip(d){
+  const n=rp+d;
+  if(n<0)return;
+  if(n>=cur.pages){closeReader();return}
+  rp=n; renderPage();
+}
+function closeReader(){
+  document.getElementById("v-reader").classList.remove("on");
+  document.body.style.overflow="";
+}
+document.addEventListener("keydown",e=>{
+  if(!document.getElementById("v-reader").classList.contains("on"))return;
+  if(e.key==="ArrowRight")flip(1);
+  if(e.key==="ArrowLeft")flip(-1);
+  if(e.key==="Escape")closeReader();
+});
+
+/* ---------------- view switch ---------------- */
+function go(v){
+  document.querySelectorAll(".view").forEach(x=>x.classList.remove("on"));
+  document.getElementById("v-"+(v==="g"?"g":"home")).classList.add("on");
+  document.querySelectorAll("nav a").forEach(a=>a.classList.toggle("on",a.dataset.nav===v));
+  if(v==="home")renderHome();
+}
+renderHome();
+</script>
