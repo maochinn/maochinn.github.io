@@ -1,0 +1,39 @@
+---
+import Layout from '../layouts/Layout.astro';
+import GalleryCard from '../components/GalleryCard.astro';
+import PostCard from '../components/PostCard.astro';
+import { getGalleries, getPosts, type Gallery, type Post } from '../lib/site';
+
+const galleries = await getGalleries();
+const posts = await getPosts();
+const featured = galleries.filter((g) => g.data.featured);
+
+// 封面牆：圖集與文章依日期混排
+type WallItem = { date: Date; g?: Gallery; p?: Post };
+const wall: WallItem[] = [
+  ...galleries.map((g) => ({ date: g.data.date, g })),
+  ...posts.map((p) => ({ date: p.data.date, p })),
+].sort((a, b) => b.date.valueOf() - a.date.valueOf());
+---
+
+<Layout active="home">
+  {
+    featured.length > 0 && (
+      <>
+        <h2 class="sec">熱門作品 <span>popular now</span></h2>
+        <div class="grid">
+          {featured.map((g) => (
+            <GalleryCard g={g} />
+          ))}
+        </div>
+      </>
+    )
+  }
+
+  <h2 class="sec">
+    最新上傳 <span>new uploads · {galleries.length} 本圖集 · {posts.length} 篇文章</span>
+  </h2>
+  <div class="grid">
+    {wall.map((item) => (item.g ? <GalleryCard g={item.g} /> : <PostCard p={item.p!} />))}
+  </div>
+</Layout>

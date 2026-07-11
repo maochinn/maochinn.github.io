@@ -1,0 +1,123 @@
+---
+import { render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import Reader from '../../components/Reader.astro';
+import type { Namespace } from '../../data/taxonomy';
+import { getPosts, getAllMetas, buildCounts, postMeta, nsUrl, fmtDate } from '../../lib/site';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((p) => ({ params: { slug: p.id }, props: { p } }));
+}
+
+const { p } = Astro.props;
+const { Content } = await render(p);
+const m = postMeta(p);
+const images = m.images ?? [];
+const cover = images[0]?.src;
+
+const counts = buildCounts((await getAllMetas()).metas);
+const cnt = (ns: Namespace, name: string) => {
+  const c = counts.get(ns)?.get(name);
+  return c ? c.galleries + c.posts : 0;
+};
+const rows: { label: string; ns: Namespace; names: string[] }[] = [
+  { label: '系列', ns: 'parody', names: m.parodies },
+  { label: '角色', ns: 'character', names: m.characters },
+  { label: '標籤', ns: 'tag', names: m.tags },
+  { label: '作者', ns: 'artist', names: m.artists },
+  { label: '社團', ns: 'group', names: m.groups },
+  { label: '語言', ns: 'language', names: m.languages },
+  { label: '分類', ns: 'category', names: m.categories },
+].filter((r) => r.names.length > 0);
+
+const readerPages = images.map((img, i) => ({
+  src: img.src,
+  caption: img.alt || `第 ${i + 1} 頁`,
+}));
+---
+
+<Layout title={p.data.title} description={p.data.description} active="blog">
+  <div class="detail">
+    <div class="d-cover">
+      <div class="cover">
+        {
+          cover ? (
+            <img class="coverart" src={cover} alt={p.data.title} />
+          ) : (
+            <div class="text-cover">
+              <span class="tc-title">{p.data.title}</span>
+              <i class="tc-mark">STUDIO MAOCHINN · TEXT</i>
+            </div>
+          )
+        }
+      </div>
+    </div>
+    <div class="d-info">
+      <h1>{p.data.title}</h1>
+      {p.data.description && <p class="alt">{p.data.description}</p>}
+      <div class="meta" style="margin-top:10px">
+        {
+          rows.map((r) => (
+            <div class="mrow">
+              <span>{r.label}</span>
+              <div class="chips">
+                {r.names.map((name) => (
+                  <a class="chip" href={nsUrl(r.ns, name)}>
+                    {name} <em>{cnt(r.ns, name)}</em>
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))
+        }
+        {
+          images.length > 0 && (
+            <div class="mrow">
+              <span>頁數</span>
+              <div class="chips"><span class="chip static">{images.length} pages</span></div>
+            </div>
+          )
+        }
+        <div class="mrow">
+          <span>長度</span>
+          <div class="chips"><span class="chip static">{m.minutes} min</span></div>
+        </div>
+        <div class="mrow">
+          <span>上傳於</span>
+          <div class="chips"><span class="chip static">{fmtDate(p.data.date)}</span></div>
+        </div>
+      </div>
+      <div class="btns">
+        {images.length > 0 && <button class="btn pink" id="btn-read">▶ 開始閱讀</button>}
+        <a class="btn grey" href="#article">📄 閱讀全文</a>
+      </div>
+    </div>
+  </div>
+
+  {
+    images.length > 0 && (
+      <div class="thumbs">
+        {images.map((img, i) => (
+          <button class="thumb" data-page={i} aria-label={`第 ${i + 1} 頁`}>
+            <img src={img.src} alt={img.alt || `第 ${i + 1} 頁`} loading="lazy" />
+            <i>{i + 1}</i>
+          </button>
+        ))}
+      </div>
+    )
+  }
+
+  <article class="prose" id="article" style="margin-top:34px">
+    <Content />
+  </article>
+
+  {images.length > 0 && <Reader title={p.data.title} pages={readerPages} jumpSelector=".prose img" />}
+
+  <script is:inline>
+    document.getElementById('btn-read')?.addEventListener('click', () => window.openReader(0));
+    document.querySelectorAll('.thumb').forEach((th) => {
+      th.addEventListener('click', () => window.openReader(Number(th.dataset.page)));
+    });
+  </script>
+</Layout>

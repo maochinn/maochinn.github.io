@@ -1,0 +1,17 @@
+# Overlay config：疊在 _config.yml 之後使用（--config _config.yml,_config.astro.yml），
+# 讓 Chirpy 鏡像掛在新站底下的 /medium/。原 _config.yml 一字不動。
+url: "https://maochinn.github.io"
+baseurl: "/medium"
+
+# 注意：YAML 陣列是整個覆蓋不是合併，這裡必須抄一份 _config.yml 的原清單再追加 site
+exclude:
+  - "*.gem"
+  - "*.gemspec"
+  - docs
+  - tools
+  - README.md
+  - LICENSE
+  - purgecss.js
+  - rollup.config.js
+  - "package*.json"
+  - site

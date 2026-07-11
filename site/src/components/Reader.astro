@@ -1,0 +1,76 @@
+---
+/**
+ * 全螢幕閱讀器（圖集與文章共用）
+ * 頁面用 window.openReader(i) 開啟第 i 頁。
+ * jumpSelector 有給時，顯示「跳到文中位置」：關閉閱讀器並捲動到
+ * 該 selector 下 src 相符的那張圖（文章的行內圖）。
+ */
+interface Props {
+  title: string;
+  pages: { src: string; caption?: string }[];
+  jumpSelector?: string;
+}
+const { title, pages, jumpSelector } = Astro.props;
+---
+
+<div id="reader">
+  <div class="r-top">
+    <button class="back" id="r-back">‹ 返回</button>
+    <span class="rt">{title}</span>
+    {jumpSelector && <button class="back" id="r-jump" title="關閉並捲動到這張圖在文章中的位置">↧ 文中位置</button>}
+    <span class="pg" id="r-pg"></span>
+  </div>
+  <div class="r-stage">
+    <button class="r-zone l" id="r-prev" aria-label="上一頁"></button>
+    <img id="r-img" src={pages[0]?.src} alt="" />
+    <button class="r-zone r" id="r-next" aria-label="下一頁"></button>
+  </div>
+  <div class="r-bot" id="r-caption">← → 鍵盤翻頁 · 點擊左右側翻頁 · Esc 離開</div>
+</div>
+
+<script is:inline define:vars={{ pages, jumpSelector }}>
+  const reader = document.getElementById('reader');
+  const rImg = document.getElementById('r-img');
+  const rPg = document.getElementById('r-pg');
+  const rCap = document.getElementById('r-caption');
+  const HINT = '← → 鍵盤翻頁 · 點擊左右側翻頁 · Esc 離開';
+  let cur = 0;
+  const show = (i) => {
+    cur = i;
+    rImg.src = pages[i].src;
+    rPg.textContent = `${i + 1} / ${pages.length}`;
+    rCap.textContent = pages[i].caption || HINT;
+    if (pages[i + 1]) new window.Image().src = pages[i + 1].src; // 預載下一頁
+  };
+  const close = () => {
+    reader.classList.remove('on');
+    document.body.style.overflow = '';
+  };
+  const flip = (dir) => {
+    const n = cur + dir;
+    if (n < 0) return;
+    if (n >= pages.length) return close(); // 讀完最後一頁 → 回詳情
+    show(n);
+  };
+  window.openReader = (i) => {
+    show(i);
+    reader.classList.add('on');
+    document.body.style.overflow = 'hidden';
+  };
+  document.getElementById('r-back').addEventListener('click', close);
+  document.getElementById('r-prev').addEventListener('click', () => flip(-1));
+  document.getElementById('r-next').addEventListener('click', () => flip(1));
+  document.getElementById('r-jump')?.addEventListener('click', () => {
+    close();
+    const target = [...document.querySelectorAll(jumpSelector)].find((img) =>
+      img.getAttribute('src') === pages[cur].src
+    );
+    target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+  document.addEventListener('keydown', (e) => {
+    if (!reader.classList.contains('on')) return;
+    if (e.key === 'ArrowRight') flip(1);
+    if (e.key === 'ArrowLeft') flip(-1);
+    if (e.key === 'Escape') close();
+  });
+</script>

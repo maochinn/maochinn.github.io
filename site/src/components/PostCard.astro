@@ -1,0 +1,30 @@
+---
+import type { Post } from '../lib/site';
+import { postMeta } from '../lib/site';
+
+interface Props {
+  p: Post;
+}
+const { p } = Astro.props;
+const m = postMeta(p);
+const cover = m.images?.[0]?.src;
+const cat = m.categories[0] ?? '';
+---
+
+<a class="g-card" href={m.url}>
+  <div class="cover">
+    {
+      cover ? (
+        <img class="coverart" src={cover} alt={p.data.title} loading="lazy" />
+      ) : (
+        <div class="text-cover">
+          <span class="tc-title">{p.data.title}</span>
+          <i class="tc-mark">STUDIO MAOCHINN · TEXT</i>
+        </div>
+      )
+    }
+    <span class="badge">{cat}</span>
+    <span class="pages-badge">{m.pages > 0 ? `${m.pages}P` : `${m.minutes} min`}</span>
+  </div>
+  <div class="cap">📄 {p.data.title}</div>
+</a>

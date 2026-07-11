@@ -1,0 +1,27 @@
+---
+// 舊 Chirpy 網址的轉向頁：文章 permalink 原本是 /posts/:title/（:title = 檔名去日期），
+// 鏡像搬到 /medium/ 後，讓已被搜尋引擎收錄與分享出去的舊連結繼續活著
+import { getPosts } from '../../lib/site';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((p) => ({
+    params: { slug: p.id.replace(/^\d{4}-\d{2}-\d{2}-/, '') },
+  }));
+}
+
+const { slug } = Astro.params;
+const redirect = `/medium/posts/${slug}/`;
+---
+
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="refresh" content={`0; url=${redirect}`} />
+    <link rel="canonical" href={redirect} />
+    <title>轉向中…</title>
+  </head>
+  <body>
+    <a href={redirect}>文章已搬家 → {redirect}</a>
+  </body>
+</html>

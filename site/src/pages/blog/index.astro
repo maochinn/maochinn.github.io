@@ -1,0 +1,31 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getPosts } from '../../lib/site';
+
+const posts = await getPosts();
+const byYear = new Map<number, typeof posts>();
+for (const p of posts) {
+  const y = p.data.date.getFullYear();
+  if (!byYear.has(y)) byYear.set(y, []);
+  byYear.get(y)!.push(p);
+}
+---
+
+<Layout title="部落格" active="blog">
+  <h2 class="sec">部落格 <span>{posts.length} posts · synced from medium</span></h2>
+  {
+    [...byYear.entries()].map(([year, list]) => (
+      <>
+        <h2 class="sec">
+          {year} <span>{list.length} posts</span>
+        </h2>
+        <div class="grid">
+          {list.map((p) => (
+            <PostCard p={p} />
+          ))}
+        </div>
+      </>
+    ))
+  }
+</Layout>

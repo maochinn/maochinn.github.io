@@ -1,0 +1,110 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import GalleryCard from '../../components/GalleryCard.astro';
+import PostCard from '../../components/PostCard.astro';
+import { TAXONOMY, NS_PATH, NS_LABEL, type Namespace } from '../../data/taxonomy';
+import {
+  getAllMetas,
+  buildCounts,
+  galleryMeta,
+  postMeta,
+  nsUrl,
+  NS_FIELD,
+} from '../../lib/site';
+
+export async function getStaticPaths() {
+  const { metas } = await getAllMetas();
+  const counts = buildCounts(metas);
+  const paths: {
+    params: { ns: string; name: string };
+    props: { ns: Namespace; redirect: string | null };
+  }[] = [];
+  const taken = new Set<string>();
+  const bad = (s: string) => s.includes('/') || s.includes(':');
+
+  // 1. 真實頁：每個 namespace 中實際有內容的正名
+  for (const [ns, names] of counts) {
+    for (const name of names.keys()) {
+      if (bad(name)) continue;
+      paths.push({ params: { ns: NS_PATH[ns], name }, props: { ns, redirect: null } });
+      taken.add(`${NS_PATH[ns]}/${name}`);
+    }
+  }
+
+  // 2. 轉向頁：別名 + 非 tag namespace 的正名，都曾以 /tag/<詞>/ 形式存在（或會被使用者猜）
+  const addRedirect = (name: string, target: { ns: Namespace; name: string }) => {
+    if (bad(name) || taken.has(`tag/${name}`)) return;
+    if (!counts.get(target.ns)?.has(target.name)) return; // 目標沒內容就不生成
+    taken.add(`tag/${name}`);
+    paths.push({
+      params: { ns: 'tag', name },
+      props: { ns: target.ns, redirect: nsUrl(target.ns, target.name) },
+    });
+  };
+  for (const [ns, entries] of Object.entries(TAXONOMY) as [Namespace, Record<string, string[]>][]) {
+    for (const [name, aliases] of Object.entries(entries)) {
+      for (const alias of aliases) addRedirect(alias, { ns, name });
+      if (ns !== 'tag') addRedirect(name, { ns, name });
+    }
+  }
+  // 圖集自帶的角色/系列/分類詞（不一定列在 TAXONOMY），舊網址也是 /tag/<詞>/
+  for (const [ns, names] of counts) {
+    if (ns === 'tag') continue;
+    for (const name of names.keys()) addRedirect(name, { ns, name });
+  }
+  return paths;
+}
+
+const { ns, redirect } = Astro.props;
+const { name } = Astro.params;
+
+let galleries: Awaited<ReturnType<typeof getAllMetas>>['galleries'] = [];
+let posts: Awaited<ReturnType<typeof getAllMetas>>['posts'] = [];
+let nsLabel = '';
+if (!redirect) {
+  const all = await getAllMetas();
+  const field = NS_FIELD[ns];
+  galleries = all.galleries.filter((g) => galleryMeta(g)[field].includes(name));
+  posts = all.posts.filter((p) => postMeta(p)[field].includes(name));
+  nsLabel = NS_LABEL.find(([n]) => n === ns)?.[1] ?? ns;
+}
+---
+
+{
+  redirect ? (
+    <html lang="zh-Hant">
+      <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="refresh" content={`0; url=${redirect}`} />
+        <link rel="canonical" href={redirect} />
+        <title>轉向中…</title>
+      </head>
+      <body>
+        <a href={redirect}>此標籤已搬家 → {redirect}</a>
+      </body>
+    </html>
+  ) : (
+    <Layout title={`${nsLabel}: ${name}`} active="tags">
+      <h2 class="sec">
+        {nsLabel}:「{name}」 <span>{galleries.length} 本圖集 · {posts.length} 篇文章</span>
+      </h2>
+
+      {(galleries.length > 0 || posts.length > 0) && (
+        <div class="grid">
+          {galleries.map((g) => (
+            <GalleryCard g={g} />
+          ))}
+          {posts.map((p) => (
+            <PostCard p={p} />
+          ))}
+        </div>
+      )}
+
+      {galleries.length === 0 && posts.length === 0 && (
+        <div class="empty">
+          沒有符合 <b>{name}</b> 的內容
+        </div>
+      )}
+    </Layout>
+  )
+}

@@ -1,0 +1,59 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  active?: 'home' | 'blog' | 'tags';
+}
+const { title, description = '帽捲的作品集與部落格', active } = Astro.props;
+const fullTitle = title ? `${title} | STUDIO MAOCHINN` : 'STUDIO MAOCHINN';
+---
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="dark" />
+    <title>{fullTitle}</title>
+  </head>
+  <body>
+    <header class="site">
+      <div class="hwrap">
+        <a class="logo" href="/">mao<b>chinn</b><small>STUDIO&nbsp;MAOCHINN</small></a>
+        <nav class="site">
+          <a href="/" class={active === 'home' ? 'on' : ''}>首頁</a>
+          <a href="/blog/" class={active === 'blog' ? 'on' : ''}>部落格</a>
+          <a href="/tags/" class={active === 'tags' ? 'on' : ''}>標籤</a>
+          <a href="#" id="nav-random" title="手氣不錯">隨機 🎲</a>
+        </nav>
+        <form class="search" action="/search/" method="get">
+          <input name="q" placeholder='搜尋，例：character:"時崎狂三" -category:"練習"' autocomplete="off" />
+          <button type="submit" aria-label="搜尋">🔍</button>
+        </form>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site">
+      <b>STUDIO MAOCHINN</b> — 圖集 × 文章 × tag 宇宙<br />
+      全站靜態生成 · 無伺服器 · 無資料庫<br />
+      <span class="wink">本站不含任何本子，僅含本子的靈魂。懂的人都懂。</span>
+    </footer>
+
+    <script>
+      // 隨機 🎲：從全站索引抽一本圖集
+      document.getElementById('nav-random')?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const res = await fetch('/search-index.json');
+        const idx = await res.json();
+        const gs = idx.entries.filter((x: { type: string }) => x.type === 'gallery');
+        const pick = gs[Math.floor(Math.random() * gs.length)];
+        if (pick) location.href = pick.url;
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+---
+// 舊 Chirpy 的頂層頁（/archives/、/categories/）轉向 /medium/ 鏡像；
+// /tags/ 不在此列——新站自己有 /tags/
+export function getStaticPaths() {
+  return ['archives', 'categories'].map((chirpy) => ({ params: { chirpy } }));
+}
+
+const { chirpy } = Astro.params;
+const redirect = `/medium/${chirpy}/`;
+---
+
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="refresh" content={`0; url=${redirect}`} />
+    <link rel="canonical" href={redirect} />
+    <title>轉向中…</title>
+  </head>
+  <body>
+    <a href={redirect}>此頁已搬家 → {redirect}</a>
+  </body>
+</html>

@@ -1,0 +1,143 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="搜尋">
+  <h2 class="sec" id="s-head">搜尋 <span id="s-count"></span></h2>
+  <div class="grid" id="s-results"></div>
+  <div class="empty" id="s-empty" style="display:none">
+    沒有符合的結果。試試 <b>character:"時崎狂三"</b>、<b>parody:"omniverse" -category:"遊記"</b> 或
+    <b>tag:"電腦圖學"</b>
+  </div>
+
+  <script>
+    type NsField =
+      | 'parodies'
+      | 'characters'
+      | 'tags'
+      | 'artists'
+      | 'groups'
+      | 'languages'
+      | 'categories';
+    type Entry = {
+      type: 'gallery' | 'post';
+      title: string;
+      url: string;
+      date: string;
+      pages: number;
+      minutes?: number;
+      alt?: string;
+      rating?: string;
+      cover?: string | null;
+      description?: string;
+    } & Record<NsField, string[]>;
+    type Index = { aliases: Record<string, [string, string]>; entries: Entry[] };
+
+    const NS_TO_FIELD: Record<string, NsField> = {
+      parody: 'parodies',
+      character: 'characters',
+      tag: 'tags',
+      artist: 'artists',
+      group: 'groups',
+      language: 'languages',
+      category: 'categories',
+    };
+
+    const q = new URLSearchParams(location.search).get('q') ?? '';
+    const input = document.querySelector<HTMLInputElement>('.search input');
+    if (input) input.value = q;
+
+    type Filter = { terms: { field: NsField; name: string; neg: boolean }[]; words: string[] };
+
+    /* nhentai 式語法：<ns>:"名字"、-<ns>:名字、自由文字；別名自動轉正名 */
+    function parse(query: string, aliases: Index['aliases']): Filter {
+      const terms: Filter['terms'] = [];
+      const words: string[] = [];
+      const NS = 'parody|character|tag|artist|group|language|category';
+      const re = new RegExp(`(-?)(${NS}):"([^"]+)"|(-?)(${NS}):(\\S+)|(\\S+)`, 'g');
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(query))) {
+        const [neg, ns, raw] = m[2] ? [m[1], m[2], m[3]] : m[5] ? [m[4], m[5], m[6]] : ['', '', ''];
+        if (ns) {
+          // 使用者打的是別名或不同 namespace 的詞 → 以 taxonomy 的認定為準
+          const hit = aliases[raw.normalize().toLowerCase()];
+          const field = hit ? NS_TO_FIELD[hit[0]] : NS_TO_FIELD[ns];
+          const name = hit ? hit[1] : raw.normalize();
+          terms.push({ field, name, neg: neg === '-' });
+        } else if (m[7]) {
+          words.push(m[7].toLowerCase());
+        }
+      }
+      return { terms, words };
+    }
+
+    function matches(e: Entry, f: Filter) {
+      for (const t of f.terms) {
+        const has = e[t.field]?.includes(t.name);
+        if (t.neg ? has : !has) return false;
+      }
+      if (f.words.length) {
+        const hay = [
+          e.title,
+          e.alt ?? '',
+          e.description ?? '',
+          ...e.parodies, ...e.characters, ...e.tags,
+          ...e.artists, ...e.groups, ...e.languages, ...e.categories,
+        ]
+          .join(' ')
+          .toLowerCase();
+        if (!f.words.every((w) => hay.includes(w))) return false;
+      }
+      return true;
+    }
+
+    const esc = (s: string) =>
+      s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+
+    function galleryCard(e: Entry) {
+      const masked = e.rating && e.rating !== 'all';
+      return `<a class="g-card${masked ? ' masked' : ''}" href="${e.url}">
+        <div class="cover">
+          <img class="coverart" src="${e.cover}" alt="${esc(e.alt ?? e.title)}" loading="lazy" />
+          ${masked ? `<div class="mask"><b>${e.rating!.toUpperCase()}</b><i>點入確認後顯示</i></div>` : ''}
+          <span class="badge${e.categories[0] === '創作' ? ' pink' : ''}">${esc(e.categories[0] ?? '')}</span>
+          <span class="pages-badge">${e.pages}P</span>
+        </div>
+        <div class="cap">${esc(e.title)}</div>
+      </a>`;
+    }
+
+    function postCard(e: Entry) {
+      const coverHtml = e.cover
+        ? `<img class="coverart" src="${e.cover}" alt="${esc(e.title)}" loading="lazy" />`
+        : `<div class="text-cover"><span class="tc-title">${esc(e.title)}</span><i class="tc-mark">STUDIO MAOCHINN · TEXT</i></div>`;
+      const badge = e.pages > 0 ? `${e.pages}P` : `${e.minutes} min`;
+      return `<a class="g-card" href="${e.url}">
+        <div class="cover">
+          ${coverHtml}
+          <span class="badge">${esc(e.categories[0] ?? '')}</span>
+          <span class="pages-badge">${badge}</span>
+        </div>
+        <div class="cap">📄 ${esc(e.title)}</div>
+      </a>`;
+    }
+
+    async function run() {
+      const head = document.getElementById('s-head')!;
+      head.childNodes[0].textContent = q ? `搜尋：${q} ` : '搜尋 ';
+      const res = await fetch('/search-index.json');
+      const idx: Index = await res.json();
+      const f = parse(q, idx.aliases);
+      const hits = q ? idx.entries.filter((e) => matches(e, f)) : idx.entries;
+      hits.sort((a, b) => b.date.localeCompare(a.date));
+      const gs = hits.filter((e) => e.type === 'gallery');
+      const ps = hits.filter((e) => e.type === 'post');
+      document.getElementById('s-count')!.textContent = `${gs.length} 本圖集 · ${ps.length} 篇文章`;
+      document.getElementById('s-results')!.innerHTML = hits
+        .map((e) => (e.type === 'gallery' ? galleryCard(e) : postCard(e)))
+        .join('');
+      (document.getElementById('s-empty') as HTMLElement).style.display = hits.length ? 'none' : '';
+    }
+    run();
+  </script>
+</Layout>

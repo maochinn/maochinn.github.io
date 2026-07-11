@@ -1,0 +1,35 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { NS_LABEL } from '../../data/taxonomy';
+import { getAllMetas, buildCounts, nsUrl } from '../../lib/site';
+
+const { metas } = await getAllMetas();
+const counts = buildCounts(metas);
+const sections = NS_LABEL.map(([ns, zh, en]) => ({
+  ns,
+  zh,
+  en,
+  items: [...(counts.get(ns) ?? new Map()).entries()].sort(
+    (a, b) => b[1].galleries + b[1].posts - (a[1].galleries + a[1].posts)
+  ),
+})).filter((s) => s.items.length > 0);
+---
+
+<Layout title="標籤" active="tags">
+  {
+    sections.map(({ ns, zh, en, items }) => (
+      <>
+        <h2 class="sec">
+          {zh} <span>{en} · {items.length}</span>
+        </h2>
+        <div class="chips">
+          {items.map(([name, c]) => (
+            <a class="chip" href={nsUrl(ns, name)}>
+              {name} <em>{c.galleries + c.posts}</em>
+            </a>
+          ))}
+        </div>
+      </>
+    ))
+  }
+</Layout>

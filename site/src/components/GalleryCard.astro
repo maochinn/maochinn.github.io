@@ -1,0 +1,28 @@
+---
+import { Image } from 'astro:assets';
+import type { Gallery } from '../lib/site';
+
+interface Props {
+  g: Gallery;
+}
+const { g } = Astro.props;
+const d = g.data;
+const masked = d.rating !== 'all';
+---
+
+<a class:list={['g-card', { masked }]} href={`/g/${d.id}/`}>
+  <div class="cover">
+    <Image class="coverart" src={d.cover} alt={d.alt || d.title} width={480} />
+    {
+      masked && (
+        <div class="mask">
+          <b>{d.rating.toUpperCase()}</b>
+          <i>點入確認後顯示</i>
+        </div>
+      )
+    }
+    <span class:list={['badge', { pink: d.category === '創作' }]}>{d.category}</span>
+    <span class="pages-badge">{d.pages.length}P</span>
+  </div>
+  <div class="cap">{d.title}</div>
+</a>
