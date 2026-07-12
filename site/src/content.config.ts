@@ -42,4 +42,18 @@ const blog = defineCollection({
   }),
 });
 
-export const collections = { galleries, blog };
+// 巴哈小屋創作（import-baha.mjs 從 ../archive/baha 生成，樣式比照 blog）
+const baha = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/baha' }),
+  schema: z.object({
+    title: z.string(),
+    date: z.coerce.date(),
+    baha_category: z.string().default(''),
+    kind: z.number().int(), // 巴哈 kind1：1=文章 3=插畫 6=Cosplay
+    gp: z.number().int().default(0),
+    visit: z.number().int().default(0),
+    source: z.string(),
+  }),
+});
+
+export const collections = { galleries, blog, baha };

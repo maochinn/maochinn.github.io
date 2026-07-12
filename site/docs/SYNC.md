@@ -9,7 +9,7 @@ sync 失敗會紅燈但不影響既有資料。
 |---|---|---|---|
 | `scripts/sync-youtube.mjs` | 頻道 RSS（僅最新 15 部） | `src/data/videos.json` | ✅ 影片卡混入封面牆 + `/v/<id>/` 內嵌播放頁 |
 | `scripts/sync-pixiv.mjs` | 公開 AJAX API（user 6856401） | `src/content/galleries/<pixiv-id>/` | ✅ 一般圖集機制 |
-| `scripts/sync-baha.mjs` | 小屋 creation list API + 文章頁 | repo 根目錄 `archive/baha/<sn>-<slug>/` | ❌ 純備份 |
+| `scripts/sync-baha.mjs` | 小屋 creation list API + 文章頁 | repo 根目錄 `archive/baha/<sn>-<slug>/` | ✅ build 時 `import-baha.mjs` 轉成 `/baha/<sn>/` 文章 |
 | `scripts/backfill-youtube.mjs` | uploads 播放清單 + watch 頁 | 同 videos.json | 一次性：頻道有「比 json 早的漏網影片」才需要 |
 
 ## 端點備忘（全部非官方，改版時來這裡修）
@@ -35,10 +35,16 @@ sync 失敗會紅燈但不影響既有資料。
 - 匿名抓不到 R-18，腳本另有 `xRestrict > 0` 過濾當第二道保險；gallery id = pixiv 作品 id（8 位數）
 
 ### 巴哈
-- 每篇：`meta.json` + `content.html`（原始內文，圖連結已改本地）+ `content.md` + `images/`
+- 備份每篇：`meta.json` + `content.html`（原始內文，圖連結已改本地）+ `content.md` + `images/`
 - `ref.gamer.com.tw` 轉址連結已還原成原始網址；內文圖（含熱鏈的 miro.medium）全下載
 - 「兒少保護」標記的跳過（要手機認證帳號才看得到）——見下方延後項
 - `archive/` 已加進 `_config.astro.yml` 的 exclude（不然 Jekyll 會把它複製進 /medium/ 產物）
+- **上站**：pages-deploy build 時 `import-baha.mjs` 把備份轉成 `src/content/baha/<sn>.md` +
+  `public/baha/<sn>/`（皆 gitignore 生成物），路由 `/baha/<sn>/`、社團標 巴哈姆特；
+  分類規則：插畫類（kind≠1）→ 創作/塗鴉，文章類走 Medium 同款 POST_CATEGORY_RULES；
+  標題的【x】[x] 前綴當原始 tag 過 taxonomy 分流
+- **與 Medium 重複的整合**：不少巴哈文是 Medium 好讀版，目前兩邊都在牆上；
+  要下架單篇巴哈版 → `src/data/baha-overrides.ts` 設 `hidden: true`（備份不受影響）
 
 ## 延後項（敏感內容，之後另想辦法：NAS 私有備份等）
 
