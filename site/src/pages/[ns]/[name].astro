@@ -3,22 +3,23 @@ import Layout from '../../layouts/Layout.astro';
 import GalleryCard from '../../components/GalleryCard.astro';
 import PostCard from '../../components/PostCard.astro';
 import BahaCard from '../../components/BahaCard.astro';
+import FbCard from '../../components/FbCard.astro';
 import VideoCard from '../../components/VideoCard.astro';
 import { TAXONOMY, NS_PATH, NS_LABEL, type Namespace } from '../../data/taxonomy';
 import {
   getAllMetas,
-  buildCounts,
+  getCounts,
   galleryMeta,
   postMeta,
   bahaMeta,
+  fbMeta,
   videoMeta,
   nsUrl,
   NS_FIELD,
 } from '../../lib/site';
 
 export async function getStaticPaths() {
-  const { metas } = await getAllMetas();
-  const counts = buildCounts(metas);
+  const counts = await getCounts();
   const paths: {
     params: { ns: string; name: string };
     props: { ns: Namespace; redirect: string | null };
@@ -65,6 +66,7 @@ const { name } = Astro.params;
 let galleries: Awaited<ReturnType<typeof getAllMetas>>['galleries'] = [];
 let posts: Awaited<ReturnType<typeof getAllMetas>>['posts'] = [];
 let bahaPosts: Awaited<ReturnType<typeof getAllMetas>>['bahaPosts'] = [];
+let fbPosts: Awaited<ReturnType<typeof getAllMetas>>['fbPosts'] = [];
 let videos: Awaited<ReturnType<typeof getAllMetas>>['videos'] = [];
 let nsLabel = '';
 if (!redirect) {
@@ -73,6 +75,7 @@ if (!redirect) {
   galleries = all.galleries.filter((g) => galleryMeta(g)[field].includes(name));
   posts = all.posts.filter((p) => postMeta(p)[field].includes(name));
   bahaPosts = all.bahaPosts.filter((b) => bahaMeta(b)[field].includes(name));
+  fbPosts = all.fbPosts.filter((f) => fbMeta(f)[field].includes(name));
   videos = all.videos.filter((v) => videoMeta(v)[field].includes(name));
   nsLabel = NS_LABEL.find(([n]) => n === ns)?.[1] ?? ns;
 }
@@ -96,11 +99,12 @@ if (!redirect) {
       <h2 class="sec">
         {nsLabel}:「{name}」
         <span>
-          {galleries.length} 本圖集 · {posts.length + bahaPosts.length} 篇文章 · {videos.length} 部影片
+          {galleries.length} 本圖集 · {posts.length + bahaPosts.length} 篇文章 · {fbPosts.length} 則動態 ·
+          {videos.length} 部影片
         </span>
       </h2>
 
-      {(galleries.length > 0 || posts.length > 0 || bahaPosts.length > 0 || videos.length > 0) && (
+      {(galleries.length > 0 || posts.length > 0 || bahaPosts.length > 0 || fbPosts.length > 0 || videos.length > 0) && (
         <div class="grid">
           {galleries.map((g) => (
             <GalleryCard g={g} />
@@ -111,13 +115,16 @@ if (!redirect) {
           {bahaPosts.map((b) => (
             <BahaCard b={b} />
           ))}
+          {fbPosts.map((f) => (
+            <FbCard f={f} />
+          ))}
           {videos.map((v) => (
             <VideoCard v={v} />
           ))}
         </div>
       )}
 
-      {galleries.length === 0 && posts.length === 0 && bahaPosts.length === 0 && videos.length === 0 && (
+      {galleries.length === 0 && posts.length === 0 && bahaPosts.length === 0 && fbPosts.length === 0 && videos.length === 0 && (
         <div class="empty">
           沒有符合 <b>{name}</b> 的內容
         </div>

@@ -56,4 +56,14 @@ const baha = defineCollection({
   }),
 });
 
-export const collections = { galleries, blog, baha };
+// Facebook 粉專貼文（import-fb.mjs 從 ../archive/facebook 生成）
+const fb = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/fb' }),
+  schema: z.object({
+    title: z.string(),
+    date: z.coerce.date(),
+    source: z.string(),
+  }),
+});
+
+export const collections = { galleries, blog, baha, fb };

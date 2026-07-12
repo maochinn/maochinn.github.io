@@ -1,10 +1,9 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { NS_LABEL } from '../../data/taxonomy';
-import { getAllMetas, buildCounts, tagTotal, nsUrl } from '../../lib/site';
+import { getCounts, tagTotal, nsUrl } from '../../lib/site';
 
-const { metas } = await getAllMetas();
-const counts = buildCounts(metas);
+const counts = await getCounts();
 const sections = NS_LABEL.map(([ns, zh, en]) => ({
   ns,
   zh,

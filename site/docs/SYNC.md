@@ -59,6 +59,9 @@ sync 失敗會紅燈但不影響既有資料。
      （實務上不過期，除非改密碼或安全事件）
   4. `gh secret set FB_PAGE_TOKEN`（互動貼上，不留 shell 紀錄）
 - Token 失效時 Actions 會紅燈 → 重跑上面 2-4
+- **上站**：build 時 `import-fb.mjs` 轉成 `/fb/<postid>/`（社團標 Facebook、分類 動態、
+  標題=內文第一行截斷）；**牆上只放有圖的**（純文字動態量太大，仍可搜／/group/Facebook/ 全列）；
+  下架單篇 → `src/data/fb-overrides.ts` 設 `hidden: true`
 
 ## 延後項（敏感內容，之後另想辦法：NAS 私有備份等）
 

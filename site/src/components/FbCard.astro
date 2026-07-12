@@ -1,0 +1,29 @@
+---
+import type { FbPost } from '../lib/site';
+import { fbMeta } from '../lib/site';
+
+interface Props {
+  f: FbPost;
+}
+const { f } = Astro.props;
+const m = fbMeta(f);
+const cover = m.images?.[0]?.src;
+---
+
+<a class="g-card" href={m.url}>
+  <div class="cover">
+    {
+      cover ? (
+        <img class="coverart" src={cover} alt={f.data.title} loading="lazy" />
+      ) : (
+        <div class="text-cover">
+          <span class="tc-title">{f.data.title}</span>
+          <i class="tc-mark">STUDIO MAOCHINN · FB</i>
+        </div>
+      )
+    }
+    <span class="badge">{m.categories[0]}</span>
+    <span class="pages-badge">{m.pages > 0 ? `${m.pages}P` : `${m.minutes} min`}</span>
+  </div>
+  <div class="cap">📄 {f.data.title}</div>
+</a>
