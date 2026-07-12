@@ -3,12 +3,14 @@ import { NS_PATH, type Namespace } from '../data/taxonomy';
 import { POST_OVERRIDES } from '../data/post-overrides';
 import { VIDEO_OVERRIDES } from '../data/video-overrides';
 import { BAHA_OVERRIDES } from '../data/baha-overrides';
+import { FB_OVERRIDES } from '../data/fb-overrides';
 import videosJson from '../data/videos.json';
 import { canonical, classify, classifyPostCategory, readingMinutes } from './taxonomy';
 
 export type Gallery = CollectionEntry<'galleries'>;
 export type Post = CollectionEntry<'blog'>;
 export type BahaPost = CollectionEntry<'baha'>;
+export type FbPost = CollectionEntry<'fb'>;
 
 /** YouTube 影片（sync-youtube.mjs 維護的 videos.json） */
 export interface Video {
@@ -39,10 +41,10 @@ export interface UnifiedMeta {
   images?: { src: string; alt: string }[];
 }
 
-/** 文章 markdown → 文中圖片清單（只取本站 /assets 與 /baha 的圖，順序即頁序） */
+/** 文章 markdown → 文中圖片清單（只取本站 /assets、/baha、/fb 的圖，順序即頁序） */
 export function extractImages(body: string): { src: string; alt: string }[] {
   const out: { src: string; alt: string }[] = [];
-  const re = /!\[([^\]]*)\]\((\/(?:assets|baha)\/[^)\s]+)\)/g;
+  const re = /!\[([^\]]*)\]\((\/(?:assets|baha|fb)\/[^)\s]+)\)/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(body))) out.push({ src: m[2], alt: m[1] });
   return out;
@@ -71,10 +73,30 @@ export async function getBahaPosts(): Promise<BahaPost[]> {
     .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 }
 
+export async function getFbPosts(): Promise<FbPost[]> {
+  const list = await getCollection('fb');
+  return list
+    .filter((f) => !FB_OVERRIDES[f.id]?.hidden)
+    .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+}
+
 /** YouTube 縮圖（hqdefault 一定存在；maxres 舊影片會 404） */
 export const videoThumb = (id: string) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 
-export function galleryMeta(g: Gallery): UnifiedMeta {
+/** meta 函式的 per-entry 快取：封面牆、幾百個 tag 頁、幾千個詳情頁都在重複算同一批 */
+function memo1<T extends object, R>(fn: (x: T) => R): (x: T) => R {
+  const cache = new WeakMap<T, R>();
+  return (x) => {
+    let r = cache.get(x);
+    if (r === undefined) {
+      r = fn(x);
+      cache.set(x, r);
+    }
+    return r;
+  };
+}
+
+export const galleryMeta = memo1(function galleryMeta(g: Gallery): UnifiedMeta {
   const d = g.data;
   const parody = canonical(d.parody, 'parody');
   const category = canonical(d.category, 'category');
@@ -96,9 +118,9 @@ export function galleryMeta(g: Gallery): UnifiedMeta {
     categories: [category],
     pages: d.pages.length,
   };
-}
+});
 
-export function postMeta(p: Post): UnifiedMeta {
+export const postMeta = memo1(function postMeta(p: Post): UnifiedMeta {
   // Medium 的原始 tags（含 categories 欄位）過 taxonomy 自動分流
   const buckets = classify([...p.data.tags, ...p.data.categories]);
   const ov = POST_OVERRIDES[p.id] ?? {};
@@ -122,9 +144,9 @@ export function postMeta(p: Post): UnifiedMeta {
     minutes: readingMinutes(p.body ?? ''),
     images,
   };
-}
+});
 
-export function bahaMeta(b: BahaPost): UnifiedMeta {
+export const bahaMeta = memo1(function bahaMeta(b: BahaPost): UnifiedMeta {
   const d = b.data;
   // 標題裡的【x】[x] 前綴當原始 tag 用（[同人]、【旅遊】、[RWBY] 之類），過 taxonomy 分流
   const tokens = [...d.title.matchAll(/【([^】]+)】|\[([^\]]+)\]/g)]
@@ -158,9 +180,30 @@ export function bahaMeta(b: BahaPost): UnifiedMeta {
     minutes: readingMinutes(b.body ?? ''),
     images,
   };
-}
+});
 
-export function videoMeta(v: Video): UnifiedMeta {
+export const fbMeta = memo1(function fbMeta(f: FbPost): UnifiedMeta {
+  const ov = FB_OVERRIDES[f.id] ?? {};
+  const images = extractImages(f.body ?? '');
+  return {
+    type: 'post',
+    title: f.data.title,
+    url: `/fb/${f.id}/`,
+    date: f.data.date,
+    parodies: ov.parodies ?? [],
+    characters: ov.characters ?? [],
+    tags: ov.tags ?? [],
+    artists: ['maochinn'],
+    groups: ['Facebook'],
+    languages: ['中文'],
+    categories: ov.categories ?? ['動態'],
+    pages: images.length,
+    minutes: readingMinutes(f.body ?? ''),
+    images,
+  };
+});
+
+export const videoMeta = memo1(function videoMeta(v: Video): UnifiedMeta {
   const ov = VIDEO_OVERRIDES[v.id] ?? {};
   const merge = (a?: string[], b?: string[]) => [...new Set([...(a ?? []), ...(b ?? [])])];
   // 標題帶課程/作業/測試字樣的多半是習作
@@ -179,7 +222,7 @@ export function videoMeta(v: Video): UnifiedMeta {
     categories: ov.categories ?? [practice ? '練習' : '創作'],
     pages: 0,
   };
-}
+});
 
 /** namespace → UnifiedMeta 的欄位名 */
 export const NS_FIELD: Record<Namespace, keyof Pick<
@@ -229,29 +272,46 @@ export function buildCounts(metas: UnifiedMeta[]): Map<Namespace, Map<string, Ta
   return all;
 }
 
-export async function getAllMetas(): Promise<{
+interface AllMetas {
   galleries: Gallery[];
   posts: Post[];
   bahaPosts: BahaPost[];
+  fbPosts: FbPost[];
   videos: Video[];
   metas: UnifiedMeta[];
-}> {
-  const galleries = await getGalleries();
-  const posts = await getPosts();
-  const bahaPosts = await getBahaPosts();
-  const videos = getVideos();
-  return {
-    galleries,
-    posts,
-    bahaPosts,
-    videos,
-    metas: [
-      ...galleries.map(galleryMeta),
-      ...posts.map(postMeta),
-      ...bahaPosts.map(bahaMeta),
-      ...videos.map(videoMeta),
-    ],
-  };
+}
+
+// 全站幾千頁的 getStaticPaths / 檔案卡都要這份資料，build 是單一 process，算一次就好
+let allMetasCache: Promise<AllMetas> | undefined;
+let countsCache: Promise<Map<Namespace, Map<string, TagCount>>> | undefined;
+
+export function getAllMetas(): Promise<AllMetas> {
+  return (allMetasCache ??= (async () => {
+    const galleries = await getGalleries();
+    const posts = await getPosts();
+    const bahaPosts = await getBahaPosts();
+    const fbPosts = await getFbPosts();
+    const videos = getVideos();
+    return {
+      galleries,
+      posts,
+      bahaPosts,
+      fbPosts,
+      videos,
+      metas: [
+        ...galleries.map(galleryMeta),
+        ...posts.map(postMeta),
+        ...bahaPosts.map(bahaMeta),
+        ...fbPosts.map(fbMeta),
+        ...videos.map(videoMeta),
+      ],
+    };
+  })());
+}
+
+/** buildCounts(getAllMetas().metas) 的快取版——詳情頁的 tag 計數都走這裡 */
+export function getCounts(): Promise<Map<Namespace, Map<string, TagCount>>> {
+  return (countsCache ??= getAllMetas().then(({ metas }) => buildCounts(metas)));
 }
 
 export const fmt = (n: number) => n.toLocaleString('en-US');

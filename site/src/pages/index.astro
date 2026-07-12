@@ -3,30 +3,39 @@ import Layout from '../layouts/Layout.astro';
 import GalleryCard from '../components/GalleryCard.astro';
 import PostCard from '../components/PostCard.astro';
 import BahaCard from '../components/BahaCard.astro';
+import FbCard from '../components/FbCard.astro';
 import VideoCard from '../components/VideoCard.astro';
 import {
   getGalleries,
   getPosts,
   getBahaPosts,
+  getFbPosts,
   getVideos,
+  fbMeta,
   type Gallery,
   type Post,
   type BahaPost,
+  type FbPost,
   type Video,
 } from '../lib/site';
 
 const galleries = await getGalleries();
 const posts = await getPosts();
 const bahaPosts = await getBahaPosts();
+const fbPosts = await getFbPosts();
 const videos = getVideos();
 const featured = galleries.filter((g) => g.data.featured);
 
-// 封面牆：圖集、文章（Medium＋巴哈）、影片依日期混排
-type WallItem = { date: Date; g?: Gallery; p?: Post; b?: BahaPost; v?: Video };
+// FB 動態量太大（2000+），牆上只放有圖的；純文字的仍有頁面、可搜、/group/Facebook/ 全列
+const fbWall = fbPosts.filter((f) => (fbMeta(f).images?.length ?? 0) > 0);
+
+// 封面牆：圖集、文章（Medium＋巴哈）、FB 圖文、影片依日期混排
+type WallItem = { date: Date; g?: Gallery; p?: Post; b?: BahaPost; f?: FbPost; v?: Video };
 const wall: WallItem[] = [
   ...galleries.map((g) => ({ date: g.data.date, g })),
   ...posts.map((p) => ({ date: p.data.date, p })),
   ...bahaPosts.map((b) => ({ date: b.data.date, b })),
+  ...fbWall.map((f) => ({ date: f.data.date, f })),
   ...videos.map((v) => ({ date: new Date(v.published), v })),
 ].sort((a, b) => b.date.valueOf() - a.date.valueOf());
 const nPosts = posts.length + bahaPosts.length;
@@ -48,7 +57,10 @@ const nPosts = posts.length + bahaPosts.length;
 
   <h2 class="sec">
     最新上傳
-    <span>new uploads · {galleries.length} 本圖集 · {nPosts} 篇文章 · {videos.length} 部影片</span>
+    <span>
+      new uploads · {galleries.length} 本圖集 · {nPosts} 篇文章 · {fbPosts.length} 則動態 ·
+      {videos.length} 部影片
+    </span>
   </h2>
   <div class="grid">
     {
@@ -59,6 +71,8 @@ const nPosts = posts.length + bahaPosts.length;
           <PostCard p={item.p} />
         ) : item.b ? (
           <BahaCard b={item.b} />
+        ) : item.f ? (
+          <FbCard f={item.f} />
         ) : (
           <VideoCard v={item.v!} />
         )

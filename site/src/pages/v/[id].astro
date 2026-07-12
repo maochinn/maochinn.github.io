@@ -3,8 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import type { Namespace } from '../../data/taxonomy';
 import {
   getVideos,
-  getAllMetas,
-  buildCounts,
+  getCounts,
   videoMeta,
   tagTotal,
   nsUrl,
@@ -18,7 +17,7 @@ export async function getStaticPaths() {
 const { v } = Astro.props;
 const m = videoMeta(v);
 
-const counts = buildCounts((await getAllMetas()).metas);
+const counts = await getCounts();
 const cnt = (ns: Namespace, name: string) => {
   const c = counts.get(ns)?.get(name);
   return c ? tagTotal(c) : 0;

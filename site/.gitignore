@@ -6,9 +6,11 @@ dist/
 # CI 會用 import-content.mjs 從同 repo 重新生成（文章 + 文章圖片）
 src/content/blog/
 public/assets/
-# CI 會用 import-baha.mjs 從 ../archive/baha 重新生成
+# CI 會用 import-baha.mjs / import-fb.mjs 從 ../archive 重新生成
 src/content/baha/
 public/baha/
+src/content/fb/
+public/fb/
 # R18 內容不進 git（EXCLUDE_R18=1 是公開站的第二道保險）
 src/content/galleries/r18-extras/
 

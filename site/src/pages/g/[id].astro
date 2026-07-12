@@ -5,8 +5,7 @@ import Reader from '../../components/Reader.astro';
 import type { Namespace } from '../../data/taxonomy';
 import {
   getGalleries,
-  getAllMetas,
-  buildCounts,
+  getCounts,
   galleryMeta,
   tagTotal,
   nsUrl,
@@ -24,7 +23,7 @@ const d = g.data;
 const m = galleryMeta(g);
 const masked = d.rating !== 'all';
 
-const counts = buildCounts((await getAllMetas()).metas);
+const counts = await getCounts();
 const cnt = (ns: Namespace, name: string) => {
   const c = counts.get(ns)?.get(name);
   return c ? tagTotal(c) : 0;

@@ -3,7 +3,7 @@ import { render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import Reader from '../../components/Reader.astro';
 import type { Namespace } from '../../data/taxonomy';
-import { getPosts, getAllMetas, buildCounts, postMeta, tagTotal, nsUrl, fmtDate } from '../../lib/site';
+import { getPosts, getCounts, postMeta, tagTotal, nsUrl, fmtDate } from '../../lib/site';
 
 export async function getStaticPaths() {
   const posts = await getPosts();
@@ -16,7 +16,7 @@ const m = postMeta(p);
 const images = m.images ?? [];
 const cover = images[0]?.src;
 
-const counts = buildCounts((await getAllMetas()).metas);
+const counts = await getCounts();
 const cnt = (ns: Namespace, name: string) => {
   const c = counts.get(ns)?.get(name);
   return c ? tagTotal(c) : 0;
