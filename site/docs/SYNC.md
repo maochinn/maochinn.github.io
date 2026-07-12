@@ -46,8 +46,22 @@ sync 失敗會紅燈但不影響既有資料。
 - **與 Medium 重複的整合**：不少巴哈文是 Medium 好讀版，目前兩邊都在牆上；
   要下架單篇巴哈版 → `src/data/baha-overrides.ts` 設 `hidden: true`（備份不受影響）
 
+### Facebook（粉專 maochinnn）
+- `scripts/sync-facebook.mjs`：Graph API `/{page-id}/published_posts` → `archive/facebook/<日期>-<postid>/`
+  （meta.json + content.md + images/；FB CDN 圖片連結會過期所以必須落地；影片只存 permalink）
+- 需要 GitHub Secret **`FB_PAGE_TOKEN`**（長效粉專 token）；沒設的話這步自動跳過不會紅燈
+- **Token 取得（一次性）**：
+  1. [developers.facebook.com](https://developers.facebook.com/) 建一個 app（類型選「商業」即可，不用送審——讀自己管理的粉專在開發模式就能用）
+  2. 開 [Graph API 測試工具](https://developers.facebook.com/tools/explorer/)：選這個 app，
+     權限勾 `pages_show_list`、`pages_read_engagement`、`pages_read_user_content`，
+     產生「使用者存取權杖」（會跳授權視窗，記得勾 maochinnn 粉專）
+  3. `node scripts/fb-token.mjs <app-id> <app-secret> <剛拿到的token>` → 印出長效粉專 token
+     （實務上不過期，除非改密碼或安全事件）
+  4. `gh secret set FB_PAGE_TOKEN`（互動貼上，不留 shell 紀錄）
+- Token 失效時 Actions 會紅燈 → 重跑上面 2-4
+
 ## 延後項（敏感內容，之後另想辦法：NAS 私有備份等）
 
 - 巴哈 8 篇「兒少保護」文章（需登入 cookie 才抓得到）
-- Facebook 全部：個人檔案無 API、爬蟲違反 ToS；正規做法 = 官方「下載你的資訊」（JSON）手動匯出
+- Facebook **個人檔案**（粉專以外的個人貼文）：無 API；正規做法 = 官方「下載你的資訊」（JSON）手動匯出
 - Pixiv / 其他平台的 R18 作品（本 repo 公開，R18 一律不進 git）
