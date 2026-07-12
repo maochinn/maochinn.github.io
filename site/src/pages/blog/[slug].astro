@@ -3,7 +3,7 @@ import { render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import Reader from '../../components/Reader.astro';
 import type { Namespace } from '../../data/taxonomy';
-import { getPosts, getAllMetas, buildCounts, postMeta, nsUrl, fmtDate } from '../../lib/site';
+import { getPosts, getAllMetas, buildCounts, postMeta, tagTotal, nsUrl, fmtDate } from '../../lib/site';
 
 export async function getStaticPaths() {
   const posts = await getPosts();
@@ -19,7 +19,7 @@ const cover = images[0]?.src;
 const counts = buildCounts((await getAllMetas()).metas);
 const cnt = (ns: Namespace, name: string) => {
   const c = counts.get(ns)?.get(name);
-  return c ? c.galleries + c.posts : 0;
+  return c ? tagTotal(c) : 0;
 };
 const rows: { label: string; ns: Namespace; names: string[] }[] = [
   { label: '系列', ns: 'parody', names: m.parodies },

@@ -7,7 +7,7 @@ const galleries = defineCollection({
     z.object({
       title: z.string(),
       alt: z.string().default(''),
-      id: z.number().int(), // 六位數編號，全站唯一
+      id: z.number().int(), // 全站唯一：策展圖集用六位數惡趣味編號，pixiv 匯入的直接用 8 位 pixiv id
       date: z.coerce.date(),
       category: z.enum(['創作', '練習', '塗鴉', '合作']),
       parody: z.string().default('原創'),

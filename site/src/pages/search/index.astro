@@ -20,7 +20,7 @@ import Layout from '../../layouts/Layout.astro';
       | 'languages'
       | 'categories';
     type Entry = {
-      type: 'gallery' | 'post';
+      type: 'gallery' | 'post' | 'video';
       title: string;
       url: string;
       date: string;
@@ -122,6 +122,17 @@ import Layout from '../../layouts/Layout.astro';
       </a>`;
     }
 
+    function videoCard(e: Entry) {
+      return `<a class="g-card" href="${e.url}">
+        <div class="cover">
+          <img class="coverart" src="${e.cover}" alt="${esc(e.title)}" loading="lazy" />
+          <span class="badge${e.categories[0] === '創作' ? ' pink' : ''}">${esc(e.categories[0] ?? '')}</span>
+          <span class="pages-badge">▶ VIDEO</span>
+        </div>
+        <div class="cap">▶ ${esc(e.title)}</div>
+      </a>`;
+    }
+
     async function run() {
       const head = document.getElementById('s-head')!;
       head.childNodes[0].textContent = q ? `搜尋：${q} ` : '搜尋 ';
@@ -132,9 +143,11 @@ import Layout from '../../layouts/Layout.astro';
       hits.sort((a, b) => b.date.localeCompare(a.date));
       const gs = hits.filter((e) => e.type === 'gallery');
       const ps = hits.filter((e) => e.type === 'post');
-      document.getElementById('s-count')!.textContent = `${gs.length} 本圖集 · ${ps.length} 篇文章`;
+      const vs = hits.filter((e) => e.type === 'video');
+      document.getElementById('s-count')!.textContent =
+        `${gs.length} 本圖集 · ${ps.length} 篇文章 · ${vs.length} 部影片`;
       document.getElementById('s-results')!.innerHTML = hits
-        .map((e) => (e.type === 'gallery' ? galleryCard(e) : postCard(e)))
+        .map((e) => (e.type === 'gallery' ? galleryCard(e) : e.type === 'post' ? postCard(e) : videoCard(e)))
         .join('');
       (document.getElementById('s-empty') as HTMLElement).style.display = hits.length ? 'none' : '';
     }

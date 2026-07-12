@@ -2,12 +2,14 @@
 import Layout from '../../layouts/Layout.astro';
 import GalleryCard from '../../components/GalleryCard.astro';
 import PostCard from '../../components/PostCard.astro';
+import VideoCard from '../../components/VideoCard.astro';
 import { TAXONOMY, NS_PATH, NS_LABEL, type Namespace } from '../../data/taxonomy';
 import {
   getAllMetas,
   buildCounts,
   galleryMeta,
   postMeta,
+  videoMeta,
   nsUrl,
   NS_FIELD,
 } from '../../lib/site';
@@ -60,12 +62,14 @@ const { name } = Astro.params;
 
 let galleries: Awaited<ReturnType<typeof getAllMetas>>['galleries'] = [];
 let posts: Awaited<ReturnType<typeof getAllMetas>>['posts'] = [];
+let videos: Awaited<ReturnType<typeof getAllMetas>>['videos'] = [];
 let nsLabel = '';
 if (!redirect) {
   const all = await getAllMetas();
   const field = NS_FIELD[ns];
   galleries = all.galleries.filter((g) => galleryMeta(g)[field].includes(name));
   posts = all.posts.filter((p) => postMeta(p)[field].includes(name));
+  videos = all.videos.filter((v) => videoMeta(v)[field].includes(name));
   nsLabel = NS_LABEL.find(([n]) => n === ns)?.[1] ?? ns;
 }
 ---
@@ -86,10 +90,11 @@ if (!redirect) {
   ) : (
     <Layout title={`${nsLabel}: ${name}`} active="tags">
       <h2 class="sec">
-        {nsLabel}:「{name}」 <span>{galleries.length} 本圖集 · {posts.length} 篇文章</span>
+        {nsLabel}:「{name}」
+        <span>{galleries.length} 本圖集 · {posts.length} 篇文章 · {videos.length} 部影片</span>
       </h2>
 
-      {(galleries.length > 0 || posts.length > 0) && (
+      {(galleries.length > 0 || posts.length > 0 || videos.length > 0) && (
         <div class="grid">
           {galleries.map((g) => (
             <GalleryCard g={g} />
@@ -97,10 +102,13 @@ if (!redirect) {
           {posts.map((p) => (
             <PostCard p={p} />
           ))}
+          {videos.map((v) => (
+            <VideoCard v={v} />
+          ))}
         </div>
       )}
 
-      {galleries.length === 0 && posts.length === 0 && (
+      {galleries.length === 0 && posts.length === 0 && videos.length === 0 && (
         <div class="empty">
           沒有符合 <b>{name}</b> 的內容
         </div>
