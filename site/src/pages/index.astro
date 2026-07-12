@@ -2,21 +2,34 @@
 import Layout from '../layouts/Layout.astro';
 import GalleryCard from '../components/GalleryCard.astro';
 import PostCard from '../components/PostCard.astro';
+import BahaCard from '../components/BahaCard.astro';
 import VideoCard from '../components/VideoCard.astro';
-import { getGalleries, getPosts, getVideos, type Gallery, type Post, type Video } from '../lib/site';
+import {
+  getGalleries,
+  getPosts,
+  getBahaPosts,
+  getVideos,
+  type Gallery,
+  type Post,
+  type BahaPost,
+  type Video,
+} from '../lib/site';
 
 const galleries = await getGalleries();
 const posts = await getPosts();
+const bahaPosts = await getBahaPosts();
 const videos = getVideos();
 const featured = galleries.filter((g) => g.data.featured);
 
-// 封面牆：圖集、文章、影片依日期混排
-type WallItem = { date: Date; g?: Gallery; p?: Post; v?: Video };
+// 封面牆：圖集、文章（Medium＋巴哈）、影片依日期混排
+type WallItem = { date: Date; g?: Gallery; p?: Post; b?: BahaPost; v?: Video };
 const wall: WallItem[] = [
   ...galleries.map((g) => ({ date: g.data.date, g })),
   ...posts.map((p) => ({ date: p.data.date, p })),
+  ...bahaPosts.map((b) => ({ date: b.data.date, b })),
   ...videos.map((v) => ({ date: new Date(v.published), v })),
 ].sort((a, b) => b.date.valueOf() - a.date.valueOf());
+const nPosts = posts.length + bahaPosts.length;
 ---
 
 <Layout active="home">
@@ -35,12 +48,20 @@ const wall: WallItem[] = [
 
   <h2 class="sec">
     最新上傳
-    <span>new uploads · {galleries.length} 本圖集 · {posts.length} 篇文章 · {videos.length} 部影片</span>
+    <span>new uploads · {galleries.length} 本圖集 · {nPosts} 篇文章 · {videos.length} 部影片</span>
   </h2>
   <div class="grid">
     {
       wall.map((item) =>
-        item.g ? <GalleryCard g={item.g} /> : item.p ? <PostCard p={item.p} /> : <VideoCard v={item.v!} />
+        item.g ? (
+          <GalleryCard g={item.g} />
+        ) : item.p ? (
+          <PostCard p={item.p} />
+        ) : item.b ? (
+          <BahaCard b={item.b} />
+        ) : (
+          <VideoCard v={item.v!} />
+        )
       )
     }
   </div>

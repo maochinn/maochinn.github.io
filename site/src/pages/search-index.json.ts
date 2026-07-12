@@ -1,10 +1,10 @@
 import type { APIRoute } from 'astro';
 import { getImage } from 'astro:assets';
-import { getAllMetas, galleryMeta, postMeta, videoMeta, videoThumb, fmtDate } from '../lib/site';
+import { getAllMetas, galleryMeta, postMeta, bahaMeta, videoMeta, videoThumb, fmtDate } from '../lib/site';
 import { lookupEntries } from '../lib/taxonomy';
 
 export const GET: APIRoute = async () => {
-  const { galleries, posts, videos } = await getAllMetas();
+  const { galleries, posts, bahaPosts, videos } = await getAllMetas();
 
   const galleryEntries = await Promise.all(
     galleries.map(async (g) => {
@@ -31,6 +31,17 @@ export const GET: APIRoute = async () => {
     };
   });
 
+  const bahaEntries = bahaPosts.map((b) => {
+    const m = bahaMeta(b);
+    const { images, ...rest } = m;
+    return {
+      ...rest,
+      date: fmtDate(m.date),
+      description: '',
+      cover: images?.[0]?.src ?? null,
+    };
+  });
+
   const videoEntries = videos.map((v) => {
     const m = videoMeta(v);
     return {
@@ -44,7 +55,7 @@ export const GET: APIRoute = async () => {
   // aliases: 任一寫法（小寫）→ [namespace, 正名]，搜尋時把使用者輸入正規化
   const payload = {
     aliases: Object.fromEntries(lookupEntries()),
-    entries: [...galleryEntries, ...postEntries, ...videoEntries],
+    entries: [...galleryEntries, ...postEntries, ...bahaEntries, ...videoEntries],
   };
 
   return new Response(JSON.stringify(payload), {

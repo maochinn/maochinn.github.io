@@ -48,6 +48,10 @@ jobs:
         env:
           JEKYLL_DIR: ".."
 
+      - name: Import Bahamut creations (from archive/baha)
+        run: node scripts/import-baha.mjs
+        working-directory: site
+
       - name: Build Astro site
         run: npm run build
         working-directory: site

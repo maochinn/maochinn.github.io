@@ -2,11 +2,13 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 import { NS_PATH, type Namespace } from '../data/taxonomy';
 import { POST_OVERRIDES } from '../data/post-overrides';
 import { VIDEO_OVERRIDES } from '../data/video-overrides';
+import { BAHA_OVERRIDES } from '../data/baha-overrides';
 import videosJson from '../data/videos.json';
 import { canonical, classify, classifyPostCategory, readingMinutes } from './taxonomy';
 
 export type Gallery = CollectionEntry<'galleries'>;
 export type Post = CollectionEntry<'blog'>;
+export type BahaPost = CollectionEntry<'baha'>;
 
 /** YouTube 影片（sync-youtube.mjs 維護的 videos.json） */
 export interface Video {
@@ -37,10 +39,10 @@ export interface UnifiedMeta {
   images?: { src: string; alt: string }[];
 }
 
-/** 文章 markdown → 文中圖片清單（只取本站 /assets 的圖，順序即頁序） */
+/** 文章 markdown → 文中圖片清單（只取本站 /assets 與 /baha 的圖，順序即頁序） */
 export function extractImages(body: string): { src: string; alt: string }[] {
   const out: { src: string; alt: string }[] = [];
-  const re = /!\[([^\]]*)\]\((\/assets\/[^)\s]+)\)/g;
+  const re = /!\[([^\]]*)\]\((\/(?:assets|baha)\/[^)\s]+)\)/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(body))) out.push({ src: m[2], alt: m[1] });
   return out;
@@ -60,6 +62,13 @@ export async function getPosts(): Promise<Post[]> {
 
 export function getVideos(): Video[] {
   return [...(videosJson as Video[])].sort((a, b) => b.published.localeCompare(a.published));
+}
+
+export async function getBahaPosts(): Promise<BahaPost[]> {
+  const list = await getCollection('baha');
+  return list
+    .filter((b) => !BAHA_OVERRIDES[b.id]?.hidden)
+    .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 }
 
 /** YouTube 縮圖（hqdefault 一定存在；maxres 舊影片會 404） */
@@ -111,6 +120,42 @@ export function postMeta(p: Post): UnifiedMeta {
     categories: ov.categories ?? [classifyPostCategory(tags, groups)],
     pages: images.length,
     minutes: readingMinutes(p.body ?? ''),
+    images,
+  };
+}
+
+export function bahaMeta(b: BahaPost): UnifiedMeta {
+  const d = b.data;
+  // 標題裡的【x】[x] 前綴當原始 tag 用（[同人]、【旅遊】、[RWBY] 之類），過 taxonomy 分流
+  const tokens = [...d.title.matchAll(/【([^】]+)】|\[([^\]]+)\]/g)]
+    .map((m) => m[1] ?? m[2])
+    .filter((t) => t !== '達人專欄');
+  const buckets = classify([...tokens, d.baha_category].filter((t) => t && t !== '未分類'));
+  const ov = BAHA_OVERRIDES[b.id] ?? {};
+  const merge = (a?: string[], b2?: string[]) => [...new Set([...(a ?? []), ...(b2 ?? [])])];
+  const tags = merge(buckets.tag, ov.tags);
+  const images = extractImages(b.body ?? '');
+  // 插畫類（kind≠1）依標題分 塗鴉/創作；文章類走與 Medium 相同的規則
+  const category =
+    d.kind !== 1
+      ? /塗鴉|落書/.test(d.title)
+        ? '塗鴉'
+        : '創作'
+      : classifyPostCategory(tags, buckets.group ?? []);
+  return {
+    type: 'post',
+    title: d.title,
+    url: `/baha/${b.id}/`,
+    date: d.date,
+    parodies: merge(buckets.parody, ov.parodies),
+    characters: merge(buckets.character, ov.characters),
+    tags,
+    artists: ['maochinn'],
+    groups: ['巴哈姆特'],
+    languages: ['中文'],
+    categories: ov.categories ?? [category],
+    pages: images.length,
+    minutes: readingMinutes(b.body ?? ''),
     images,
   };
 }
@@ -187,17 +232,25 @@ export function buildCounts(metas: UnifiedMeta[]): Map<Namespace, Map<string, Ta
 export async function getAllMetas(): Promise<{
   galleries: Gallery[];
   posts: Post[];
+  bahaPosts: BahaPost[];
   videos: Video[];
   metas: UnifiedMeta[];
 }> {
   const galleries = await getGalleries();
   const posts = await getPosts();
+  const bahaPosts = await getBahaPosts();
   const videos = getVideos();
   return {
     galleries,
     posts,
+    bahaPosts,
     videos,
-    metas: [...galleries.map(galleryMeta), ...posts.map(postMeta), ...videos.map(videoMeta)],
+    metas: [
+      ...galleries.map(galleryMeta),
+      ...posts.map(postMeta),
+      ...bahaPosts.map(bahaMeta),
+      ...videos.map(videoMeta),
+    ],
   };
 }
 
