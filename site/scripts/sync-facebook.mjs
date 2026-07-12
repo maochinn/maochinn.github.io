@@ -42,7 +42,8 @@ function collectImages(att) {
 
 const FIELDS =
   'id,message,created_time,permalink_url,attachments{media_type,media,url,subattachments}';
-let url = `https://graph.facebook.com/${V}/${page.id}/published_posts?fields=${FIELDS}&limit=100&access_token=${TOKEN}`;
+// limit 別調高：帶巢狀 attachments 展開時，太大會吃到 "reduce the amount of data" 錯誤
+let url = `https://graph.facebook.com/${V}/${page.id}/published_posts?fields=${FIELDS}&limit=25&access_token=${TOKEN}`;
 let added = 0;
 let total = 0;
 while (url) {
