@@ -1,0 +1,55 @@
+name: "Content Sync"
+on:
+  # 每月 15 號 04:30 UTC（ZMediumToMarkdown 也在 15 號跑；兩邊各自 commit、各自觸發部署，互不相干）
+  schedule:
+    - cron: "30 4 15 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "content-sync"
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Install site dependencies
+        run: npm ci
+        working-directory: site
+
+      - name: Sync YouTube (RSS -> videos.json)
+        run: node scripts/sync-youtube.mjs
+        working-directory: site
+
+      - name: Sync Pixiv (new works -> galleries)
+        run: node scripts/sync-pixiv.mjs
+        working-directory: site
+
+      - name: Sync Bahamut (new creations -> archive/baha)
+        run: node scripts/sync-baha.mjs
+        working-directory: site
+
+      - name: Commit changes (if any)
+        run: |
+          git add -A site/src/data/videos.json site/src/content/galleries archive
+          if git diff --cached --quiet; then
+            echo "no new content"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git commit -m "Content sync: youtube/pixiv/baha ($(date -u +%Y-%m-%d))"
+            git push
+          fi

@@ -1,14 +1,24 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { NS_PATH, type Namespace } from '../data/taxonomy';
 import { POST_OVERRIDES } from '../data/post-overrides';
+import { VIDEO_OVERRIDES } from '../data/video-overrides';
+import videosJson from '../data/videos.json';
 import { canonical, classify, classifyPostCategory, readingMinutes } from './taxonomy';
 
 export type Gallery = CollectionEntry<'galleries'>;
 export type Post = CollectionEntry<'blog'>;
 
-/** 全站統一的同人誌式檔案卡欄位（圖集與文章共用） */
+/** YouTube 影片（sync-youtube.mjs 維護的 videos.json） */
+export interface Video {
+  id: string;
+  title: string;
+  published: string;
+  description: string;
+}
+
+/** 全站統一的同人誌式檔案卡欄位（圖集、文章、影片共用） */
 export interface UnifiedMeta {
-  type: 'gallery' | 'post';
+  type: 'gallery' | 'post' | 'video';
   title: string;
   url: string;
   date: Date;
@@ -47,6 +57,13 @@ export async function getPosts(): Promise<Post[]> {
   const list = await getCollection('blog');
   return list.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 }
+
+export function getVideos(): Video[] {
+  return [...(videosJson as Video[])].sort((a, b) => b.published.localeCompare(a.published));
+}
+
+/** YouTube 縮圖（hqdefault 一定存在；maxres 舊影片會 404） */
+export const videoThumb = (id: string) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 
 export function galleryMeta(g: Gallery): UnifiedMeta {
   const d = g.data;
@@ -98,6 +115,27 @@ export function postMeta(p: Post): UnifiedMeta {
   };
 }
 
+export function videoMeta(v: Video): UnifiedMeta {
+  const ov = VIDEO_OVERRIDES[v.id] ?? {};
+  const merge = (a?: string[], b?: string[]) => [...new Set([...(a ?? []), ...(b ?? [])])];
+  // 標題帶課程/作業/測試字樣的多半是習作
+  const practice = /作業|練習|[Kk]renz|[Tt]est|[Dd]emo/.test(v.title);
+  return {
+    type: 'video',
+    title: v.title,
+    url: `/v/${v.id}/`,
+    date: new Date(v.published),
+    parodies: ov.parodies ?? [],
+    characters: ov.characters ?? [],
+    tags: merge([], ov.tags),
+    artists: ['maochinn'],
+    groups: ['YouTube'],
+    languages: ['無文字'],
+    categories: ov.categories ?? [practice ? '練習' : '創作'],
+    pages: 0,
+  };
+}
+
 /** namespace → UnifiedMeta 的欄位名 */
 export const NS_FIELD: Record<Namespace, keyof Pick<
   UnifiedMeta,
@@ -118,18 +156,26 @@ export const nsUrl = (ns: Namespace, name: string) =>
 export interface TagCount {
   galleries: number;
   posts: number;
+  videos: number;
 }
+
+export const tagTotal = (c: TagCount) => c.galleries + c.posts + c.videos;
 
 /** 每個 namespace 的 名稱 → 出現次數 */
 export function buildCounts(metas: UnifiedMeta[]): Map<Namespace, Map<string, TagCount>> {
   const all = new Map<Namespace, Map<string, TagCount>>();
   for (const ns of Object.keys(NS_FIELD) as Namespace[]) all.set(ns, new Map());
+  const KIND: Record<UnifiedMeta['type'], keyof TagCount> = {
+    gallery: 'galleries',
+    post: 'posts',
+    video: 'videos',
+  };
   for (const m of metas) {
-    const kind: keyof TagCount = m.type === 'gallery' ? 'galleries' : 'posts';
+    const kind = KIND[m.type];
     for (const ns of Object.keys(NS_FIELD) as Namespace[]) {
       const map = all.get(ns)!;
       for (const name of m[NS_FIELD[ns]]) {
-        const cur = map.get(name) ?? { galleries: 0, posts: 0 };
+        const cur = map.get(name) ?? { galleries: 0, posts: 0, videos: 0 };
         cur[kind]++;
         map.set(name, cur);
       }
@@ -141,14 +187,17 @@ export function buildCounts(metas: UnifiedMeta[]): Map<Namespace, Map<string, Ta
 export async function getAllMetas(): Promise<{
   galleries: Gallery[];
   posts: Post[];
+  videos: Video[];
   metas: UnifiedMeta[];
 }> {
   const galleries = await getGalleries();
   const posts = await getPosts();
+  const videos = getVideos();
   return {
     galleries,
     posts,
-    metas: [...galleries.map(galleryMeta), ...posts.map(postMeta)],
+    videos,
+    metas: [...galleries.map(galleryMeta), ...posts.map(postMeta), ...videos.map(videoMeta)],
   };
 }
 

@@ -1,0 +1,386 @@
+[
+  {
+    "id": "xEZLRzWZ4BU",
+    "title": "Warping Mesh",
+    "published": "2024-07-08",
+    "description": "Up: Runtime: Multi-texture warped grid\n\nBottom-left: Offline Multi-shape warped grid (Skinned Mesh Renderer)\nBottom-middle: Offline Multi-texture warped grid\nBottom-right: Offline Multi-UV Warped grid"
+  },
+  {
+    "id": "Eoyrzw0D2Iw",
+    "title": "西門町 武昌廣場 Gura 壽司郎廣告",
+    "published": "2024-02-16",
+    "description": "A"
+  },
+  {
+    "id": "ci9iKMPWXs4",
+    "title": "【Unity】Multipass Rendering",
+    "published": "2023-09-21",
+    "description": "https://medium.com/maochinn/unity-multipass-rendering-7b98d6e88641"
+  },
+  {
+    "id": "tQlfIkkGeQk",
+    "title": "Krenz 構成 L6 節點一",
+    "published": "2023-07-05",
+    "description": ""
+  },
+  {
+    "id": "oO8rr0EZXqY",
+    "title": "Krenz 構成 L8",
+    "published": "2023-07-05",
+    "description": ""
+  },
+  {
+    "id": "vhxYwIC7yZA",
+    "title": "Krenz 構成 L6 節點二",
+    "published": "2023-07-05",
+    "description": ""
+  },
+  {
+    "id": "hH5PxDztvsw",
+    "title": "Live2D T1 Test2 Motion 2",
+    "published": "2023-05-21",
+    "description": ""
+  },
+  {
+    "id": "oKh02xIp9Ys",
+    "title": "Live2D T1 Test2 Motion 1",
+    "published": "2023-05-21",
+    "description": ""
+  },
+  {
+    "id": "UMqapO9PQ5Q",
+    "title": "[Blender] Delete duplicate vertices in separate objects",
+    "published": "2022-12-16",
+    "description": ""
+  },
+  {
+    "id": "s80CJMkq9m8",
+    "title": "ClipDrop Relight Kurumi",
+    "published": "2022-09-12",
+    "description": "https://clipdrop.co/relight"
+  },
+  {
+    "id": "avyLX52Nz30",
+    "title": "Cross Plane",
+    "published": "2022-07-29",
+    "description": ""
+  },
+  {
+    "id": "9GbJQllCM1k",
+    "title": "3D Reconstruction Test 3",
+    "published": "2022-06-09",
+    "description": "DJI mini 3 pro\nContextCapture \nBlender"
+  },
+  {
+    "id": "E2tsz5lE5XM",
+    "title": "3D Reconstruction Test 2",
+    "published": "2022-06-09",
+    "description": "DJI mini 3 pro\nContextCapture \nBlender"
+  },
+  {
+    "id": "uErDSNGjxvs",
+    "title": "3D Reconstruction Test 1",
+    "published": "2022-06-09",
+    "description": "DJI mini 3 pro\nContextCapture \nBlender"
+  },
+  {
+    "id": "9VGRRiieJCA",
+    "title": "Live2D T1 Test",
+    "published": "2022-03-06",
+    "description": ""
+  },
+  {
+    "id": "9OlZK_GtQ2w",
+    "title": "魔妖骨塔",
+    "published": "2022-02-04",
+    "description": ""
+  },
+  {
+    "id": "OmbDLWjV7kk",
+    "title": "Blender test tree point cloud",
+    "published": "2021-08-22",
+    "description": "use depth map to point cloud"
+  },
+  {
+    "id": "umYBkZhdHVg",
+    "title": "泳裝狂三 過程紀錄",
+    "published": "2021-08-08",
+    "description": ""
+  },
+  {
+    "id": "5qSxiFAj91M",
+    "title": "赤黑新章 泳裝狂三 過程紀錄",
+    "published": "2021-08-01",
+    "description": ""
+  },
+  {
+    "id": "RlaAldRl4-c",
+    "title": "忍豆風雲•三 怪奇之塔 風魔篇 鐵扇青海波 35斬",
+    "published": "2021-07-17",
+    "description": "挑戰40斬的青海波裝任務\n42斬的沒錄到QAQ"
+  },
+  {
+    "id": "a64Plx74WXA",
+    "title": "Mesh Deformation (2)",
+    "published": "2021-01-12",
+    "description": "https://github.com/maochinn/MeshDeformation\n\nImplementing As-Rigid-As-Possible Shape Manipulation and Surface Flattening"
+  },
+  {
+    "id": "w-_ThWJir08",
+    "title": "Mesh Deformation (1)",
+    "published": "2021-01-12",
+    "description": "https://github.com/maochinn/MeshDeformation\n\nImplementing As-Rigid-As-Possible Shape Manipulation and Surface Flattening"
+  },
+  {
+    "id": "jN9S6g4xGcQ",
+    "title": "Mesh Simplification",
+    "published": "2020-11-10",
+    "description": "use openmesh with QEM simplification"
+  },
+  {
+    "id": "c04c2Pui6Rs",
+    "title": "Skeleton Extraction (2)",
+    "published": "2020-11-10",
+    "description": "C/C++ with eigen\nimplement Skeleton Extraction by Mesh Contraction.\n\nhttps://github.com/maochinn/MeshSimplification"
+  },
+  {
+    "id": "30qOQ_iO8ho",
+    "title": "Skeleton Extraction",
+    "published": "2020-11-10",
+    "description": "C/C++ with eigen\nimplement Skeleton Extraction by Mesh Contraction.\n\nhttps://github.com/maochinn/MeshSimplification"
+  },
+  {
+    "id": "ylOMSduw2Ck",
+    "title": "Water Surface with Tessellation shader",
+    "published": "2020-08-06",
+    "description": "refer:\nhttp://madebyevan.com/webgl-water/"
+  },
+  {
+    "id": "n5sNRwNm4gc",
+    "title": "Orientation Particle",
+    "published": "2020-07-02",
+    "description": ""
+  },
+  {
+    "id": "iFlR3LJe5RM",
+    "title": "Orientation Particle Shape Matching",
+    "published": "2020-06-29",
+    "description": "blender 2.8 python script\nJacobi method\nRed: 1 loop\nGreen: 4 loop\nBlue: 10 loop\nWhite: 4 loop (particle with weight)"
+  },
+  {
+    "id": "zCl9uSRY5Pw",
+    "title": "Paper Presentation :Distributed Ray Tracing",
+    "published": "2020-04-05",
+    "description": "Distributed Ray Tracing"
+  },
+  {
+    "id": "s1sX9R5j7pE",
+    "title": "Particle System - Hair",
+    "published": "2020-01-21",
+    "description": "blender 2.8 addon + C++ lib"
+  },
+  {
+    "id": "IRM5OvR2Lg8",
+    "title": "Particle System - Box",
+    "published": "2020-01-21",
+    "description": "blender 2.8 addon + C++ lib"
+  },
+  {
+    "id": "-jHrcJi2DG8",
+    "title": "Particle System - Cloth",
+    "published": "2020-01-21",
+    "description": "blender 2.8 addon + C++ lib"
+  },
+  {
+    "id": "ht0ixcRgAPs",
+    "title": "Motion Path Editing with Registration Curve (Transition)",
+    "published": "2020-01-19",
+    "description": "use blender 2.8 with python script and .bvh file\nhttps://github.com/maochinn/motion_path_editing"
+  },
+  {
+    "id": "CTjXxdkreSc",
+    "title": "Motion Path Editing with Registration Curve (Interpolation)",
+    "published": "2020-01-19",
+    "description": "use blender with python script and .bvh file\nhttps://github.com/maochinn/motion_path_editing"
+  },
+  {
+    "id": "SjzAYzVoqHw",
+    "title": "Blender 2.8 Chain Reaction",
+    "published": "2020-01-19",
+    "description": ""
+  },
+  {
+    "id": "ZLxlmbrv4DI",
+    "title": "CG project 3 ver3",
+    "published": "2020-01-19",
+    "description": "opengl"
+  },
+  {
+    "id": "Vm0GCLeLZmQ",
+    "title": "paper reading test",
+    "published": "2019-09-26",
+    "description": "Data-Driven Modeling and Animation of Outdoor Trees Through Interactive Approach"
+  },
+  {
+    "id": "6ZG77_Y7zRc",
+    "title": "Unity Quiz04",
+    "published": "2019-08-23",
+    "description": ""
+  },
+  {
+    "id": "V_CV85gXrtg",
+    "title": "Unity Quiz03",
+    "published": "2019-08-23",
+    "description": ""
+  },
+  {
+    "id": "rNK3lQvHxbg",
+    "title": "CG project 3 ver2",
+    "published": "2019-08-23",
+    "description": "have some bug..."
+  },
+  {
+    "id": "Wf-VjYFJHpo",
+    "title": "CG project 3 ver1",
+    "published": "2019-08-15",
+    "description": ""
+  },
+  {
+    "id": "9FD1Sv7kosI",
+    "title": "Unity Quiz02",
+    "published": "2019-08-09",
+    "description": "game programming quiz"
+  },
+  {
+    "id": "x0hyoBA-Pzs",
+    "title": "CG Project 2 Maze",
+    "published": "2019-08-01",
+    "description": "view, projection matrix(implement myself)\nclipping walls (dont use depth test, and only use glVertex2f)\nrecursive visibility(wall of opaque or transparent)"
+  },
+  {
+    "id": "13KPQ2PyypY",
+    "title": "Project 1 Image",
+    "published": "2019-07-18",
+    "description": "處理影像"
+  },
+  {
+    "id": "Q-7MElJ88dk",
+    "title": "dynamic skybox",
+    "published": "2019-07-09",
+    "description": "test"
+  },
+  {
+    "id": "1TR8oA9fq_E",
+    "title": "shadow map",
+    "published": "2019-07-09",
+    "description": "test"
+  },
+  {
+    "id": "bu24tJb_GiI",
+    "title": "2019海大畢業煙火",
+    "published": "2019-06-16",
+    "description": "煙火好看"
+  },
+  {
+    "id": "pK1Z9JmYhzA",
+    "title": "ROV 作品展示影片1",
+    "published": "2018-12-18",
+    "description": "使用手把操作"
+  },
+  {
+    "id": "6EqlfJ9yDMA",
+    "title": "Computer Graphic assignment work-4",
+    "published": "2018-09-26",
+    "description": "use opengl1.x\nrobot have three motion(walk, jump, stretch)\nall light can adjust color by ambient、diffuse、specular\nhave collision detect by wall and door"
+  },
+  {
+    "id": "DeZtq16gS7Y",
+    "title": "Computer Graphic assignment work-5",
+    "published": "2018-09-26",
+    "description": "use opengl1.x\nmulti-light :direction、point、spot light)\nmulti-texture\nfoggy effect(GL_LINEAR、GL_EXP、GL_EXP2)\nbillboard\nanimation by key frame"
+  },
+  {
+    "id": "DWVJ9Sd_nlY",
+    "title": "FPS Game:Hunter demo(2)",
+    "published": "2018-07-03",
+    "description": "only use opengl"
+  },
+  {
+    "id": "vDb9ds_zKnc",
+    "title": "FPS Game:Hunter demo",
+    "published": "2018-07-03",
+    "description": "only use opengl"
+  },
+  {
+    "id": "2eb67ZvQzvQ",
+    "title": "Hunter game",
+    "published": "2018-07-02",
+    "description": "simple FPS game\nuse opengl\nuse assimp"
+  },
+  {
+    "id": "OQq8Q4H6GcI",
+    "title": "AR test Video (2)",
+    "published": "2018-06-13",
+    "description": "use this video:\nhttps://youtu.be/YL86YqENJMQ\n\nimplement AR program\nuse opencv opengl assimp\n\n3Dmodel from:\nhttps://sketchfab.com/models/ee2a882d8e7e4fb6a705c962530cb714\n\ncontact:\negino135egino135@gmail.com"
+  },
+  {
+    "id": "YL86YqENJMQ",
+    "title": "Marker test Video (2)",
+    "published": "2018-06-13",
+    "description": "create by opencv aruco"
+  },
+  {
+    "id": "ZhTyf7yqJ2o",
+    "title": "AR (1) -opencv opengl",
+    "published": "2018-06-13",
+    "description": "have green point light in scene\n\nimplement AR program\nuse opencv opengl assimp\n\n3Dmodel from:\nhttps://sketchfab.com/models/ee2a882d8e7e4fb6a705c962530cb714\n\ncontact:\negino135egino135@gmail.com"
+  },
+  {
+    "id": "bl6Qjj1D6yo",
+    "title": "AR (3) -opencv opengl",
+    "published": "2018-06-13",
+    "description": "have 3 kind point light in scene\n\nimplement AR program\nuse opencv opengl assimp\n\n3Dmodel from:\nhttps://sketchfab.com/models/ee2a882d8e7e4fb6a705c962530cb714\n\ncontact:\negino135egino135@gmail.com"
+  },
+  {
+    "id": "dD-Y5Bi9bTI",
+    "title": "AR (2) -opencv opengl",
+    "published": "2018-06-13",
+    "description": "have 3 kind point light in scene\n\nimplement AR program\nuse opencv opengl assimp\n\n3Dmodel from:\nhttps://sketchfab.com/models/ee2a882d8e7e4fb6a705c962530cb714\n\ncontact:\negino135egino135@gmail.com"
+  },
+  {
+    "id": "aMXPNc9PLMU",
+    "title": "AR test Video (1)",
+    "published": "2018-06-13",
+    "description": "use this video:\nhttps://youtu.be/Eo4xYoZ5jHI\n\nimplement AR program\nuse opencv opengl assimp\n\n3Dmodel from:\nhttps://sketchfab.com/models/ee2a882d8e7e4fb6a705c962530cb714\n\ncontact:\negino135egino135@gmail.com"
+  },
+  {
+    "id": "Eo4xYoZ5jHI",
+    "title": "Marker test Video (1)",
+    "published": "2018-06-13",
+    "description": "create by opencv aruco"
+  },
+  {
+    "id": "XRfXtcBXlo8",
+    "title": "AR test",
+    "published": "2018-06-11",
+    "description": "implement AR\nuse DroidCam to capture by Sony phone\nuse opencv aruco to detect\nuse opengl 3.x to render\nby VS C++"
+  },
+  {
+    "id": "vHNkcvmp5qY",
+    "title": "機器視覺 作業三-拼貼",
+    "published": "2018-05-30",
+    "description": "use opencv in c++\nfeature point : KAZE\nmatch : BFMatcher\nfindHomography() to get transform"
+  },
+  {
+    "id": "zbfVcnOsFvs",
+    "title": "機器視覺 作業三-全景拼貼",
+    "published": "2018-05-30",
+    "description": "use opencv in c++\nfeature point : AKAZE\nmatch : BFMatcher\nfindHomography() to get transform"
+  },
+  {
+    "id": "NWq1EphECxk",
+    "title": "機器視覺 作業一",
+    "published": "2018-04-18",
+    "description": ":3"
+  }
+]

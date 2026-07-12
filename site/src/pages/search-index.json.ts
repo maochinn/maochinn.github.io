@@ -1,10 +1,10 @@
 import type { APIRoute } from 'astro';
 import { getImage } from 'astro:assets';
-import { getAllMetas, galleryMeta, postMeta, fmtDate } from '../lib/site';
+import { getAllMetas, galleryMeta, postMeta, videoMeta, videoThumb, fmtDate } from '../lib/site';
 import { lookupEntries } from '../lib/taxonomy';
 
 export const GET: APIRoute = async () => {
-  const { galleries, posts } = await getAllMetas();
+  const { galleries, posts, videos } = await getAllMetas();
 
   const galleryEntries = await Promise.all(
     galleries.map(async (g) => {
@@ -31,10 +31,20 @@ export const GET: APIRoute = async () => {
     };
   });
 
+  const videoEntries = videos.map((v) => {
+    const m = videoMeta(v);
+    return {
+      ...m,
+      date: fmtDate(m.date),
+      description: v.description,
+      cover: videoThumb(v.id),
+    };
+  });
+
   // aliases: 任一寫法（小寫）→ [namespace, 正名]，搜尋時把使用者輸入正規化
   const payload = {
     aliases: Object.fromEntries(lookupEntries()),
-    entries: [...galleryEntries, ...postEntries],
+    entries: [...galleryEntries, ...postEntries, ...videoEntries],
   };
 
   return new Response(JSON.stringify(payload), {

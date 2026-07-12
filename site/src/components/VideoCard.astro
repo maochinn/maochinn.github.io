@@ -1,0 +1,19 @@
+---
+import type { Video } from '../lib/site';
+import { videoMeta, videoThumb } from '../lib/site';
+
+interface Props {
+  v: Video;
+}
+const { v } = Astro.props;
+const m = videoMeta(v);
+---
+
+<a class="g-card" href={m.url}>
+  <div class="cover">
+    <img class="coverart" src={videoThumb(v.id)} alt={v.title} loading="lazy" />
+    <span class:list={['badge', { pink: m.categories[0] === '創作' }]}>{m.categories[0]}</span>
+    <span class="pages-badge">▶ VIDEO</span>
+  </div>
+  <div class="cap">▶ {v.title}</div>
+</a>

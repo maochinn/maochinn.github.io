@@ -1,7 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { NS_LABEL } from '../../data/taxonomy';
-import { getAllMetas, buildCounts, nsUrl } from '../../lib/site';
+import { getAllMetas, buildCounts, tagTotal, nsUrl } from '../../lib/site';
 
 const { metas } = await getAllMetas();
 const counts = buildCounts(metas);
@@ -9,9 +9,7 @@ const sections = NS_LABEL.map(([ns, zh, en]) => ({
   ns,
   zh,
   en,
-  items: [...(counts.get(ns) ?? new Map()).entries()].sort(
-    (a, b) => b[1].galleries + b[1].posts - (a[1].galleries + a[1].posts)
-  ),
+  items: [...(counts.get(ns) ?? new Map()).entries()].sort((a, b) => tagTotal(b[1]) - tagTotal(a[1])),
 })).filter((s) => s.items.length > 0);
 ---
 
@@ -25,7 +23,7 @@ const sections = NS_LABEL.map(([ns, zh, en]) => ({
         <div class="chips">
           {items.map(([name, c]) => (
             <a class="chip" href={nsUrl(ns, name)}>
-              {name} <em>{c.galleries + c.posts}</em>
+              {name} <em>{tagTotal(c)}</em>
             </a>
           ))}
         </div>

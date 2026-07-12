@@ -1,0 +1,78 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import type { Namespace } from '../../data/taxonomy';
+import {
+  getVideos,
+  getAllMetas,
+  buildCounts,
+  videoMeta,
+  tagTotal,
+  nsUrl,
+  fmtDate,
+} from '../../lib/site';
+
+export async function getStaticPaths() {
+  return getVideos().map((v) => ({ params: { id: v.id }, props: { v } }));
+}
+
+const { v } = Astro.props;
+const m = videoMeta(v);
+
+const counts = buildCounts((await getAllMetas()).metas);
+const cnt = (ns: Namespace, name: string) => {
+  const c = counts.get(ns)?.get(name);
+  return c ? tagTotal(c) : 0;
+};
+const rows: { label: string; ns: Namespace; names: string[] }[] = [
+  { label: '系列', ns: 'parody', names: m.parodies },
+  { label: '角色', ns: 'character', names: m.characters },
+  { label: '標籤', ns: 'tag', names: m.tags },
+  { label: '作者', ns: 'artist', names: m.artists },
+  { label: '社團', ns: 'group', names: m.groups },
+  { label: '分類', ns: 'category', names: m.categories },
+].filter((r) => r.names.length > 0);
+---
+
+<Layout title={v.title} description={v.description || v.title}>
+  <div class="detail">
+    <div class="d-cover" style="flex: 1 1 480px; max-width: 720px;">
+      <div style="position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000;">
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${v.id}`}
+          title={v.title}
+          style="position: absolute; inset: 0; width: 100%; height: 100%; border: 0;"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen></iframe>
+      </div>
+    </div>
+    <div class="d-info">
+      <h1>▶ {v.title}</h1>
+      <div class="meta">
+        {
+          rows.map((r) => (
+            <div class="mrow">
+              <span>{r.label}</span>
+              <div class="chips">
+                {r.names.map((name) => (
+                  <a class="chip" href={nsUrl(r.ns, name)}>
+                    {name} <em>{cnt(r.ns, name)}</em>
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))
+        }
+        <div class="mrow">
+          <span>上傳於</span>
+          <div class="chips"><span class="chip static">{fmtDate(m.date)}</span></div>
+        </div>
+      </div>
+      {v.description && <p class="alt" style="white-space: pre-line;">{v.description}</p>}
+      <div class="btns">
+        <a class="btn pink" href={`https://www.youtube.com/watch?v=${v.id}`} target="_blank" rel="noopener">
+          在 YouTube 開啟 ↗
+        </a>
+      </div>
+    </div>
+  </div>
+</Layout>

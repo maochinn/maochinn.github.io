@@ -1,0 +1,4 @@
+{
+  "$comment": "sync-pixiv.mjs 跳過的 pixiv 作品 id：與 WebTest 舊策展圖集重複、或不想上站的。刪掉已匯入的圖集資料夾 + 把 id 加進來 = 下架。",
+  "ignore": []
+}

@@ -1,0 +1,713 @@
+# [Blender2.82] Render Engine
+
+> 2020-03-04 · Blender · GP 6 · 來源 https://home.gamer.com.tw/artwork.php?sn=4706234
+
+本文已搬運、更新到[medium](https://medium.com/maochinn/blender-2-82-render-engine-a01759e95c9)
+
+  
+
+blender2.8 原則上把整個engine的結構都整理出來，
+
+尤其是在2.82板後又重新整理過，
+
+這邊就來介紹一下。
+
+  
+
+首先，最簡單的應用就是我要怎麼加自己的render engine，
+
+![](images/01.png)
+
+如果只是原始的blender，
+
+Render engine應該只會有Eevee, Workbench, Cycles
+
+  
+
+而這些engine都是透過2種方式來註冊
+
+1.Python
+
+2.C
+
+  
+
+1.Python
+
+首先是Python端，
+
+你可以在blender.exe的那個資料夾看到類似"2.82"之類的資料夾，
+
+這因為版本會有不一樣，
+
+在2.82\\scripts\\addons\\cycles\\\_\_init\_\_.py
+
+裡面有這麼幾行
+
+classes = (
+
+    CyclesRender,
+
+)
+
+...
+
+for cls in classes:
+
+        register\_class(cls)
+
+這邊就是把CyclesRender進行註冊，
+
+也就是說你看的Cycles就是從Python端在runtime的時候註冊的
+
+(這邊猜測是因為要提供使用者方便用OSL，所以必須用python作為接口)
+
+  
+
+那其他的程式碼就先不管她，我們可以看到官網有提供[簡單例子](https://docs.blender.org/api/master/bpy.types.RenderEngine.html#bpy.types.RenderEngine.active_view_set)
+
+你可以把整段程式碼複製下來做成一個addon就可以了
+
+記得要去pefermance>addon把這個addon打開
+
+  
+
+可以看到它也有類似的註冊
+
+bpy.utils.register\_class(CustomRenderEngine)
+
+  
+
+我這邊把它的名子改成了Custom\_Python，
+
+所以你可以看到上面我的Rrender Engine裡面有這個東西。
+
+  
+
+但是依據這個簡單的例子，
+
+我們可以稍微理解如果要自己寫Render Engine要怎麼做，
+
+以這個例子來說，如果對於血Blender有點研究就會發現他只是利用bgl\[註1\]去render，
+
+但是如果是Cycles，它就複雜很多，
+
+它透過C code編譯許多tool給Cycles使用，
+
+也就是它不是純粹用Python來實作。
+
+  
+
+2.C
+
+其實分成這兩種事不太準確的，
+
+因為其實都是C端進行註冊的，但不妨我們先這種認為，
+
+  
+
+先聲明，後面的東西涉及底層的C code，
+
+所以如果只有下載軟體，沒有把整個專案載下來重編過的是看不到後面的東西，
+
+然後這邊我用的是Blender 2.82，
+
+你可以在原始的檔案中找到這個資料夾
+
+blender\\source\\blender\\draw\\engines
+
+裡面就有好幾個engine，
+
+包含eevee, workbench和external，
+
+那為什麼我們預設只有eevee跟workbench呢
+
+  
+
+在blender\\source\\blender\\draw\\intern\\draw\_manager.c
+
+裡面有
+
+void DRW\_engines\_register(void)
+
+{
+
+  RE\_engines\_register(&DRW\_engine\_viewport\_eevee\_type);
+
+  RE\_engines\_register(&DRW\_engine\_viewport\_workbench\_type);
+
+...
+
+}
+
+這個就是註冊的地方了，
+
+可以看到只有註冊這兩種Render engine
+
+  
+
+那這邊我們會好奇說，那剛剛有提到的external呢?
+
+只要加這一行在下面
+
+RE\_engines\_register(&DRW\_engine\_viewport\_external\_type);
+
+那你就會多這個engine啦，
+
+但我猜測這個engine應該是個樣板給別人看的，
+
+因為你實際打開來會發現只有做depth pass
+
+  
+
+但是透過這個樣板，我們可以知道如何在C code增加Render engine，
+
+在最後我會說明一下怎麼寫一個簡單的engine。
+
+  
+
+那你可能會好奇，那Cycles有什麼不一樣呢，
+
+其實本質上是一樣的，怎麼說呢?
+
+  
+
+以eevee的例子來說，它在blender還沒有開始把視窗建出來，
+
+還沒執行任何python腳本之前，
+
+就會執行上面看到的DRW\_engines\_register()
+
+也就是註冊一些預設內建的Render Engine。
+
+  
+
+那如果是利用Python來註冊，
+
+則是利用bpy.utils.register\_class
+
+這個東西其實是會去call 底層的C code的，
+
+它其會去呼叫rna\_RenderEngine\_register()這個function，
+
+然後再進一步就會呼叫RE\_engines\_register()
+
+這個就跟前面DRW\_engines\_register()裡面的註冊是一樣的，
+
+也就是說無論是哪種註冊，最終都要透過DRW\_engines\_register來註冊Render Engine
+
+  
+
+如果畫成圖類似這樣
+
+![](images/02.png)
+
+  
+
+那麼最後，我們要怎麼做一個簡單的Render Engine呢?
+
+Custom Engine
+
+首先，要做一個engine總要有個目標，
+
+我這邊的目標是可以讓wireframe產生random色彩的engine，
+
+奇怪，這個功能不是本來就有了嗎?
+
+![](images/03.png)
+
+沒錯，就如同上面一樣，
+
+但是，不幸的是你會發現Curve卻沒有這個功能，
+
+也就是只有mesh之類的東西才有隨機的顏色。
+
+  
+
+所以我們要來把它做出來，但在做之前，
+
+可能要搞清楚Blender的Render Pipeline是怎麼跑的
+
+  
+
+[這篇](https://wiki.blender.jp/Dev:2.8/Source/Viewport/DrawManager)有蠻清楚的描述
+
+首先，每個Render engine下面要定義一個Draw Engine
+
+而Draw Engine則是實際上render時拿來渲染的資料，
+
+所以可以看到blender\\source\\blender\\draw\\engines\\eevee
+
+裡面的eevee\_engine.c有如下定義，
+
+DrawEngineType draw\_engine\_eevee\_type = {
+
+    NULL,
+
+    NULL,
+
+    N\_("Eevee"),
+
+    &eevee\_data\_size,
+
+    &eevee\_engine\_init,
+
+    &eevee\_engine\_free,
+
+    &eevee\_cache\_init,
+
+    &EEVEE\_cache\_populate,
+
+    &eevee\_cache\_finish,
+
+    &eevee\_draw\_background,
+
+    NULL, /\* Everything is drawn in the background pass (see comment on function) \*/
+
+    &eevee\_view\_update,
+
+    &eevee\_id\_update,
+
+    &eevee\_render\_to\_image,
+
+};
+
+  
+
+RenderEngineType DRW\_engine\_viewport\_eevee\_type = {
+
+    NULL,
+
+    NULL,
+
+    EEVEE\_ENGINE,
+
+    N\_("Eevee"),
+
+    RE\_INTERNAL | RE\_USE\_PREVIEW,
+
+    NULL,
+
+    &DRW\_render\_to\_image,
+
+    NULL,
+
+    NULL,
+
+    NULL,
+
+    NULL,
+
+    &EEVEE\_render\_update\_passes,
+
+    &draw\_engine\_eevee\_type,
+
+    {NULL, NULL, NULL},
+
+};
+
+分別定義了Render Engine跟Draw Engine，
+
+也可以發現Render Engine裡面有 Draw Engine draw\_engine\_eevee\_type
+
+而前面提到的註冊也就是用這邊的Render Engine DRW\_engine\_viewport\_eevee\_type
+
+  
+
+那把焦點放在Draw Engine，因為它才是實際上渲染的，
+
+我們可以用這張圖來搭配，
+
+![](images/04.png)
+
+簡單來說，每一次render的loop會重複下面的流程
+
+DRW\_engine\_init->
+
+DRW\_engine\_cache\_init->
+
+DRW\_engine\_cache\_populate->
+
+DRW\_engine\_cache\_finish->
+
+DRW\_draw\_scene
+
+  
+
+也就是我們會先把engine初始化，把一些資料去先宣告好，
+
+再來是把快取初始化，其實就是把shader跟pass建好，
+
+pass在blender這邊的結構是這樣的
+
+![](images/05.png)
+
+簡單來說，render時最大的單位就是pass，
+
+一個pass可以有很多shadingGroup，
+
+那一個shadingGroup裡面只有一個shader，
+
+但可以有很多個要渲染的geometry(或者說是object)，
+
+而每個geometry跟shader就會對應成一個call，
+
+那這個call就是render原則上的最小的單位。
+
+  
+
+也就是會像這樣
+
+![](images/06.png)
+
+  
+
+講了這麼多，我們回來看eevee，
+
+可以看到它有這些funtion
+
+    &eevee\_engine\_init,
+
+    &eevee\_engine\_free,
+
+    &eevee\_cache\_init,
+
+    &EEVEE\_cache\_populate,
+
+    &eevee\_cache\_finish,
+
+    &eevee\_draw\_background,
+
+這些function都是在整個流程上會用到的
+
+  
+
+所以我們可以參考eevee的架構來寫
+
+DrawEngineType draw\_engine\_custom\_type = {
+
+    NULL,
+
+    NULL,
+
+    N\_("Custom"),
+
+    &custom\_data\_size,
+
+    &custom\_engine\_init,
+
+    &custom\_engine\_free,
+
+    &custom\_cache\_init,
+
+    &custom\_cache\_populate,
+
+    &custom\_cache\_finish,
+
+    NULL,
+
+    &custom\_draw\_scene,
+
+    NULL,
+
+    NULL,
+
+    NULL,
+
+};
+
+  
+
+RenderEngineType DRW\_engine\_custom\_type = {
+
+    NULL,
+
+    NULL,
+
+    CUSTOM\_ENGINE,
+
+    N\_("Custom"),
+
+    RE\_INTERNAL | RE\_USE\_PREVIEW,
+
+    NULL,
+
+    &DRW\_render\_to\_image,
+
+    NULL,
+
+    NULL,
+
+    NULL,
+
+    NULL,
+
+    &custom\_render\_update\_passes,
+
+    &draw\_engine\_custom\_type,
+
+    {NULL, NULL, NULL},
+
+};
+
+並且記得在DRW\_engines\_register裡面加上
+
+RE\_engines\_register(&DRW\_engine\_custom\_type);
+
+只要成功，就可以看到Render Engine那邊多了一個Custom
+
+接下來就只要實作每個函式了，
+
+  
+
+首先是
+
+static void custom\_engine\_init(void \*vedata)
+
+{
+
+  CUSTOM\_Data \*data = vedata;
+
+  CUSTOM\_StorageList \*stl = data\->stl;
+
+  const DRWContextState \*draw\_ctx = DRW\_context\_state\_get();
+
+  const View3D \*v3d = draw\_ctx\->v3d;
+
+  
+
+  if (!stl\->pd)
+
+    stl\->pd = MEM\_callocN(sizeof(\*stl\->pd), \_\_func\_\_);
+
+  
+
+  CUSTOM\_PrivateData \*pd = stl\->pd;
+
+  
+
+  pd\->hide\_overlays = (v3d\->flag2 & V3D\_HIDE\_OVERLAYS) != 0;
+
+  if (!stl\->pd\->hide\_overlays)
+
+    stl\->pd\->overlay = v3d\->overlay;
+
+  else
+
+    memset(&stl\->pd\->overlay, 0, sizeof(stl\->pd\->overlay));
+
+  
+
+  if (v3d\->shading.type == OB\_WIRE)
+
+    stl\->pd\->overlay.flag |= V3D\_OVERLAY\_WIREFRAMES;
+
+}
+
+這邊其實沒必要特別去處理overlay的東西，
+
+主要看得是把裡面的資料初始化
+
+  
+
+再來是
+
+static void custom\_cache\_init(void \*vedata)
+
+{
+
+  CUSTOM\_Data \*data = vedata;
+
+  CUSTOM\_PassList \*psl = data\->psl;
+
+  CUSTOM\_PrivateData \*pd = data\->stl\->pd;
+
+  const DRWContextState \*draw\_ctx = DRW\_context\_state\_get();
+
+  
+
+  View3DShading \*shading = &draw\_ctx\->v3d\->shading;
+
+  
+
+  pd\->wire\_step\_param = pd\->overlay.wireframe\_threshold - 254.0f / 255.0f;
+
+  
+
+  bool is\_wire\_shmode = (shading\->type == OB\_WIRE);
+
+  bool is\_material\_shmode = (shading\->type > OB\_SOLID);
+
+  bool is\_object\_color = is\_wire\_shmode && (shading\->wire\_color\_type == V3D\_SHADING\_OBJECT\_COLOR);
+
+  bool is\_random\_color = is\_wire\_shmode && (shading\->wire\_color\_type == V3D\_SHADING\_RANDOM\_COLOR);
+
+  
+
+  GPUShader \*shader = CUSTOM\_shader();
+
+  
+
+  DRWState state = DRW\_STATE\_WRITE\_COLOR | DRW\_STATE\_WRITE\_DEPTH | DRW\_STATE\_DEPTH\_LESS\_EQUAL |
+
+                   DRW\_STATE\_STENCIL\_EQUAL | DRW\_STATE\_FIRST\_VERTEX\_CONVENTION;
+
+  // DRW\_STATE\_STENCIL\_EQUAL 會執行stencil test
+
+  
+
+  DRW\_PASS\_CREATE(psl\->custom\_default\_ps, state);
+
+  DRWPass \*pass = psl\->custom\_default\_ps;
+
+  
+
+  DRWShadingGroup \*grp = pd\->shgrp = DRW\_shgroup\_create(shader, pass);
+
+  DRW\_shgroup\_uniform\_block\_persistent(grp, "globalsBlock", G\_draw.block\_ubo);
+
+  DRW\_shgroup\_uniform\_float\_copy(grp, "wireStepParam", pd\->wire\_step\_param);
+
+  DRW\_shgroup\_uniform\_bool\_copy(grp, "useColoring", true);
+
+  DRW\_shgroup\_uniform\_bool\_copy(grp, "isTransform", (G.moving & G\_TRANSFORM\_OBJ) != 0);
+
+  DRW\_shgroup\_uniform\_bool\_copy(grp, "isObjectColor", false);
+
+  DRW\_shgroup\_uniform\_bool\_copy(grp, "isRandomColor", true);
+
+  DRW\_shgroup\_stencil\_mask(grp, 0xFF);  // stencil buffer 可寫
+
+}
+
+詳細的東西就不講，
+
+總之就是把shader跟pass建出來，
+
+  
+
+比較特別的是Blender的shader會透過Cmake把glsl code轉成字元陣列，
+
+這樣就可以快速compile，
+
+具體可以看blender\\source\\blender\\draw\\CMakeLists.txt
+
+裡面有一大串data\_to\_c\_simple
+
+你可以自己寫一些shader，然後要記得在這邊加對應的數量，
+
+這樣他才會把你寫的編成字元陣列
+
+  
+
+然後是
+
+static void custom\_cache\_populate(void \*vedata, Object \*ob)
+
+{
+
+  CUSTOM\_Data \*data = vedata;
+
+  CUSTOM\_PrivateData \*pd = data\->stl\->pd;
+
+  struct GPUBatch \*geom = NULL;
+
+  
+
+  if (ob\->type == OB\_MESH)
+
+    geom = DRW\_cache\_mesh\_face\_wireframe\_get(ob);
+
+  else if (ob\->type == OB\_CURVE)
+
+    geom = DRW\_cache\_curve\_edge\_wire\_get(ob);
+
+  
+
+  if (geom) {
+
+    DRW\_shgroup\_call(pd\->shgrp, geom, ob);
+
+  }
+
+}
+
+這邊就是看object的類型，
+
+如果是mesh，那就拿它的wireframe，
+
+如果是curve，那就拿線的wire，
+
+最後加call到shading group，
+
+  
+
+最後是
+
+static void custom\_draw\_scene(void \*vedata)
+
+{
+
+  CUSTOM\_Data\* data = vedata;
+
+  CUSTOM\_PassList \*psl = data\->psl;
+
+  CUSTOM\_PrivateData \*pd = data\->stl\->pd;
+
+  
+
+  DRW\_draw\_pass(psl\->custom\_default\_ps);
+
+}
+
+就把那個pass拿去畫就好了
+
+  
+
+那結果就像這樣
+
+![](images/07.png)
+
+記得要把overlay關掉，
+
+因為那個會擋住線的顏色。
+
+  
+
+這邊我把fork下來的blender附在[這邊](https://github.com/maochinn/blender/tree/mao/source/blender/draw/engines/custom)，可以自己研究
+
+  
+
+  
+
+總結來說
+
+如果只是要簡單的寫一個Render Engine原則上只要用Python就夠了，
+
+但是如果有效能需求之類的，需要從底層寫，
+
+那就要用C來撰寫，
+
+但幸好現在的版本已經把整個結構都開放出來，
+
+可以參考他們已經寫好的engine來參考
+
+  
+
+最後，如果也有人在研究相關的底層歡迎跟我討論，
+
+現在孤軍奮戰有點辛苦。
+
+  
+
+以上!
+
+  
+
+\---
+
+註1:bgl
+
+blender GL，blender提供一系列類似於OpenGL的語法在python上
+
+$('article.c-text img').load(function () { // 表格內圖片大於表格寬時，設為 100% if ($(this).parents('table').length != 0) { if ($(this).width() >= $(this).parents('td').width()) { $(this).width('100%'); } else { $(this).width($(this).width() + 'px'); } } });

@@ -8,6 +8,7 @@ import {
   getAllMetas,
   buildCounts,
   galleryMeta,
+  tagTotal,
   nsUrl,
   fmt,
   fmtDate,
@@ -26,7 +27,7 @@ const masked = d.rating !== 'all';
 const counts = buildCounts((await getAllMetas()).metas);
 const cnt = (ns: Namespace, name: string) => {
   const c = counts.get(ns)?.get(name);
-  return c ? c.galleries + c.posts : 0;
+  return c ? tagTotal(c) : 0;
 };
 // 檔案卡列：namespace → 顯示名 + 值
 const rows: { label: string; ns: Namespace; names: string[] }[] = [
