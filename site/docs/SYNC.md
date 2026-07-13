@@ -52,7 +52,8 @@ sync 失敗會紅燈但不影響既有資料。
 - **附件詳情**（meta.json 的 `attachments`，2026-07-13 由 backfill-fb-attachments.mjs 補齊全量）：
   分享目標存 `unshimmed_url`（乾淨連結，不存 l.facebook.com 轉址殼）+ title/description；
   **原生影片**（video_inline/animated_image_video）本體下載成 `video.mp4`（media_source 直鏈會過期）。
-  注意：`native_templates` 型（分享 FB 站內貼文，量最大）API 讀不到目標貼文——只能靠 permalink 回 FB 看
+  注意：`native_templates` 型（分享 FB 站內貼文，量最大）API 讀不到目標貼文（target/story/oEmbed
+  都試過）——站上改用官方 post plugin 內嵌本篇（點擊載入），分享的原貼文與照片由 FB 渲染
 - 需要 GitHub Secret **`FB_PAGE_TOKEN`**（長效粉專 token）；沒設的話這步自動跳過不會紅燈
 - **Token 取得（一次性）**：
   1. [developers.facebook.com](https://developers.facebook.com/) 建一個 app（類型選「商業」即可，不用送審——讀自己管理的粉專在開發模式就能用）
