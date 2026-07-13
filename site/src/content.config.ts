@@ -69,6 +69,7 @@ const fb = defineCollection({
     link: z.string().optional(), // 其他分享連結（連結卡）
     link_title: z.string().optional(),
     link_desc: z.string().optional(),
+    fb_embed: z.boolean().optional(), // 分享 FB 站內貼文（API 讀不到）→ post plugin 點擊載入
   }),
 });
 
