@@ -11,5 +11,11 @@
       "title": "目前無法查看此內容",
       "description": "會發生此情況，通常是因為擁有者僅與一小群用戶分享內容、變更了分享對象，或是刪除了內容。"
     }
-  ]
+  ],
+  "shared": {
+    "link": "https://www.facebook.com/ahedtra.delta/videos/%E5%89%9B%E5%89%9B%E6%9C%89%E4%BA%BA%E8%AA%87%E6%88%91%E7%9A%84%E9%80%9F%E5%AF%AB%E5%BE%88%E5%8E%B2%E5%AE%B3%E5%95%8F%E6%88%91%E8%B3%A3%E4%B8%8D%E8%B3%A3%E6%88%91%E6%83%B3%E8%AA%AA%E5%93%88%E5%93%88-%E6%88%91%E6%B2%92%E4%BA%8B%E7%95%AB%E8%91%97%E7%8E%A9%E7%9A%84%E6%80%8E%E9%BA%BC%E5%8F%AF%E8%83%BD%E6%9C%83%E6%9C%89%E4%BA%BA%E6%83%B3%E8%A6%815000%E5%B0%B1%E3%84%87%E3%84%9E%E5%8F%AF%E4%BB%A5%E5%95%8A%E8%AA%92%E4%BD%86%E6%88%91%E8%A6%81%E8%BD%89%E5%B8%B3%E5%85%A5%E5%B8%B3%E9%9F%B3%E6%95%88%E6%96%BC%E6%98%AF%E6%88%91%E4%BA%BA%E7%94%9F%E7%AC%AC%E4%B8%80%E6%AC%A1%E8%AE%93%E9%80%9F%E5%AF%AB%E6%9C%AC%E9%9B%A2%E9%96%8B%E4%BA%86%E6%88%91%E6%88%91%E4%B8%80%E9%82%8A%E5%A5%BD%E9%96%8B/553815013715808/",
+    "images": [
+      "shared-01.jpg"
+    ]
+  }
 }

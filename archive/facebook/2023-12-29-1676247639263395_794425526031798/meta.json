@@ -11,5 +11,11 @@
       "title": "目前無法查看此內容",
       "description": "會發生此情況，通常是因為擁有者僅與一小群用戶分享內容、變更了分享對象，或是刪除了內容。"
     }
-  ]
+  ],
+  "shared": {
+    "link": "https://www.facebook.com/dhj951/videos/%E9%9B%A3%E6%80%AA%E7%87%83%E4%B8%8D%E8%B5%B7%E4%BE%86/1054242169058844/",
+    "images": [
+      "shared-01.jpg"
+    ]
+  }
 }

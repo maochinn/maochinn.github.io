@@ -26,8 +26,11 @@ const fbPosts = await getFbPosts();
 const videos = getVideos();
 const featured = galleries.filter((g) => g.data.featured);
 
-// FB 動態量太大（2000+），牆上只放有圖的；純文字的仍有頁面、可搜、/group/Facebook/ 全列
-const fbWall = fbPosts.filter((f) => (fbMeta(f).images?.length ?? 0) > 0);
+// FB 動態量太大（2000+），牆上只放有「自己貼的圖」的；純文字與站內分享（shared- 預覽圖）
+// 仍有頁面、可搜、/group/Facebook/ 全列——分享縮圖是別人的內容，別淹掉自己的牆
+const fbWall = fbPosts.filter((f) =>
+  (fbMeta(f).images ?? []).some((img) => !img.src.includes('/shared-'))
+);
 
 // 封面牆：圖集、文章（Medium＋巴哈）、FB 圖文、影片依日期混排
 type WallItem = { date: Date; g?: Gallery; p?: Post; b?: BahaPost; f?: FbPost; v?: Video };

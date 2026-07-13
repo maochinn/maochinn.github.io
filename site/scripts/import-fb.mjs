@@ -28,10 +28,11 @@ function deriveTitle(body, extra, atts) {
     .map((l) => l.replace(/!\[[^\]]*\]\([^)]*\)/g, '').trim())
     .find((l) => l.length > 0);
   if (!line) {
-    if (extra.link_title) return `分享：${extra.link_title}`;
     if (extra.youtube || extra.fb_video || extra.video_file) return '（影片貼文）';
-    // native_templates = 分享 FB 站內貼文，API 讀不到目標，只能標記類型
-    if (atts.some((a) => ['share', 'native_templates', 'multi_share'].includes(a.type))) return '（分享貼文）';
+    // native_templates = 分享 FB 站內貼文：連結卡標題是通用字串，當不了卡片標題
+    if (atts.some((a) => a.type === 'native_templates')) return '（分享貼文）';
+    if (extra.link_title) return `分享：${extra.link_title}`;
+    if (atts.some((a) => ['share', 'multi_share'].includes(a.type))) return '（分享貼文）';
     return '（相片貼文）';
   }
   return line.length > 40 ? `${line.slice(0, 40)}…` : line;
@@ -83,6 +84,14 @@ for (const dir of readdirSync(ARCHIVE)) {
   }
 
   const extra = attachmentFields(meta.attachments);
+  // 站內分享的補救成果（backfill-fb-shared.mjs 抓 embed 頁）：目標連結→連結卡、預覽圖→附進內文
+  if (meta.shared?.link) {
+    extra.link = meta.shared.link;
+    extra.link_title = '分享的原始貼文';
+  }
+  if (meta.shared?.images?.length) {
+    body += '\n\n' + meta.shared.images.map((n) => `![分享內容](/fb/${slug}/${n})`).join('\n');
+  }
   // 原生影片有備份本體 → 自家 <video> 播放，不依賴 FB plugin
   if (existsSync(path.join(src, 'video.mp4'))) {
     mkdirSync(path.join(OUT_IMG, slug), { recursive: true });

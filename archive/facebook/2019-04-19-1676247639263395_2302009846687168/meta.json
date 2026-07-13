@@ -9,5 +9,12 @@
       "media_type": "link",
       "type": "native_templates"
     }
-  ]
+  ],
+  "shared": {
+    "link": null,
+    "images": [
+      "shared-01.png",
+      "shared-02.png"
+    ]
+  }
 }

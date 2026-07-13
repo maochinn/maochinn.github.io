@@ -52,8 +52,15 @@ sync 失敗會紅燈但不影響既有資料。
 - **附件詳情**（meta.json 的 `attachments`，2026-07-13 由 backfill-fb-attachments.mjs 補齊全量）：
   分享目標存 `unshimmed_url`（乾淨連結，不存 l.facebook.com 轉址殼）+ title/description；
   **原生影片**（video_inline/animated_image_video）本體下載成 `video.mp4`（media_source 直鏈會過期）。
-  注意：`native_templates` 型（分享 FB 站內貼文，量最大）API 讀不到目標貼文（target/story/oEmbed
-  都試過）——站上改用官方 post plugin 內嵌本篇（點擊載入），分享的原貼文與照片由 FB 渲染
+  注意：`native_templates` 型（分享 FB 站內貼文，1634 篇最大宗）**API 讀不到目標貼文**
+  （target/story/oEmbed 全試過，一律回「目前無法查看此內容」）
+- **站內分享的補救**（`fb-embed.mjs` + `backfill-fb-shared.mjs`）：公開 embed 頁
+  `plugins/post.php` 的 server-side HTML 裡有分享目標的永久連結與預覽圖 → 抓進 meta.json 的
+  `shared: { link, images }`，圖存 `images/shared-NN.*`。
+  **必須用 curl 抓**：Node fetch 只講 HTTP/1.1，FB 會擋「自稱 Chrome 卻不走 HTTP/2」的請求（400）。
+  拿不到的：原作者名與貼文文字（JS 渲染）、原尺寸圖（CDN 簽名綁縮圖參數，改了 403）。
+  站上 = 連結卡（連原貼文）+ 預覽圖進內文 + post plugin 點擊載入看完整內容；
+  **預覽圖不上牆**（是別人的內容，牆只放自己貼的圖）
 - 需要 GitHub Secret **`FB_PAGE_TOKEN`**（長效粉專 token）；沒設的話這步自動跳過不會紅燈
 - **Token 取得（一次性）**：
   1. [developers.facebook.com](https://developers.facebook.com/) 建一個 app（類型選「商業」即可，不用送審——讀自己管理的粉專在開發模式就能用）
