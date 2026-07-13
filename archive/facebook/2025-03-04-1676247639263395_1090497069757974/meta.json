@@ -3,5 +3,13 @@
   "created_time": "2025-03-04T03:20:43+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/1090497069757974",
   "media_type": "album",
-  "images": 2
+  "images": 2,
+  "attachments": [
+    {
+      "media_type": "album",
+      "type": "album",
+      "url": "https://www.facebook.com/1525148926292784/posts/1090497069757974",
+      "title": "帽捲maochinn 貼文的相片"
+    }
+  ]
 }

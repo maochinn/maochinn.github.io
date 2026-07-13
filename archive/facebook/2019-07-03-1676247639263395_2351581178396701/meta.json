@@ -3,5 +3,14 @@
   "created_time": "2019-07-03T04:35:46+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/2351581178396701",
   "media_type": "link",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "link",
+      "type": "share",
+      "url": "https://www.soft4fun.net/tech/news/taipei-sans-tc.htm",
+      "title": "繁體中文字體「台北黑體」免費開源下載，更適合印刷，個人/商業皆可使用",
+      "description": "找到免費中文字體雖然不難，但是可選擇的少，畢竟中文字體的製作成本與時間相當可觀，最近幾年較常被討論的如 Adobe 和 Google 合作的思源黑體，最近由「翰字鑄造(JT Foundry)」釋出的免費開源字體「台北黑體」不僅完全免費可..."
+    }
+  ]
 }

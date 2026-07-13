@@ -3,5 +3,13 @@
   "created_time": "2019-12-21T18:56:05+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/2492219984332819",
   "media_type": "photo",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "photo",
+      "type": "photo",
+      "url": "https://www.facebook.com/photo.php?fbid=2492219580999526&set=a.364524595688562&type=3",
+      "description": "繼續研究"
+    }
+  ]
 }

@@ -3,5 +3,14 @@
   "created_time": "2024-10-03T06:43:03+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/975727471234935",
   "media_type": "link",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "link",
+      "type": "share",
+      "url": "https://link.medium.com/ZiXUjTW2nNb",
+      "title": "【Omniverse】學習筆記 — 01：Application and Extension",
+      "description": "Omniverse的軟體大致可以分為，Application跟Extension，這個關係類似於Blender跟Addon的關係，只是在Omniverse中模組化做得更加徹底，基本上畫面中所有的視窗都會是extension，Application只是選擇好幾個extension組…"
+    }
+  ]
 }

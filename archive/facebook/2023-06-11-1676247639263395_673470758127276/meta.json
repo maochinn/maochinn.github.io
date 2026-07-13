@@ -3,5 +3,14 @@
   "created_time": "2023-06-11T16:28:35+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/673470758127276",
   "media_type": "link",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "link",
+      "type": "share",
+      "url": "https://medium.com/maochinn/圖與畫-從電腦圖學看數位美術-ccd7e8ef7536",
+      "title": "【圖與畫】從電腦圖學看數位美術",
+      "description": "將「美」用冰冷的規則束縛住，使它不再神秘，使他不再美。"
+    }
+  ]
 }

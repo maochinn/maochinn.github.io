@@ -3,5 +3,13 @@
   "created_time": "2015-11-10T13:02:49+0000",
   "permalink_url": "https://www.facebook.com/photo.php?fbid=1691107064444119&set=a.1691107061110786&type=3",
   "media_type": "album",
-  "images": 5
+  "images": 5,
+  "attachments": [
+    {
+      "media_type": "album",
+      "type": "new_album",
+      "url": "https://www.facebook.com/media/set/?set=ms.c.eJw9yMEJACAQA8GOJMsFJf03Jnroa2CYAS1N24YMOujQj%7E_KE4hcOl9rJQA1w.bps.a.1691107061110786&type=1",
+      "title": "作品"
+    }
+  ]
 }

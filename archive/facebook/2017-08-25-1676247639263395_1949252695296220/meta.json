@@ -3,5 +3,13 @@
   "created_time": "2017-08-25T13:02:46+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/1949252695296220",
   "media_type": "photo",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "photo",
+      "type": "photo",
+      "url": "https://www.facebook.com/photo.php?fbid=1949252638629559&set=a.364524595688562&type=3",
+      "description": "跟風，準備飆車"
+    }
+  ]
 }

@@ -3,5 +3,13 @@
   "created_time": "2023-04-04T09:05:27+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/629888682485484",
   "media_type": "photo",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "photo",
+      "type": "photo",
+      "url": "https://www.facebook.com/photo.php?fbid=629888249152194&set=a.364524589021896&type=3",
+      "description": "重練一下比例"
+    }
+  ]
 }

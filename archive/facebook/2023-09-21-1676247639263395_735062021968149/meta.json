@@ -3,5 +3,14 @@
   "created_time": "2023-09-21T14:02:40+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/735062021968149",
   "media_type": "link",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "link",
+      "type": "share",
+      "url": "https://medium.com/maochinn/unity-multipass-rendering-7b98d6e88641",
+      "title": "【Unity】Multipass Rendering",
+      "description": "首先，這邊要做的事情非常簡單，就是將相機畫面render到一個Texture上，然後再render到遊戲畫面(Display)上，這件事情就是Multipass Rendering，也就是render兩次(Two…"
+    }
+  ]
 }

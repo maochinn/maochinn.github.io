@@ -3,5 +3,14 @@
   "created_time": "2024-09-07T06:41:31+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/956136956527320",
   "media_type": "link",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "link",
+      "type": "share",
+      "url": "https://youtu.be/rJB59LwtWds?si=boXYxYF3mTgGCz8j",
+      "title": "破防小天才",
+      "media_source": "https://www.youtube.com/embed/rJB59LwtWds?autoplay=1"
+    }
+  ]
 }

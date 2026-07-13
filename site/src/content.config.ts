@@ -63,6 +63,12 @@ const fb = defineCollection({
     title: z.string(),
     date: z.coerce.date(),
     source: z.string(),
+    youtube: z.string().optional(), // 分享 YouTube 影片 → 直接內嵌
+    video_file: z.string().optional(), // 原生影片備份本體（/fb/<id>/video.mp4）→ <video>
+    fb_video: z.string().optional(), // FB 原生影片頁 URL → plugin 內嵌（無本體時的備援）
+    link: z.string().optional(), // 其他分享連結（連結卡）
+    link_title: z.string().optional(),
+    link_desc: z.string().optional(),
   }),
 });
 

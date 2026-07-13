@@ -3,5 +3,14 @@
   "created_time": "2015-11-16T16:42:30+0000",
   "permalink_url": "https://www.facebook.com/photo.php?fbid=1692476154307210&set=a.364524595688562&type=3",
   "media_type": "photo",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "photo",
+      "type": "photo",
+      "url": "https://www.facebook.com/photo.php?fbid=1692476154307210&set=a.364524595688562&type=3",
+      "title": "相片",
+      "description": "一場奇幻的旅程-旅者\n概念配色"
+    }
+  ]
 }

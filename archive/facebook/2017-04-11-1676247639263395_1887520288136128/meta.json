@@ -3,5 +3,14 @@
   "created_time": "2017-04-11T16:37:54+0000",
   "permalink_url": "https://www.facebook.com/photo.php?fbid=1887520288136128&set=a.364524595688562&type=3",
   "media_type": "photo",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "photo",
+      "type": "photo",
+      "url": "https://www.facebook.com/photo.php?fbid=1887520288136128&set=a.364524595688562&type=3",
+      "title": "相片",
+      "description": "丟丟丟，陸續增加，還沒找到目標"
+    }
+  ]
 }

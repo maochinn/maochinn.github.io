@@ -3,5 +3,13 @@
   "created_time": "2025-08-21T12:55:19+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/1237207181753628",
   "media_type": "link",
-  "images": 0
+  "images": 0,
+  "attachments": [
+    {
+      "media_type": "link",
+      "type": "share",
+      "url": "https://zhuanlan.zhihu.com/p/24527314245",
+      "title": "zhuanlan.zhihu.com"
+    }
+  ]
 }

@@ -3,5 +3,14 @@
   "created_time": "2024-09-26T12:58:48+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/970359221771760",
   "media_type": "link",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "link",
+      "type": "share",
+      "url": "https://link.medium.com/oFf34UuRcNb",
+      "title": "【Omniverse】學習筆記 — 00：Kit-based Development",
+      "description": "雖然Omniverse炒起很兇，但是翻一翻其實沒有什麼文章在講怎麼開發，尤其現在如果到官網下載會建議你不要使用舊版(Omniverse Launcher)，而是要使用Kit-based development來開發"
+    }
+  ]
 }

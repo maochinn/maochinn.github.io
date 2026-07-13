@@ -3,5 +3,13 @@
   "created_time": "2019-05-26T13:53:54+0000",
   "permalink_url": "https://www.facebook.com/photo.php?fbid=2325816487639837&set=a.2325816070973212&type=3",
   "media_type": "album",
-  "images": 12
+  "images": 12,
+  "attachments": [
+    {
+      "media_type": "album",
+      "type": "new_album",
+      "url": "https://www.facebook.com/media/set/?set=ms.c.eJxNztsNgFAIA9CNDFCe%7E_y9mYvXi70lbMFi0pnclplGXvTCEPFAyBS070A7JEN8KAR%7E_EEH4VbuiOMhFbeRI5m%7E_AfvVe4ITfL6SW6.bps.a.2325816070973212&type=1",
+      "title": "Krenz 2019色彩4期"
+    }
+  ]
 }

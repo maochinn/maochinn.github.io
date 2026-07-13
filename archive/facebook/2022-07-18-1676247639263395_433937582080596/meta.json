@@ -3,5 +3,14 @@
   "created_time": "2022-07-18T09:33:26+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/433937582080596",
   "media_type": "link",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "link",
+      "type": "share",
+      "url": "https://www.incgmedia.com/new-release/blender-shader-alanwyat",
+      "title": "這是什麼酷東西？一睹 Blender 中全新的插畫著色器，把 3D 場景變成油畫！",
+      "description": "你有想過把 3D 場景轉變成一幅畫嗎？日前，由 Blender 藝術家 Alan Wyatt 所製作的油畫著色器正式推出，它能讓你在 Blender 中把每一筆顏料都套在每個 3D 物件上，並在場景與物件邊緣之間做出區隔，以呈現出個體感。根據他的說法...."
+    }
+  ]
 }

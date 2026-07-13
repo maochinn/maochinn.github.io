@@ -3,5 +3,13 @@
   "created_time": "2021-12-08T05:05:47+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/3038069416414537",
   "media_type": "link",
-  "images": 0
+  "images": 0,
+  "attachments": [
+    {
+      "media_type": "link",
+      "type": "native_templates",
+      "title": "目前無法查看此內容",
+      "description": "會發生此情況，通常是因為擁有者僅與一小群用戶分享內容、變更了分享對象，或是刪除了內容。"
+    }
+  ]
 }

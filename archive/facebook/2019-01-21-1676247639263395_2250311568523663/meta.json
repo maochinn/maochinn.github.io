@@ -3,5 +3,13 @@
   "created_time": "2019-01-21T17:25:10+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/2250311568523663",
   "media_type": "photo",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "photo",
+      "type": "photo",
+      "url": "https://www.facebook.com/photo.php?fbid=2250311501857003&set=a.364524595688562&type=3",
+      "description": "[練習]\n改天換成用拼貼的看看"
+    }
+  ]
 }

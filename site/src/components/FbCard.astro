@@ -8,6 +8,7 @@ interface Props {
 const { f } = Astro.props;
 const m = fbMeta(f);
 const cover = m.images?.[0]?.src;
+const isVideo = Boolean(f.data.youtube || f.data.fb_video || f.data.video_file);
 ---
 
 <a class="g-card" href={m.url}>
@@ -23,7 +24,7 @@ const cover = m.images?.[0]?.src;
       )
     }
     <span class="badge">{m.categories[0]}</span>
-    <span class="pages-badge">{m.pages > 0 ? `${m.pages}P` : `${m.minutes} min`}</span>
+    <span class="pages-badge">{isVideo ? '▶ VIDEO' : m.pages > 0 ? `${m.pages}P` : `${m.minutes} min`}</span>
   </div>
-  <div class="cap">📄 {f.data.title}</div>
+  <div class="cap">{isVideo ? '▶' : '📄'} {f.data.title}</div>
 </a>

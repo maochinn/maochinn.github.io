@@ -3,5 +3,14 @@
   "created_time": "2016-09-01T08:35:38+0000",
   "permalink_url": "https://www.facebook.com/photo.php?fbid=1792051961016295&set=a.364524595688562&type=3",
   "media_type": "photo",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "photo",
+      "type": "photo",
+      "url": "https://www.facebook.com/photo.php?fbid=1792051961016295&set=a.364524595688562&type=3",
+      "title": "相片",
+      "description": "雖然晚了一天，還是把它完成了"
+    }
+  ]
 }

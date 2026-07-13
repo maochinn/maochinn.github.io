@@ -40,8 +40,20 @@ function collectImages(att) {
   return out;
 }
 
+/** API 附件 → 精簡備份格式（l.facebook.com 轉址殼不存，只存 unshimmed 乾淨連結） */
+function slimAttachments(att) {
+  return (att?.data ?? []).map((a) => {
+    const o = { media_type: a.media_type ?? null, type: a.type ?? null };
+    if (a.unshimmed_url) o.url = a.unshimmed_url;
+    if (a.title) o.title = a.title;
+    if (a.description) o.description = a.description;
+    if (a.media?.source) o.media_source = a.media.source; // YouTube 分享=穩定 embed；FB 原生=過期 CDN，僅備考
+    return o;
+  });
+}
+
 const FIELDS =
-  'id,message,created_time,permalink_url,attachments{media_type,media,url,subattachments}';
+  'id,message,created_time,permalink_url,attachments{media_type,type,media,url,unshimmed_url,title,description,subattachments}';
 // limit 別調高：帶巢狀 attachments 展開時，太大會吃到 "reduce the amount of data" 錯誤
 let url = `https://graph.facebook.com/${V}/${page.id}/published_posts?fields=${FIELDS}&limit=25&access_token=${TOKEN}`;
 let added = 0;
@@ -68,6 +80,18 @@ while (url) {
         }
         await sleep(200);
       }
+      // 原生影片（video_inline / animated_image_video）：media_source 直鏈會過期，本體落地備份
+      const atts = slimAttachments(post.attachments);
+      const vatt = atts.find(
+        (a) => a.media_type === 'video' && a.url?.includes('facebook.com') && a.media_source
+      );
+      if (vatt) {
+        try {
+          writeFileSync(path.join(dir, 'video.mp4'), await fetchBuffer(vatt.media_source));
+        } catch (e) {
+          console.warn(`   影片抓不到: ${e.message}`);
+        }
+      }
       const md =
         `> ${post.created_time} · 來源 ${post.permalink_url}\n\n` +
         (post.message ?? '') +
@@ -83,6 +107,7 @@ while (url) {
             permalink_url: post.permalink_url,
             media_type: post.attachments?.data?.[0]?.media_type ?? null,
             images: saved.length,
+            attachments: atts,
           },
           null,
           2

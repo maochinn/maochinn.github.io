@@ -3,5 +3,13 @@
   "created_time": "2019-07-13T11:39:58+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/2357967574424728",
   "media_type": "photo",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "photo",
+      "type": "photo",
+      "url": "https://www.facebook.com/photo.php?fbid=2357967521091400&set=a.364524595688562&type=3",
+      "description": "不想加光影，就這樣吧"
+    }
+  ]
 }
