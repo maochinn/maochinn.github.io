@@ -61,6 +61,9 @@ function attachmentFields(atts = []) {
     if (share.title) out.link_title = share.title;
     if (share.description) out.link_desc = share.description;
   }
+  // 分享 FB 站內貼文：API 讀不到目標（native_templates），
+  // 站上改用官方 post plugin 內嵌本篇貼文（會連分享內容一起渲染），點擊才載入
+  if (atts.some((a) => a.type === 'native_templates')) out.fb_embed = true;
   return out;
 }
 
@@ -92,7 +95,7 @@ for (const dir of readdirSync(ARCHIVE)) {
     `title: ${yStr(deriveTitle(body, extra, meta.attachments ?? []))}`,
     `date: ${meta.created_time}`,
     `source: ${yStr(meta.permalink_url)}`,
-    ...Object.entries(extra).map(([k, v]) => `${k}: ${yStr(v)}`),
+    ...Object.entries(extra).map(([k, v]) => `${k}: ${typeof v === 'boolean' ? v : yStr(v)}`),
     '---',
     '',
   ].join('\n');
