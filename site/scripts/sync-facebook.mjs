@@ -7,6 +7,7 @@
 import { writeFileSync, mkdirSync, existsSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { fetchBuffer, sleep, extFromUrl } from './sync-lib.mjs';
+import { scrapeSharedPost } from './fb-embed.mjs';
 
 const TOKEN = process.env.FB_PAGE_TOKEN;
 if (!TOKEN) {
@@ -82,6 +83,28 @@ while (url) {
       }
       // 原生影片（video_inline / animated_image_video）：media_source 直鏈會過期，本體落地備份
       const atts = slimAttachments(post.attachments);
+      // 站內分享（native_templates）：API 讀不到目標，補抓 embed 頁的連結與預覽圖
+      // （best-effort：CI 機房 IP 可能被 FB 擋，失敗就略過，本地重跑可補）
+      let shared;
+      if (atts.some((a) => a.type === 'native_templates')) {
+        try {
+          const { link, images } = await scrapeSharedPost(post.permalink_url);
+          const savedShared = [];
+          for (const [i, src] of images.entries()) {
+            const name = `shared-${String(i + 1).padStart(2, '0')}${extFromUrl(src)}`;
+            try {
+              writeFileSync(path.join(dir, 'images', name), await fetchBuffer(src));
+              savedShared.push(name);
+            } catch (e) {
+              console.warn(`   分享圖抓不到: ${e.message}`);
+            }
+            await sleep(200);
+          }
+          shared = { link, images: savedShared };
+        } catch (e) {
+          console.warn(`   分享內容抓不到: ${e.message}`);
+        }
+      }
       const vatt = atts.find(
         (a) => a.media_type === 'video' && a.url?.includes('facebook.com') && a.media_source
       );
@@ -108,6 +131,7 @@ while (url) {
             media_type: post.attachments?.data?.[0]?.media_type ?? null,
             images: saved.length,
             attachments: atts,
+            ...(shared ? { shared } : {}),
           },
           null,
           2

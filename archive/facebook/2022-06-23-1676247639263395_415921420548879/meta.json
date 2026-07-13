@@ -11,5 +11,11 @@
       "title": "目前無法查看此內容",
       "description": "會發生此情況，通常是因為擁有者僅與一小群用戶分享內容、變更了分享對象，或是刪除了內容。"
     }
-  ]
+  ],
+  "shared": {
+    "link": "https://www.facebook.com/photo.php?fbid=8384517408241103&set=a.158496437509949&type=3",
+    "images": [
+      "shared-01.jpg"
+    ]
+  }
 }

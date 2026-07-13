@@ -11,5 +11,11 @@
       "title": "目前無法查看此內容",
       "description": "會發生此情況，通常是因為擁有者僅與一小群用戶分享內容、變更了分享對象，或是刪除了內容。"
     }
-  ]
+  ],
+  "shared": {
+    "link": "https://www.facebook.com/willy.bluser.2025/videos/%E5%A6%82%E4%BD%95%E8%AE%93%E5%AD%A9%E5%AD%90%E5%B0%88%E5%BF%83%E5%AF%AB%E4%BD%9C%E6%A5%AD%E5%AA%BD%E5%AA%BD%E6%89%B9%E8%A9%95%E5%A5%B9%E7%9A%84%E8%88%88%E8%B6%A3%E8%80%81%E7%88%B8%E7%9B%B4%E6%8E%A5%E7%94%A8%E5%A5%B9%E7%9A%84%E8%88%88%E8%B6%A3%E9%9B%BB%E9%A3%9B%E5%A5%B9/919420316383859/",
+    "images": [
+      "shared-01.jpg"
+    ]
+  }
 }
