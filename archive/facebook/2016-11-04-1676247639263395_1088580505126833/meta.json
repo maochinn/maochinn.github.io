@@ -3,5 +3,14 @@
   "created_time": "2016-11-04T06:54:16+0000",
   "permalink_url": "https://www.facebook.com/1676247639263395/posts/1818906391664185/",
   "media_type": "link",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "link",
+      "type": "share",
+      "url": "http://cs8.pikabu.ru/post_img/2016/11/03/7/1478171959133290035.gif",
+      "title": "cs8.pikabu.ru",
+      "description": "http://cs8.pikabu.ru/post_img/2016/11/03/7/1478171959133290035.gif"
+    }
+  ]
 }

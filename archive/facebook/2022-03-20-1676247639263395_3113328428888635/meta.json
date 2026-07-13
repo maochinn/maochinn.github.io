@@ -3,5 +3,13 @@
   "created_time": "2022-03-20T16:01:21+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/videos/944874146175841",
   "media_type": "video",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "video",
+      "type": "animated_image_video",
+      "url": "https://www.facebook.com/1525148926292784/videos/944874146175841",
+      "media_source": "https://scontent-tpe1-1.xx.fbcdn.net/o1/v/t2/f2/m412/AQOq67g5J-svvAD8YwCrjiOilWJFPSbTNy0LymwjcJFrtOCwLP2SVmgvqYAI76U1YGTd2-T119feJY2xUenR1ww.mp4?_nc_cat=100&_nc_sid=8bf8fe&_nc_ht=scontent-tpe1-1.xx.fbcdn.net&_nc_ohc=p7b7JJn7M14Q7kNvwFkHvrR&efg=eyJ2ZW5jb2RlX3RhZyI6Inhwdl9wcm9ncmVzc2l2ZS5GQUNFQk9PSy4uQzMuNDI2LnN2ZV9zZCIsInhwdl9hc3NldF9pZCI6MTA5MjMyOTEwNTExODA3NywiYXNzZXRfYWdlX2RheXMiOjE1NzUsInZpX3VzZWNhc2VfaWQiOjEwMTIyLCJkdXJhdGlvbl9zIjo2LCJ1cmxnZW5fc291cmNlIjoid3d3In0%3D&ccb=17-1&_nc_gid=yNIgpXm797b9PVTi1cYsMg&edm=APyxFHYEAAAA&_nc_zt=28&_nc_tpa=Q5bMBQHm2mSbx38aJTbg__1Oog3jZ4PQ4gS2ZxFpbQM6miJzOcrHrf5fb71tqyuUnyQNuGLpcOoctxibcQ&oh=00_AQDAKquDx7ckCuttjYY8zURfiii84kNZHunbieLVvXXQCw&oe=6A5AD182&bitrate=83928&tag=sve_sd"
+    }
+  ]
 }

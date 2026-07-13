@@ -3,5 +3,13 @@
   "created_time": "2021-11-06T14:56:05+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/3014910338730445",
   "media_type": "photo",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "photo",
+      "type": "photo",
+      "url": "https://www.facebook.com/photo.php?fbid=3014910245397121&set=a.364524595688562&type=3",
+      "description": "差分下收"
+    }
+  ]
 }

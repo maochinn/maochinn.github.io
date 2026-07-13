@@ -3,5 +3,14 @@
   "created_time": "2024-01-21T14:34:57+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/808550957952588",
   "media_type": "link",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "link",
+      "type": "share",
+      "url": "https://medium.com/maochinn/數位美術-動態-斜線與直線-b6465aacefa8",
+      "title": "【數位美術】動態 — 斜線與直線",
+      "description": "動態的其中一種我稱之為動感，直白地說就是感覺到整體畫面不穩定，而其中一個常見的成因就是畫面中有大量的斜線"
+    }
+  ]
 }

@@ -3,5 +3,14 @@
   "created_time": "2024-09-28T10:22:34+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/971845311623151",
   "media_type": "link",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "link",
+      "type": "share",
+      "url": "https://link.medium.com/WcYRq77ZfNb",
+      "title": "【自動化】學習筆記 — 00",
+      "description": "這系列文章是主要是想要分享一個資工系，寫純軟的工程師輾轉當了四個月的設備工程師的一些筆記內容，因此很多東西未必正確，甚至許多從業人員會認為這是小兒科，但是我相信這樣的人還是會有，因此就稍微紀錄一下，關..."
+    }
+  ]
 }

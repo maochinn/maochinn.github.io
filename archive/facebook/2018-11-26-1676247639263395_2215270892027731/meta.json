@@ -3,5 +3,13 @@
   "created_time": "2018-11-26T18:08:53+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/2215270892027731",
   "media_type": "photo",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "photo",
+      "type": "photo",
+      "url": "https://www.facebook.com/photo.php?fbid=2215270828694404&set=a.364524595688562&type=3",
+      "description": "重新調整一下，再加兩格"
+    }
+  ]
 }

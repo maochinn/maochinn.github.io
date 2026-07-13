@@ -3,5 +3,14 @@
   "created_time": "2020-10-13T17:01:04+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/2732780930276722",
   "media_type": "link",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "link",
+      "type": "share",
+      "url": "https://link.medium.com/GFeVl1wtyab",
+      "title": "【筆記】K大色彩課四期-00",
+      "description": "2019/6/7"
+    }
+  ]
 }

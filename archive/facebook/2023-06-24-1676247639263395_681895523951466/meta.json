@@ -3,5 +3,14 @@
   "created_time": "2023-06-24T16:28:47+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/681895523951466",
   "media_type": "link",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "link",
+      "type": "share",
+      "url": "https://medium.com/maochinn/雜談-工作面試-c50f22564805",
+      "title": "【筆記】第一份工作面試紀錄",
+      "description": "台科資工碩，紀錄面試15間公司的經驗"
+    }
+  ]
 }

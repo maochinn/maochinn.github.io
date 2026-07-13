@@ -3,5 +3,14 @@
   "created_time": "2020-03-23T01:34:33+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/2568809406673876",
   "media_type": "link",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "link",
+      "type": "share",
+      "url": "https://twitter.com/shinya7y/status/1239910677231177731?s=20&fbclid=IwAR3OHpY8oUFenoVFF1LPS1wFC1jSv-hFMbxKMPoHqMhR487KOQwUKwOZ5xA",
+      "title": "Yosuke Shinya on Twitter",
+      "description": "“自動陰影付けで遊べるページを公開しました！ https://t.co/TO5x39QHgm”"
+    }
+  ]
 }

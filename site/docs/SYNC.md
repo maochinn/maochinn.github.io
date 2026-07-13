@@ -48,7 +48,11 @@ sync 失敗會紅燈但不影響既有資料。
 
 ### Facebook（粉專 maochinnn）
 - `scripts/sync-facebook.mjs`：Graph API `/{page-id}/published_posts` → `archive/facebook/<日期>-<postid>/`
-  （meta.json + content.md + images/；FB CDN 圖片連結會過期所以必須落地；影片只存 permalink）
+  （meta.json + content.md + images/；FB CDN 圖片連結會過期所以必須落地）
+- **附件詳情**（meta.json 的 `attachments`，2026-07-13 由 backfill-fb-attachments.mjs 補齊全量）：
+  分享目標存 `unshimmed_url`（乾淨連結，不存 l.facebook.com 轉址殼）+ title/description；
+  **原生影片**（video_inline/animated_image_video）本體下載成 `video.mp4`（media_source 直鏈會過期）。
+  注意：`native_templates` 型（分享 FB 站內貼文，量最大）API 讀不到目標貼文——只能靠 permalink 回 FB 看
 - 需要 GitHub Secret **`FB_PAGE_TOKEN`**（長效粉專 token）；沒設的話這步自動跳過不會紅燈
 - **Token 取得（一次性）**：
   1. [developers.facebook.com](https://developers.facebook.com/) 建一個 app（類型選「商業」即可，不用送審——讀自己管理的粉專在開發模式就能用）
@@ -62,6 +66,9 @@ sync 失敗會紅燈但不影響既有資料。
 - **上站**：build 時 `import-fb.mjs` 轉成 `/fb/<postid>/`（社團標 Facebook、分類 動態、
   標題=內文第一行截斷）；**牆上只放有圖的**（純文字動態量太大，仍可搜／/group/Facebook/ 全列）；
   下架單篇 → `src/data/fb-overrides.ts` 設 `hidden: true`
+- **分享與影片的呈現**：YouTube 分享 → 頁上直接內嵌播放器；原生影片 → 自家 `<video>` 播備份的
+  video.mp4（不依賴 FB plugin）；外部連結分享 → 連結卡（標題+描述+網址）；
+  牆卡有影片的標 ▶ VIDEO
 
 ## 延後項（敏感內容，之後另想辦法：NAS 私有備份等）
 

@@ -3,5 +3,13 @@
   "created_time": "2026-03-20T14:25:23+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/1468246828019567?substory_index=1468246828019567",
   "media_type": "photo",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "photo",
+      "type": "cover_photo",
+      "url": "https://www.facebook.com/maochinnn",
+      "title": "帽捲maochinn 的封面相片"
+    }
+  ]
 }

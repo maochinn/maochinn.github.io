@@ -3,5 +3,13 @@
   "created_time": "2020-01-23T03:27:32+0000",
   "permalink_url": "https://www.facebook.com/1525148926292784/posts/2521935791361238",
   "media_type": "link",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "link",
+      "type": "share",
+      "url": "https://giphy.com/gifs/26xBB4AoSvhGaekNy",
+      "title": "media.giphy.com"
+    }
+  ]
 }

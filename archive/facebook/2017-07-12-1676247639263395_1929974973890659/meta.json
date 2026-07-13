@@ -3,5 +3,14 @@
   "created_time": "2017-07-12T10:49:14+0000",
   "permalink_url": "https://www.facebook.com/photo.php?fbid=1929974973890659&set=a.364524595688562&type=3",
   "media_type": "photo",
-  "images": 1
+  "images": 1,
+  "attachments": [
+    {
+      "media_type": "photo",
+      "type": "photo",
+      "url": "https://www.facebook.com/photo.php?fbid=1929974973890659&set=a.364524595688562&type=3",
+      "title": "相片",
+      "description": "早上起來突然發現自己生日"
+    }
+  ]
 }
