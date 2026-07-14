@@ -52,12 +52,12 @@ export async function scrapeSharedPost(permalink) {
     .map((h) => h.replace(/[?&]ref=embed_post/, ''))
     .find((h) => !(ownId && h.includes(ownId)) && !h.includes('sharer'));
 
-  // 預覽圖：fbcdn 內容圖（排掉 40x40 頭像與 static 資源）
+  // 預覽圖：fbcdn 內容圖（排掉頭像——URL 帶兩位數方框尺寸如 s40x40、s50x50）
   const images = [
     ...new Set(
       [...html.matchAll(/src="(https:\/\/(?:scontent|external)[^"]*fbcdn\.net[^"]*)"/g)]
         .map((m) => decodeEntities(m[1]))
-        .filter((u) => !/s40x40/.test(u))
+        .filter((u) => !/s\d{2}x\d{2}(?!\d)/.test(u))
     ),
   ];
 

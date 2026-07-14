@@ -14,9 +14,6 @@
   ],
   "shared": {
     "link": null,
-    "images": [
-      "shared-01.png",
-      "shared-02.jpg"
-    ]
+    "images": []
   }
 }

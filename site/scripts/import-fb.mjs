@@ -3,7 +3,7 @@
  *  ../archive/facebook/<日期>-<pageid>_<postid>/ → src/content/fb/<postid>.md + public/fb/<postid>/
  * 輸出是生成物（gitignore），重跑會覆蓋；individual 修正請用 src/data/fb-overrides.ts。
  */
-import { cpSync, mkdirSync, readdirSync, readFileSync, writeFileSync, existsSync, rmSync } from 'node:fs';
+import { cpSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync, existsSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { yStr } from './sync-lib.mjs';
 
@@ -90,7 +90,13 @@ for (const dir of readdirSync(ARCHIVE)) {
     extra.link_title = '分享的原始貼文';
   }
   if (meta.shared?.images?.length) {
-    body += '\n\n' + meta.shared.images.map((n) => `![分享內容](/fb/${slug}/${n})`).join('\n');
+    // 依檔案大小遞減排：最大張＝內容主圖，當封面／預覽
+    // （embed 頁的圖序不代表重要性，開頭常是被分享粉專的小頭貼）
+    const sorted = [...meta.shared.images].sort(
+      (a, b) =>
+        statSync(path.join(src, 'images', b)).size - statSync(path.join(src, 'images', a)).size
+    );
+    body += '\n\n' + sorted.map((n) => `![分享內容](/fb/${slug}/${n})`).join('\n');
   }
   // 原生影片有備份本體 → 自家 <video> 播放，不依賴 FB plugin
   if (existsSync(path.join(src, 'video.mp4'))) {
