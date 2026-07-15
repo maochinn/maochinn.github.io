@@ -41,6 +41,9 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
 - `src/content/galleries/<slug>/` — 一本圖集 = 一個資料夾：`meta.yaml` + 圖片（`01.png`…）
 - `src/content/blog/` — Medium 文章（清洗過的 markdown，重跑匯入會覆蓋）
 - `public/assets/<postid>/` — 文章圖片（檔名已消毒：`*` 等 Windows 不允許字元 → `_`）
+- `public/siggraph2026.html` — **手動產生的離線單檔**（SIGGRAPH 2026 行事曆，未掛導覽/sitemap）。
+  **別直接改這顆 1.3MB 檔**；改內容要回 `Workspace\website\siggraph2026-src\` 跑 `python gen7.py`
+  再覆蓋回來 push（該資料夾有 README）
 - `src/data/taxonomy.ts` — **全站 tag 分類法**：7 個 namespace（parody/character/tag/
   artist/group/language/category）的正名與別名；文章的自動分類規則也在這
 - `src/data/post-overrides.ts` — 個別文章 metadata 覆寫（自動歸類不準時用）

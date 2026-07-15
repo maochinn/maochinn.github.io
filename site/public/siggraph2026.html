@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SIGGRAPH 2026 行事曆 · 帽捲</title><style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#11121a;color:#c8d0e0;font:14px/1.45 "Segoe UI","Noto Sans TC",system-ui,sans-serif;padding:0 20px 50px}
@@ -179,7 +179,35 @@ button.on{background:#f5b642;border-color:#f5b642;color:#11121a;font-weight:700}
 #x{position:absolute;top:16px;right:16px;background:none;border:none;color:#6b7391;font-size:20px}
 .foot{color:#4a5070;font-size:11.5px;margin-top:26px;border-top:1px solid #222430;padding-top:13px;line-height:1.8}
 .foot code{color:#6b7391}
-@media print{body{background:#fff;color:#000}.bar,#dw,#rb,#mapbar{display:none}}
+:root{--gutw:54px}
+.daypick{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 11px;scrollbar-width:thin;margin-bottom:2px}
+.daypick::-webkit-scrollbar{height:6px}
+.daypick::-webkit-scrollbar-thumb{background:#2a2d3d;border-radius:3px}
+.dp{flex:0 0 auto;flex-direction:column;align-items:flex-start;gap:1px;background:#1b1d2a;
+ border:1px solid #2a2d3d;border-radius:8px;padding:6px 11px;color:#dbe1ee;font-weight:600;
+ font-size:12.5px;white-space:nowrap;line-height:1.25}
+.dp span{font-size:10px;color:#6b7391;font-weight:400}
+.dp.cur{background:#f5b642;border-color:#f5b642;color:#11121a}
+.dp.cur span{color:#11121a}
+#wlbl{font-size:12.5px;color:#dbe1ee;font-weight:600;min-width:150px;text-align:center}
+@media (max-width:640px){
+ :root{--gutw:40px}
+ body{padding:0 9px 40px}
+ h1{font-size:16px}
+ .sub{font-size:11.5px}
+ .top{padding-top:12px}
+ .map img{max-height:210px}
+ #m3 img,#m4 img{max-height:240px}
+ #mnote{font-size:11px}
+ .tick{font-size:9.5px;right:5px}
+ .dp{padding:5px 9px;font-size:12px}
+ #wlbl{min-width:84px;font-size:11px}
+ .nav{padding:5px 10px}
+ .ev{padding:3px 6px}
+ #dw{padding:18px 15px}
+ .foot{font-size:11px}
+}
+@media print{body{background:#fff;color:#000}.bar,#dw,#rb,#mapbar,.daypick{display:none}}
 </style></head><body>
 
 <div id="mapbar">
@@ -205,12 +233,12 @@ button.on{background:#f5b642;border-color:#f5b642;color:#11121a;font-weight:700}
 <h1>LA 2026 · 行事曆（SIGGRAPH + 一般行程）</h1>
 <div class="sub">7/18 抵達 → 7/28 凌晨返台 · SIGGRAPH <b>129</b> 場 + 一般行程 <b>53</b> 項
 （另有 <b>0</b> 項未定時）· ◆ = 3DGS / 神經渲染 ·
-三天並排，<b>← →</b> 一次移動一天 · 點任一項 → 詳情 + 上方地圖highlight位置<br>
+<b>單日檢視</b> · 點上方日期或 <b>← →</b> 切換 · 點任一項 → 詳情 + 上方地圖 highlight 位置<br>
 <span class="commute">🏨 The Live Hotel → LACC：約 1.3 km · 🚶 步行 15–20 分（結伴、避開暗巷）/ 🚕 Uber 約 5 分（$8–12）</span></div>
 
 <div class="bar">
  <button class="nav" id="prev">◀</button>
- <span id="wlbl" style="font-size:12.5px;color:#dbe1ee;font-weight:600;min-width:230px;text-align:center"></span>
+ <span id="wlbl"></span>
  <button class="nav" id="next">▶</button>
  <div class="sep"></div>
  <button id="gsBtn">◆ 只看 3DGS / 神經渲染</button>
@@ -222,7 +250,7 @@ button.on{background:#f5b642;border-color:#f5b642;color:#11121a;font-weight:700}
 
 <div id="rb"></div>
 
-<div class="chead"><div></div><button class="dh" data-day="20260718">7/18 週六<span>3 行程</span></button><button class="dh" data-day="20260719">7/19 週日<span>15 場</span></button><button class="dh" data-day="20260720">7/20 週一<span>30 場</span></button><button class="dh" data-day="20260721">7/21 週二<span>31 場</span></button><button class="dh" data-day="20260722">7/22 週三<span>37 場</span></button><button class="dh" data-day="20260723">7/23 週四<span>16 場</span></button><button class="dh" data-day="20260724">7/24 週五<span>4 行程</span></button><button class="dh" data-day="20260725">7/25 週六<span>6 行程</span></button><button class="dh" data-day="20260726">7/26 週日<span>14 行程</span></button><button class="dh" data-day="20260727">7/27 週一<span>25 行程</span></button><button class="dh" data-day="20260728">7/28 週二<span>1 行程</span></button></div>
+<div class="daypick"><button class="dp" data-day="20260718">7/18 週六<span>3 行程</span></button><button class="dp" data-day="20260719">7/19 週日<span>15 場</span></button><button class="dp" data-day="20260720">7/20 週一<span>30 場</span></button><button class="dp" data-day="20260721">7/21 週二<span>31 場</span></button><button class="dp" data-day="20260722">7/22 週三<span>37 場</span></button><button class="dp" data-day="20260723">7/23 週四<span>16 場</span></button><button class="dp" data-day="20260724">7/24 週五<span>4 行程</span></button><button class="dp" data-day="20260725">7/25 週六<span>6 行程</span></button><button class="dp" data-day="20260726">7/26 週日<span>14 行程</span></button><button class="dp" data-day="20260727">7/27 週一<span>25 行程</span></button><button class="dp" data-day="20260728">7/28 週二<span>1 行程</span></button></div>
 <div class="adhead" style="display:none"><div class="adlbl">未定時</div><div class="adcell" data-day="20260718"></div><div class="adcell" data-day="20260719"></div><div class="adcell" data-day="20260720"></div><div class="adcell" data-day="20260721"></div><div class="adcell" data-day="20260722"></div><div class="adcell" data-day="20260723"></div><div class="adcell" data-day="20260724"></div><div class="adcell" data-day="20260725"></div><div class="adcell" data-day="20260726"></div><div class="adcell" data-day="20260727"></div><div class="adcell" data-day="20260728"></div></div>
 <div class="cbody" style="height:1508.0px">
  <div class="gut"><div class="tick" style="top:0.0px"><span>00:00</span></div><div class="tick" style="top:62.0px"><span>01:00</span></div><div class="tick" style="top:124.0px"><span>02:00</span></div><div class="tick" style="top:186.0px"><span>03:00</span></div><div class="tick" style="top:248.0px"><span>04:00</span></div><div class="tick" style="top:310.0px"><span>05:00</span></div><div class="tick" style="top:372.0px"><span>06:00</span></div><div class="tick" style="top:434.0px"><span>07:00</span></div><div class="tick" style="top:496.0px"><span>08:00</span></div><div class="tick" style="top:558.0px"><span>09:00</span></div><div class="tick" style="top:620.0px"><span>10:00</span></div><div class="tick" style="top:682.0px"><span>11:00</span></div><div class="tick" style="top:744.0px"><span>12:00</span></div><div class="tick" style="top:806.0px"><span>13:00</span></div><div class="tick" style="top:868.0px"><span>14:00</span></div><div class="tick" style="top:930.0px"><span>15:00</span></div><div class="tick" style="top:992.0px"><span>16:00</span></div><div class="tick" style="top:1054.0px"><span>17:00</span></div><div class="tick" style="top:1116.0px"><span>18:00</span></div><div class="tick" style="top:1178.0px"><span>19:00</span></div><div class="tick" style="top:1240.0px"><span>20:00</span></div><div class="tick" style="top:1302.0px"><span>21:00</span></div><div class="tick" style="top:1364.0px"><span>22:00</span></div><div class="tick" style="top:1426.0px"><span>23:00</span></div><div class="tick" style="top:1488.0px"><span>24:00</span></div></div>
@@ -255,7 +283,7 @@ button.on{background:#f5b642;border-color:#f5b642;color:#11121a;font-weight:700}
 SIGGRAPH 場次來源：兩份 <code>agenda.ics</code>（61 + 86 場）→ 去重後 <b>129</b> 場（僅 7 場重疊）。
 連結與 track 分類來自官方議程存檔，以 UID 的 <code>sess###</code> 對接：<b>132</b> 場有官方連結、
 <b>31</b> 場改附子論文連結、<b>24</b> 場查無連結。<br>
-版面：固定<b>三天並排</b>，◀ ▶ 或左右方向鍵<b>一次移動一天</b>；點日期標頭可把該天移到中間。
+版面：<b>單日檢視</b>（手機也好用），◀ ▶ 或左右方向鍵<b>換日</b>；也可點最上方的<b>日期列</b>直接跳到某天。
 欄位夠寬時衝堂場次<b>並排</b>，太窄則自動改用<b>疊層錯位</b>（滑過去會浮到最上層）——隨視窗大小即時重算。<br>
 地圖分三層：Level 2 / Level 1 底圖為 <b>LACC 官方平面圖</b>；<b>園區層</b>底圖為
 <b>Discover LA 官方步行地圖</b>（橘線＝實際步行路線）。<b>圖釘位置是我對照這些圖標的</b>，非官方座標。
@@ -277,7 +305,7 @@ const D=[{"t": "抵達 LAX（華航 CI 8 · Tom Bradley TBIT 航廈）", "st": "
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const off=new Set();
-const win=3;                                      // fixed 3-day window
+const win=1;                                      // single-day view (mobile-friendly)
 let gs=false, srcF=null, start=0;                 // start = index of leftmost visible day
 let anchor=null, cur=null, mlvl=2, msel=null, roomSel=null, offSel=null;
 
@@ -300,10 +328,9 @@ function relayout(){
  clampStart();
  const vis=new Set(visible());
  $$('.col').forEach(c=>c.classList.toggle('hide',!vis.has(c.dataset.day)));
- $$('.dh').forEach(b=>b.classList.toggle('hide',!vis.has(b.dataset.day)));
+ $$('.dp').forEach(b=>b.classList.toggle('cur',vis.has(b.dataset.day)));
  $$('.adcell').forEach(c=>c.classList.toggle('hide',!vis.has(c.dataset.day)));
- const tpl='54px repeat('+win+',1fr)';
- $('.chead').style.gridTemplateColumns=tpl;
+ const tpl='var(--gutw) repeat('+win+',1fr)';
  $('.cbody').style.gridTemplateColumns=tpl;
  $('.adhead').style.gridTemplateColumns=tpl;
  $('#prev').disabled=start<=0;
@@ -332,10 +359,11 @@ function relayout(){
  });
  drawMap();
 }
-function gotoDay(d){ start=DAYS.indexOf(d)-1; relayout(); }   // centre that day in the window
+function gotoDay(d){ start=DAYS.indexOf(d); relayout();
+ document.querySelector('.dp.cur')?.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'}); }
 $('#prev').onclick=()=>{start--;relayout();};
 $('#next').onclick=()=>{start++;relayout();};
-$$('.dh').forEach(b=>b.onclick=()=>gotoDay(b.dataset.day));
+$$('.dp').forEach(b=>b.onclick=()=>gotoDay(b.dataset.day));
 addEventListener('resize',relayout);
 addEventListener('keydown',e=>{
  if(e.key==='ArrowLeft'){start--;relayout();}
@@ -495,6 +523,7 @@ addEventListener('keydown',e=>{if(e.key==='Escape'){dw.classList.remove('open');
 relayout(); note(); apply();
 /* 全日格線 00:00–24:00，載入時直接捲到 08:00，凌晨的空白不擋路 */
 addEventListener('load',()=>{
+ if(innerWidth<=640){$('#mbox').classList.add('hide');$('#mcol').textContent='展開地圖';}
  const cb=$('.cbody');
  window.scrollTo({top:Math.max(0,cb.offsetTop+8*62-140)});
 });
