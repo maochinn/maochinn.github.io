@@ -16,6 +16,11 @@
   --chip-hi: #555;
   --sans: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
   --mono: Consolas, "Courier New", monospace;
+  /* 狂三的視覺語言：紅為主、黑是條狀裝飾（比例刻意紅 8 : 黑 6）。
+     只用在裝飾帶（分隔線、卡片頂邊）——內文區不鋪紅底：
+     #ed2553 配白字對比度僅 3.9:1，低於 WCAG AA 的 4.5:1，大面積會讀不動。 */
+  --stripe: repeating-linear-gradient(45deg,
+             var(--accent) 0 8px, #0d0d0d 8px 14px);
 }
 
 * { box-sizing: border-box; }
@@ -309,12 +314,23 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
   display: flex;
   align-items: flex-end;
   overflow: hidden;
-  border-bottom: 2px solid var(--accent);   /* 紅只出現在這條分隔線 */
+}
+/* 狂三條紋帶收邊。用 ::before 疊在最上層而不是 border-image：
+   repeating-gradient 沒有固有尺寸，border-image-slice 對它的解讀很容易出錯；
+   且 .hero-art 是 absolute inset:0，會蓋掉 .hero 自己的 background。 */
+.hero::before {
+  content: '';
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: 6px; z-index: 2;
+  background: var(--stripe);
 }
 .hero-art { position: absolute; inset: 0; }
 .hero-art img {
   width: 100%; height: 100%;
-  object-fit: cover; object-position: 50% 28%;  /* 28% ≈ 人物臉部高度，避免裁到頭 */
+  /* 60%：實際渲染比對過 28/45/60/75 四檔的結果。
+     28% 只看得到灰牆與上半身、紅幾乎被裁光；75% 會切掉臉。
+     60% ＝ 顯示原圖 27–82%，紅裙與玫瑰大面積展開、側臉（原圖 y≈40%）完整保留。 */
+  object-fit: cover; object-position: 50% 60%;
   display: block;
 }
 /* 雙層漸層：左側壓暗給文字用，底部收黑接住下面的牆。
@@ -325,8 +341,12 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
   content: '';
   position: absolute; inset: 0;
   background:
-    linear-gradient(90deg, rgba(13,13,13,.95) 0%, rgba(13,13,13,.9) 30%, rgba(13,13,13,.62) 44%, rgba(13,13,13,.2) 66%, rgba(13,13,13,.02) 100%),
-    linear-gradient(0deg, var(--bg) 0%, rgba(13,13,13,0) 42%);
+    /* 左側：文字實際只到 x≈41%，所以 40% 前維持 .78 以上保可讀，
+       之後快速放亮 —— 人物在 x≈52%，壓到她身上就把紅裙洗成黑的了。 */
+    linear-gradient(90deg, rgba(13,13,13,.95) 0%, rgba(13,13,13,.93) 26%, rgba(13,13,13,.78) 40%, rgba(13,13,13,.35) 54%, rgba(13,13,13,.05) 80%, rgba(13,13,13,.02) 100%),
+    /* 底部只收 30%：42% 會吃掉裙襬那片玫瑰，整體又變回黑大於紅。
+       文字的可讀性靠上面那道左側漸層擔保，不靠這道。 */
+    linear-gradient(0deg, var(--bg) 0%, rgba(13,13,13,0) 30%);
 }
 .hero-in {
   position: relative;
@@ -373,9 +393,15 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
   margin: 26px 0 8px;
 }
 .who-card {
+  position: relative; overflow: hidden;
   background: var(--panel); border: 1px solid var(--line);
-  border-top: 2px solid var(--accent);      /* 紅只在頂邊，不填滿 */
-  border-radius: 3px; padding: 16px 18px 18px;
+  border-radius: 3px; padding: 20px 18px 18px;
+}
+/* 條紋只在頂邊，不填滿卡片（同上，不用 border-image） */
+.who-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: var(--stripe);
 }
 .who-card h3 { margin: 0 0 10px; font-size: 16px; }
 .who-card h3 span {
@@ -409,7 +435,7 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
      420px ＝ 讓人物（臉在圖高 40% ≈ 容器 168px 處）留在上半部不被文字壓到，
      文字從 190px 起跑；漸層改成由下往上壓，上半部維持通透讓臉看得見。 */
   .hero { min-height: 420px; }
-  .hero-art img { object-position: 50% 30%; }
+  .hero-art img { object-position: 50% 60%; }
   .hero-art::after {
     background:
       linear-gradient(0deg, rgba(13,13,13,.97) 0%, rgba(13,13,13,.94) 34%, rgba(13,13,13,.55) 54%, rgba(13,13,13,.12) 78%, rgba(13,13,13,.02) 100%),
