@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
 import GalleryCard from '../components/GalleryCard.astro';
 import PostCard from '../components/PostCard.astro';
 import BahaCard from '../components/BahaCard.astro';
@@ -45,6 +46,13 @@ const nPosts = posts.length + bahaPosts.length;
 ---
 
 <Layout active="home">
+  <Hero
+    galleries={galleries.length}
+    posts={nPosts}
+    fb={fbPosts.length}
+    videos={videos.length}
+  />
+
   {
     featured.length > 0 && (
       <>
@@ -58,7 +66,7 @@ const nPosts = posts.length + bahaPosts.length;
     )
   }
 
-  <h2 class="sec">
+  <h2 class="sec" id="wall">
     最新上傳
     <span>
       new uploads · {galleries.length} 本圖集 · {nPosts} 篇文章 · {fbPosts.length} 則動態 ·

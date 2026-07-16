@@ -29,6 +29,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: clip;   /* 收掉 .hero full-bleed 的 50vw 捲軸誤差（clip 不影響 sticky header） */
 }
 a { color: inherit; text-decoration: none; }
 button { font-family: inherit; }
@@ -289,6 +290,135 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
 .prose hr { border: 0; border-top: 1px solid var(--line); margin: 2em 0; }
 .prose table { border-collapse: collapse; display: block; overflow-x: auto; }
 .prose th, .prose td { border: 1px solid var(--line); padding: 6px 12px; }
+
+/* ============================================================
+   hero — 首頁 banner（狂三禮服 78990595）
+   配色刻意沿用既有 token，不另立一套：底是 --bg 的近黑，狂三紅只當強調色。
+   大面積純紅在深色底上會產生色差光暈、看久了眼睛累，且狂三本人就是
+   黑振袖 + 紅點綴 —— 紅色在這裡的總面積壓在 ~10% 以下是刻意的。
+   ============================================================ */
+.hero {
+  position: relative;
+  /* full-bleed：main 有 max-width:1180px，單純用 -16px 只能撐到 1212px、
+     在寬螢幕上會變成一個框而不是 banner。calc(50% - 50vw) 讓它掙脫容器撐滿視窗；
+     -22px 對應 main 的 padding-top，讓 banner 貼齊 header。
+     50vw 含捲軸寬 ⇒ 靠 body 的 overflow-x: clip 收掉那幾 px（用 clip 不用 hidden，
+     hidden 會建立 scroll container、弄壞 header 的 position: sticky）。 */
+  margin: -22px calc(50% - 50vw) 0;
+  min-height: clamp(300px, 46vw, 460px);
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  border-bottom: 2px solid var(--accent);   /* 紅只出現在這條分隔線 */
+}
+.hero-art { position: absolute; inset: 0; }
+.hero-art img {
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: 50% 28%;  /* 28% ≈ 人物臉部高度，避免裁到頭 */
+  display: block;
+}
+/* 雙層漸層：左側壓暗給文字用，底部收黑接住下面的牆。
+   沒有這層，白字壓在插畫上會完全讀不出來。
+   轉折點對著構圖：人物在 x≈52%、側臉在 y≈40%，左半是空牆面 ⇒ 壓暗只到 ~42%，
+   48% 之後迅速放亮，避免把她的臉一起蓋掉。 */
+.hero-art::after {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(90deg, rgba(13,13,13,.95) 0%, rgba(13,13,13,.9) 30%, rgba(13,13,13,.62) 44%, rgba(13,13,13,.2) 66%, rgba(13,13,13,.02) 100%),
+    linear-gradient(0deg, var(--bg) 0%, rgba(13,13,13,0) 42%);
+}
+.hero-in {
+  position: relative;
+  max-width: 1180px; width: 100%;
+  margin: 0 auto; padding: 34px 16px 26px;
+}
+.hero-name {
+  font-size: clamp(38px, 7vw, 68px); font-weight: 900;
+  letter-spacing: -2px; margin: 0; line-height: 1;
+}
+.hero-name b { color: var(--accent); font-weight: 900; }
+.hero-tag {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px;
+  margin: 12px 0 0; font-size: clamp(16px, 2.4vw, 22px); font-weight: 700;
+}
+.hero-tag .sep { color: var(--accent); font-weight: 400; }
+.hero-tag .bit em {
+  display: block; font-style: normal; font-size: 10px; font-weight: 400;
+  color: var(--mut); letter-spacing: 1.5px; text-transform: uppercase;
+}
+.hero-say {
+  max-width: 60ch; margin: 16px 0 0;
+  color: #cfcfcf; font-size: 14px; line-height: 1.75;
+}
+.hero-say em {
+  display: block; margin-top: 4px;
+  font-style: normal; font-size: 12px; color: var(--mut);
+}
+.hero-num { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.hero-num a {
+  background: rgba(31,31,31,.82); border: 1px solid var(--line);
+  border-radius: 3px; padding: 7px 14px;
+  font-size: 11px; color: var(--mut); letter-spacing: 1px;
+  transition: border-color .15s, color .15s;
+}
+.hero-num a b { color: var(--ink); font-size: 17px; margin-right: 5px; }
+.hero-num a i { font-style: normal; text-transform: uppercase; font-size: 9px; }
+.hero-num a:hover { border-color: var(--accent); color: #ddd; }
+
+/* ---------- who — 三個身分 ---------- */
+.who {
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  margin: 26px 0 8px;
+}
+.who-card {
+  background: var(--panel); border: 1px solid var(--line);
+  border-top: 2px solid var(--accent);      /* 紅只在頂邊，不填滿 */
+  border-radius: 3px; padding: 16px 18px 18px;
+}
+.who-card h3 { margin: 0 0 10px; font-size: 16px; }
+.who-card h3 span {
+  font-size: 10px; font-weight: 400; color: var(--mut);
+  letter-spacing: 1.5px; text-transform: uppercase; margin-left: 6px;
+}
+.who-card p { margin: 0 0 10px; font-size: 13px; line-height: 1.8; color: #c4c4c4; }
+.who-card p b { color: var(--ink); }
+.who-note {
+  background: #161616; border-left: 2px solid var(--chip-hi);
+  padding: 8px 12px; font-size: 12px !important; color: var(--mut) !important;
+}
+.who-note em { display: block; margin-top: 3px; font-style: normal; color: #6f6f6f; }
+.who-go { display: flex; gap: 14px; flex-wrap: wrap; margin: 0 !important; }
+.who-go a { color: var(--accent); font-size: 13px; font-weight: 700; }
+.who-go a:hover { color: var(--accent-hi); text-decoration: underline; }
+.who-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.who-links a {
+  background: var(--chip); border-radius: 3px; padding: 6px 11px;
+  font-size: 12px; font-weight: 700; transition: background .15s;
+}
+.who-links a i {
+  font-style: normal; font-weight: 400; color: var(--mut);
+  font-size: 10px; margin-left: 5px;
+}
+.who-links a:hover { background: var(--accent); }
+.who-links a:hover i { color: rgba(255,255,255,.8); }
+
+@media (max-width: 640px) {
+  /* 手機是直式：橫幅插畫塞不下左文右圖，改成上圖下字。
+     420px ＝ 讓人物（臉在圖高 40% ≈ 容器 168px 處）留在上半部不被文字壓到，
+     文字從 190px 起跑；漸層改成由下往上壓，上半部維持通透讓臉看得見。 */
+  .hero { min-height: 420px; }
+  .hero-art img { object-position: 50% 30%; }
+  .hero-art::after {
+    background:
+      linear-gradient(0deg, rgba(13,13,13,.97) 0%, rgba(13,13,13,.94) 34%, rgba(13,13,13,.55) 54%, rgba(13,13,13,.12) 78%, rgba(13,13,13,.02) 100%),
+      linear-gradient(0deg, var(--bg) 0%, rgba(13,13,13,0) 26%);
+  }
+  .hero-in { padding-top: 190px; }
+  .hero-say { font-size: 13px; }
+  .hero-say em { display: none; }   /* 手機空間有限，英文副標讓位給中文本體 */
+}
 
 /* ---------- misc ---------- */
 footer.site {

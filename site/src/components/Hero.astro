@@ -1,0 +1,116 @@
+---
+import { Image } from 'astro:assets';
+import banner from '../content/galleries/78990595/01.png';
+
+interface Props {
+  galleries: number;
+  posts: number;
+  fb: number;
+  videos: number;
+}
+const { galleries, posts, fb, videos } = Astro.props;
+
+// 三個身分＝三段標語。英文小字沿用站上 h2.sec 的「中文大字 + 英文小字」模式，
+// 讓不讀中文的同好也接得上，不必等全站英文化。
+const TAGLINE = [
+  { zh: '資工碼農', en: 'code monkey' },
+  { zh: '毒瘤畫手', en: 'art menace' },
+  { zh: '狂三我婆', en: 'Kurumi is my waifu' },
+];
+
+// 網址全部取自站上同步腳本實際使用的來源（scripts/sync-*.mjs、ZMediumToMarkdown.yml），
+// 不是猜的：Pixiv USER_ID=6856401、YouTube CHANNEL_ID、巴哈 owner=maochinn、
+// Medium 是 -j maochinn ⇒ /@maochinn（已逐一驗證可連）。
+const LINKS = [
+  { href: 'https://medium.com/@maochinn', label: 'Medium', note: '技術文章' },
+  { href: 'https://www.pixiv.net/users/6856401', label: 'Pixiv', note: '插畫' },
+  { href: 'https://www.youtube.com/channel/UCww--WSRxvzaY41oa0kz8Mw', label: 'YouTube', note: '影片' },
+  { href: 'https://www.facebook.com/1676247639263395', label: 'Facebook', note: '粉專' },
+  { href: 'https://home.gamer.com.tw/maochinn', label: '巴哈小屋', note: '創作' },
+  { href: 'https://github.com/maochinn', label: 'GitHub', note: '程式' },
+];
+---
+
+<section class="hero">
+  <div class="hero-art">
+    <Image
+      src={banner}
+      alt="時崎狂三 禮服 — 帽捲的插畫"
+      widths={[720, 1180, 1800]}
+      sizes="100vw"
+      loading="eager"
+      fetchpriority="high"
+      quality={72}
+    />
+  </div>
+
+  <div class="hero-in">
+    <h1 class="hero-name">mao<b>chinn</b></h1>
+    <p class="hero-tag">
+      {
+        TAGLINE.map((t, i) => (
+          <>
+            {i > 0 && <span class="sep">/</span>}
+            <span class="bit">
+              {t.zh}
+              <em>{t.en}</em>
+            </span>
+          </>
+        ))
+      }
+    </p>
+    <p class="hero-say">
+      畫圖的圖學工程師。這裡是我的作品與文章全集 —— 圖集、技術筆記、
+      隨手塗鴉，全部混在同一面牆上。
+      <em>An artist who writes graphics code. Everything I've drawn and written, on one wall.</em>
+    </p>
+
+    <div class="hero-num">
+      <a href="#wall"><b>{galleries}</b> 圖集 <i>galleries</i></a>
+      <a href="/blog/"><b>{posts}</b> 文章 <i>posts</i></a>
+      <a href="#wall"><b>{fb}</b> 動態 <i>updates</i></a>
+      <a href="#wall"><b>{videos}</b> 影片 <i>videos</i></a>
+    </div>
+  </div>
+</section>
+
+<section class="who">
+  <div class="who-card">
+    <h3>🎨 繪師 <span>illustrator</span></h3>
+    <p>
+      畫了十幾年，本命是<b>時崎狂三</b>（上面那張就是）。同人、原創、練習、
+      塗鴉本都在站上，用 tag 宇宙串起來。
+    </p>
+    <p class="who-go">
+      <a href="#wall">看作品牆 →</a>
+      <a href="/tags/">逛 tag →</a>
+    </p>
+  </div>
+
+  <div class="who-card">
+    <h3>💻 圖學工程師 <span>graphics engineer</span></h3>
+    <p>
+      資工背景，做<b>電腦圖學</b>：Omniverse / USD、Blender、OpenGL 與 WebGL2
+      shader。技術筆記寫在 Medium，同步鏡像在站上。
+    </p>
+    <p class="who-note">
+      ⚠️ 文章目前<b>都是中文</b>，英文版之後補。
+      <em>Articles are in Chinese for now — English versions are on the way.</em>
+    </p>
+    <p class="who-go"><a href="/blog/">看文章 →</a></p>
+  </div>
+
+  <div class="who-card">
+    <h3>🔗 找我 <span>elsewhere</span></h3>
+    <div class="who-links">
+      {
+        LINKS.map((l) => (
+          <a href={l.href} rel="me noopener" target="_blank">
+            {l.label}
+            <i>{l.note}</i>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</section>
