@@ -1,7 +1,7 @@
 # STUDIO MAOCHINN — 個人網站
 
 booru / 同人誌檔案庫式的個人作品集 + 部落格。tag 篩選、封面牆、多頁圖集閱讀器，
-視覺復刻 nhentai 式深灰 + 粉紅（#ed2553）風格。圖集與 Medium 同步文章共用同一套 tag。
+視覺沿用 nhentai 式深灰版面，強調色＝**狂三紅 `#e33939`**（H0°，取樣自〈狂三 禮服〉`#78990595` 的禮服主色 `#601818` 提亮至 WCAG AA；原本是 nhentai 的品牌粉紅 `#ed2553`，與角色無關，2026-07-17 換掉）。圖集與 Medium 同步文章共用同一套 tag。
 
 本目錄是 maochinn.github.io repo 的 `site/`（上層是 Chirpy + ZMediumToMarkdown，
 **上游檔案一字不動**；部署細節見 docs/MIGRATION.md）：
@@ -61,6 +61,9 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
 - `scripts/import-content.mjs` — 從兩個舊專案匯入內容（詳見 docs/CONTENT.md）
 - `scripts/sync-*.mjs` — 站外平台每月同步（YouTube/Pixiv/巴哈，詳見 docs/SYNC.md）
 - 視覺 tokens 都在 `src/styles/global.css` 的 `:root`；刻意單主題深色。
+  `--stripe`（紅 8 : 黑 6，45°）＝狂三的「紅為主、黑為條狀裝飾」語言，用於 hero 收邊／`.who-card` 頂邊／`h2.sec` 標記／footer。
+  **別用 `--accent` 鋪大面積再放白字**（4.28:1 < AA 4.5:1）；要鋪紅底用 `--accent-deep`（12.80:1）。
+  取樣／驗算工具：`scripts/pick-accent.py`、`scripts/accent-compare.py`、`scripts/banner-preview.py`
   原始設計 mockup 存檔於 `docs/design-mock.html`（可直接用瀏覽器開）
 
 ## Taxonomy 慣例

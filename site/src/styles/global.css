@@ -1,15 +1,23 @@
 /* ============================================================
    STUDIO MAOCHINN — design tokens
-   基準：scratchpad/maochinn-mock.html（nhentai 式深灰+粉紅）
+   基準：scratchpad/maochinn-mock.html（nhentai 式深灰 + 強調色）
    刻意單主題深色：這個美學沒有淺色版
+
+   強調色＝狂三紅（2026-07-17 換）。原本是 #ed2553 ＝ nhentai 的品牌粉紅
+   （H346°、帶藍分量），跟角色無關、只是照抄 nhentai 沿用至今。
+   現值取樣自使用者自己畫的〈狂三 禮服〉#78990595：禮服主色 #601818（H0° 純血紅），
+   但那個明度在黑底上只有 1.52:1 不能當文字，故保留色相/彩度提亮至 V0.89。
+   取樣與對比驗算：scripts/pick-accent.py、比對圖：scripts/accent-compare.py
    ============================================================ */
 :root {
   --bg: #0d0d0d;
   --panel: #1f1f1f;
   --card: #262626;
   --line: #333;
-  --accent: #ed2553;
-  --accent-hi: #ff3a68;
+  --accent: #e33939;      /* H0° 狂三紅 · 紅字on黑底 4.54:1（AA 通過） */
+  --accent-hi: #ff4d4d;   /* hover · 5.94:1 */
+  --accent-deep: #601818; /* 禮服取樣原色，未提亮。白字on此底 12.80:1 ⇒
+                             可當底色鋪大面積，但別拿來當文字（黑底上僅 1.52:1） */
   --ink: #ffffff;
   --mut: #8f8f8f;
   --chip: #3c3c3c;
@@ -17,8 +25,9 @@
   --sans: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
   --mono: Consolas, "Courier New", monospace;
   /* 狂三的視覺語言：紅為主、黑是條狀裝飾（比例刻意紅 8 : 黑 6）。
-     只用在裝飾帶（分隔線、卡片頂邊）——內文區不鋪紅底：
-     #ed2553 配白字對比度僅 3.9:1，低於 WCAG AA 的 4.5:1，大面積會讀不動。 */
+     只用在裝飾帶（分隔線、卡片頂邊、section 標記）。
+     ⚠️ 別拿 --accent 鋪大面積再放白字：白字on #e33939 只有 4.28:1 < AA 4.5:1。
+     真要鋪紅底請用 --accent-deep（白字 12.80:1）。 */
   --stripe: repeating-linear-gradient(45deg,
              var(--accent) 0 8px, #0d0d0d 8px 14px);
 }
@@ -86,6 +95,18 @@ nav.site a:hover, nav.site a.on { background: var(--accent); color: #fff; }
 
 main { max-width: 1180px; margin: 0 auto; padding: 22px 16px 60px; width: 100%; flex: 1; }
 
+/* 錨點目標要讓開 sticky header（58px），否則 /#about 跳過去標題會被蓋住 */
+#about, #wall { scroll-margin-top: 72px; }
+
+/* section 標題前掛一段條紋標記 —— 讓狂三的視覺語言不只出現在首頁 */
+h2.sec::before {
+  content: '';
+  align-self: center;
+  flex: 0 0 auto;
+  width: 5px; height: 20px;
+  border-radius: 1px;
+  background: var(--stripe);
+}
 h2.sec {
   font-size: 20px; font-weight: 900; margin: 26px 0 14px;
   display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
@@ -271,8 +292,8 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
 .r-zone { position: absolute; top: 0; bottom: 0; width: 34%; cursor: pointer; z-index: 2; background: none; border: 0; }
 .r-zone.l { left: 0; }
 .r-zone.r { right: 0; }
-.r-zone.l:hover { background: linear-gradient(90deg, rgba(237, 37, 83, 0.1), transparent); }
-.r-zone.r:hover { background: linear-gradient(-90deg, rgba(237, 37, 83, 0.1), transparent); }
+.r-zone.l:hover { background: linear-gradient(90deg, rgba(227, 57, 57, 0.12), transparent); }
+.r-zone.r:hover { background: linear-gradient(-90deg, rgba(227, 57, 57, 0.12), transparent); }
 .r-bot { background: var(--panel); padding: 8px 16px; display: flex; justify-content: center; gap: 6px; font-size: 12px; color: var(--mut); }
 
 /* ---------- blog prose ---------- */
@@ -291,7 +312,8 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
 .prose blockquote { border-left: 3px solid var(--accent); margin: 1.2em 0; padding: 2px 18px; color: #bbb; background: var(--panel); }
 .prose pre { background: #161616; border: 1px solid var(--line); border-radius: 3px; padding: 14px; overflow-x: auto; font-size: 13px; }
 .prose code { font-family: var(--mono); font-size: 0.92em; }
-.prose :not(pre) > code { background: #2a2a2a; padding: 1px 6px; border-radius: 3px; color: #ffb3c4; }
+/* #ffb3c4 是舊 nhentai 粉紅的淺調；改成同色相的淺紅跟著 --accent 走（8.44:1） */
+.prose :not(pre) > code { background: #2a2a2a; padding: 1px 6px; border-radius: 3px; color: #ffb3b3; }
 .prose hr { border: 0; border-top: 1px solid var(--line); margin: 2em 0; }
 .prose table { border-collapse: collapse; display: block; overflow-x: auto; }
 .prose th, .prose td { border: 1px solid var(--line); padding: 6px 12px; }
@@ -448,9 +470,16 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
 
 /* ---------- misc ---------- */
 footer.site {
+  position: relative;
   border-top: 1px solid var(--line); margin-top: 50px;
   padding: 22px 16px 30px; text-align: center;
   color: var(--mut); font-size: 12px; line-height: 2;
+}
+/* 條紋帶收尾，與 .hero 的收邊呼應 —— 頁首頁尾各一條，把整站包起來 */
+footer.site::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--stripe);
 }
 footer.site b { color: #ccc; }
 footer.site .wink { color: #555; }
