@@ -1,35 +1,44 @@
 /* ============================================================
    STUDIO MAOCHINN — design tokens
-   基準：scratchpad/maochinn-mock.html（nhentai 式深灰 + 強調色）
-   刻意單主題深色：這個美學沒有淺色版
+   狂三配色（2026-07-17）：整站以紅為主，紅分兩層，強調＝純黑，金只給重點。
 
-   強調色＝狂三紅（2026-07-17 換）。原本是 #ed2553 ＝ nhentai 的品牌粉紅
-   （H346°、帶藍分量），跟角色無關、只是照抄 nhentai 沿用至今。
-   現值取樣自使用者自己畫的〈狂三 禮服〉#78990595：禮服主色 #601818（H0° 純血紅），
-   但那個明度在黑底上只有 1.52:1 不能當文字，故保留色相/彩度提亮至 V0.89。
-   取樣與對比驗算：scripts/pick-accent.py、比對圖：scripts/accent-compare.py
+   原本是 nhentai 的品牌粉紅 #ed2553（H346°、帶藍分量），與角色無關、
+   只是照抄 nhentai 沿用至今。現在的紅取樣自使用者自己畫的
+   〈狂三 禮服〉#78990595 的禮服主色 #601818（H0° 純血紅）。
+
+   ── 為什麼要分兩層紅（不是風格選擇，是對比度算出來的）──
+   · 深紅 #601818 ＋ 白字 12.80:1；但配黑字只有 1.64:1 ⇒ 深紅區只能放白字
+   · 黑字要過 AA 4.5:1，紅底至少要亮到 #e33939（4.91:1）
+   · 但白字在 #e33939 上只有 4.28:1 ⇒ 亮紅區只能放黑字
+   ⇒ 牆/header 以外的深紅區＝白字；卡片＝亮紅＋黑字。兩者用純黑線段界定
+     （兩種紅之間只有 2.99:1，邊界得靠黑線撐）。
+   · 亮紅上做不出次要色層次（比黑淺一階就掉到 3.27:1）⇒ 卡片內靠字級/字重分層
+   · 金在亮紅上只有 2.03:1 會消失 ⇒ 金只在深紅上成立，或當「底」＋黑字
+
+   驗算工具：scripts/pick-accent.py（取樣＋WCAG）、accent-compare.py、
+             ratio-compare.py（真實封面牆比對）、try-invert.py（切換／還原）
    ============================================================ */
 :root {
-  --bg: #0d0d0d;
-  --panel: #1f1f1f;
-  --card: #262626;
-  --line: #333;
-  --accent: #e33939;      /* H0° 狂三紅 · 紅字on黑底 4.54:1（AA 通過） */
-  --accent-hi: #ff4d4d;   /* hover · 5.94:1 */
-  --accent-deep: #601818; /* 禮服取樣原色，未提亮。白字on此底 12.80:1 ⇒
-                             可當底色鋪大面積，但別拿來當文字（黑底上僅 1.52:1） */
+  --bg: #601818;
+  --panel: #6d1c1c;
+  --card: #e33939;
+  --line: #000000;
+  --accent: #000000;      /* 強調＝純黑：線段、邊框、標記、badge/按鈕的底 */
+  --accent-hi: #2a0505;   /* hover（亮紅卡片上的深色 hover） */
+  --accent-deep: #601818; /* ＝ --bg 的深紅，保留給需要明確指名深紅的地方 */
+  --gold: #d4af37;        /* 狂三左眼時鐘的金。慎用、只給重點（搜尋按鈕的底）。
+                             當「底」用＋黑字＝9.99:1；當「字」用在亮紅上僅 2.03:1
+                             會消失。亮紅 header 上須加純黑外框界定按鈕邊界。 */
   --ink: #ffffff;
-  --mut: #8f8f8f;
-  --chip: #3c3c3c;
-  --chip-hi: #555;
+  --mut: #c09a9a;
+  --chip: #7a2020;
+  --chip-hi: #8a2828;
   --sans: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
   --mono: Consolas, "Courier New", monospace;
-  /* 狂三的視覺語言：紅為主、黑是條狀裝飾（比例刻意紅 8 : 黑 6）。
-     只用在裝飾帶（分隔線、卡片頂邊、section 標記）。
-     ⚠️ 別拿 --accent 鋪大面積再放白字：白字on #e33939 只有 4.28:1 < AA 4.5:1。
-     真要鋪紅底請用 --accent-deep（白字 12.80:1）。 */
-  --stripe: repeating-linear-gradient(45deg,
-             var(--accent) 0 8px, #0d0d0d 8px 14px);
+  /* 線段＝一條純黑實線（曾試過紅黑斜條紋，使用者否決）。
+     用於 hero 收邊、.who-card 頂邊、h2.sec 標記、footer 收邊。
+     在這個配色裡它不只是裝飾：兩種紅之間僅 2.99:1，黑線同時在界定區塊邊界。 */
+  --stripe: #000000;
 }
 
 * { box-sizing: border-box; }
@@ -51,7 +60,8 @@ img { max-width: 100%; }
 
 /* ---------- header ---------- */
 header.site {
-  background: var(--panel);
+  background: var(--card);
+  color: #000;
   border-bottom: 1px solid #000;
   padding: 0 16px;
   position: sticky;
@@ -70,28 +80,28 @@ header.site {
 .logo b { color: var(--accent); font-weight: 900; }
 .logo small {
   display: block; font-size: 9px; font-weight: 400;
-  color: var(--mut); letter-spacing: 2px; margin-top: -4px;
+  color: #000; letter-spacing: 2px; margin-top: -4px;
 }
 nav.site { display: flex; gap: 2px; flex-wrap: wrap; }
 nav.site a {
-  padding: 6px 12px; color: #ccc; font-weight: 700; font-size: 14px;
+  padding: 6px 12px; color: #000; font-weight: 700; font-size: 14px;
   border-radius: 3px; cursor: pointer;
 }
 nav.site a:hover, nav.site a.on { background: var(--accent); color: #fff; }
 .search { margin-left: auto; display: flex; min-width: 0; flex: 0 1 380px; }
 .search input {
-  flex: 1; min-width: 0; background: #111;
+  flex: 1; min-width: 0; background: #f05555;
   border: 1px solid var(--line); border-right: 0;
-  color: var(--ink); padding: 8px 12px; font-size: 14px;
+  color: #000; padding: 8px 12px; font-size: 14px;
   border-radius: 3px 0 0 3px; outline: none;
 }
 .search input:focus { border-color: var(--accent); }
-.search input::placeholder { color: #666; }
+.search input::placeholder { color: #7a1414; }
 .search button {
-  background: var(--accent); border: 0; color: #fff;
+  background: var(--gold); border: 1px solid #000; color: #000;
   padding: 0 16px; border-radius: 0 3px 3px 0; cursor: pointer; font-size: 16px;
 }
-.search button:hover { background: var(--accent-hi); }
+.search button:hover { background: #f0c850; }
 
 main { max-width: 1180px; margin: 0 auto; padding: 22px 16px 60px; width: 100%; flex: 1; }
 
@@ -115,7 +125,7 @@ h2.sec span {
   color: var(--mut); font-size: 12px; font-weight: 400;
   letter-spacing: 2px; text-transform: uppercase;
 }
-h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor: pointer; font-weight: 700; }
+h2.sec .clear { margin-left: auto; font-size: 12px; color: #fff; cursor: pointer; font-weight: 700; }
 
 /* ---------- cover grid ---------- */
 .grid {
@@ -133,7 +143,7 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
 .cover {
   aspect-ratio: 320 / 456; position: relative; overflow: hidden;
   display: flex; align-items: center; justify-content: center;
-  background: #171717;
+  background: #601818;
 }
 .cover img.coverart {
   position: absolute; inset: 0;
@@ -153,7 +163,7 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
 }
 .cap {
   padding: 8px 9px 10px; font-weight: 700; font-size: 13px;
-  line-height: 1.35; color: #fff;
+  line-height: 1.35; color: #000;
   display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -161,13 +171,13 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
 /* 純文字本封面（無圖文章） */
 .text-cover {
   position: absolute; inset: 0;
-  background: linear-gradient(160deg, #232323, #141414 70%);
+  background: linear-gradient(160deg, #ef5555, #d63030 70%);
   border-top: 4px solid var(--accent);
   display: flex; flex-direction: column; justify-content: center;
   padding: 14px 12px; gap: 10px;
 }
 .text-cover .tc-title {
-  font-weight: 900; font-size: 16px; line-height: 1.5; color: #eee;
+  font-weight: 900; font-size: 16px; line-height: 1.5; color: #000;
   display: -webkit-box; -webkit-line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden;
   text-wrap: balance;
 }
@@ -183,7 +193,7 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
 .mask {
   position: absolute; inset: 0; z-index: 2;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 6px; background: rgba(13, 13, 13, 0.35);
+  gap: 6px; background: rgba(96, 24, 24, 0.35);
 }
 .masked.revealed .mask { display: none; }
 .mask b { background: var(--accent); padding: 3px 10px; border-radius: 2px; font-size: 12px; letter-spacing: 1px; }
@@ -201,7 +211,7 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
   color: var(--mut); font-size: 13px;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
-.p-meta { color: #777; font-size: 12px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.p-meta { color: #000; font-size: 12px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
 .p-list { display: flex; flex-direction: column; gap: 8px; }
 
 /* ---------- pagination ---------- */
@@ -241,7 +251,7 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
 }
 .btn.pink { background: var(--accent); color: #fff; }
 .btn.pink:hover { background: var(--accent-hi); }
-.btn.grey { background: var(--chip); color: #eee; }
+.btn.grey { background: var(--chip); color: #fff; }
 .btn.grey:hover { background: var(--chip-hi); }
 
 /* 分享連結卡（FB 分享貼文的目標連結） */
@@ -264,7 +274,7 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
 }
 .thumb {
   aspect-ratio: 320 / 456; border-radius: 3px; overflow: hidden;
-  cursor: pointer; position: relative; background: #171717;
+  cursor: pointer; position: relative; background: #601818;
   display: flex; align-items: center; justify-content: center; padding: 0; border: 0;
 }
 .thumb:hover { outline: 2px solid var(--accent); }
@@ -284,7 +294,7 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
   background: var(--panel); display: flex; align-items: center;
   gap: 14px; padding: 10px 16px; font-weight: 700;
 }
-.r-top .back { cursor: pointer; color: var(--accent); font-weight: 900; white-space: nowrap; background: none; border: 0; font-size: 15px; }
+.r-top .back { cursor: pointer; color: #fff; font-weight: 900; white-space: nowrap; background: none; border: 0; font-size: 15px; }
 .r-top .rt { flex: 1; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #ddd; }
 .r-top .pg { color: var(--mut); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .r-stage { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
@@ -310,10 +320,10 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
 .prose img { display: block; margin: 1.2em auto; border-radius: 3px; }
 .prose figcaption, .prose em > small { color: var(--mut); text-align: center; display: block; font-size: 13px; }
 .prose blockquote { border-left: 3px solid var(--accent); margin: 1.2em 0; padding: 2px 18px; color: #bbb; background: var(--panel); }
-.prose pre { background: #161616; border: 1px solid var(--line); border-radius: 3px; padding: 14px; overflow-x: auto; font-size: 13px; }
+.prose pre { background: #4a1010; border: 1px solid var(--line); border-radius: 3px; padding: 14px; overflow-x: auto; font-size: 13px; }
 .prose code { font-family: var(--mono); font-size: 0.92em; }
 /* #ffb3c4 是舊 nhentai 粉紅的淺調；改成同色相的淺紅跟著 --accent 走（8.44:1） */
-.prose :not(pre) > code { background: #2a2a2a; padding: 1px 6px; border-radius: 3px; color: #ffb3b3; }
+.prose :not(pre) > code { background: #7a2020; padding: 1px 6px; border-radius: 3px; color: #ffd0d0; }
 .prose hr { border: 0; border-top: 1px solid var(--line); margin: 2em 0; }
 .prose table { border-collapse: collapse; display: block; overflow-x: auto; }
 .prose th, .prose td { border: 1px solid var(--line); padding: 6px 12px; }
@@ -365,10 +375,10 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
   background:
     /* 左側：文字實際只到 x≈41%，所以 40% 前維持 .78 以上保可讀，
        之後快速放亮 —— 人物在 x≈52%，壓到她身上就把紅裙洗成黑的了。 */
-    linear-gradient(90deg, rgba(13,13,13,.95) 0%, rgba(13,13,13,.93) 26%, rgba(13,13,13,.78) 40%, rgba(13,13,13,.35) 54%, rgba(13,13,13,.05) 80%, rgba(13,13,13,.02) 100%),
+    linear-gradient(90deg, rgba(96,24,24,.95) 0%, rgba(96,24,24,.93) 26%, rgba(96,24,24,.78) 40%, rgba(96,24,24,.35) 54%, rgba(96,24,24,.05) 80%, rgba(96,24,24,.02) 100%),
     /* 底部只收 30%：42% 會吃掉裙襬那片玫瑰，整體又變回黑大於紅。
        文字的可讀性靠上面那道左側漸層擔保，不靠這道。 */
-    linear-gradient(0deg, var(--bg) 0%, rgba(13,13,13,0) 30%);
+    linear-gradient(0deg, var(--bg) 0%, rgba(96,24,24,0) 30%);
 }
 .hero-in {
   position: relative;
@@ -379,12 +389,12 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
   font-size: clamp(38px, 7vw, 68px); font-weight: 900;
   letter-spacing: -2px; margin: 0; line-height: 1;
 }
-.hero-name b { color: var(--accent); font-weight: 900; }
+.hero-name b { color: #fff; font-weight: 900; }
 .hero-tag {
   display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px;
   margin: 12px 0 0; font-size: clamp(16px, 2.4vw, 22px); font-weight: 700;
 }
-.hero-tag .sep { color: var(--accent); font-weight: 400; }
+.hero-tag .sep { color: var(--mut); font-weight: 400; }
 .hero-tag .bit em {
   display: block; font-style: normal; font-size: 10px; font-weight: 400;
   color: var(--mut); letter-spacing: 1.5px; text-transform: uppercase;
@@ -416,7 +426,8 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
 }
 .who-card {
   position: relative; overflow: hidden;
-  background: var(--panel); border: 1px solid var(--line);
+  color: #000;
+  background: var(--card); border: 1px solid var(--line);
   border-radius: 3px; padding: 20px 18px 18px;
 }
 /* 條紋只在頂邊，不填滿卡片（同上，不用 border-image） */
@@ -427,16 +438,16 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
 }
 .who-card h3 { margin: 0 0 10px; font-size: 16px; }
 .who-card h3 span {
-  font-size: 10px; font-weight: 400; color: var(--mut);
+  font-size: 10px; font-weight: 400; color: #5a0e0e;
   letter-spacing: 1.5px; text-transform: uppercase; margin-left: 6px;
 }
-.who-card p { margin: 0 0 10px; font-size: 13px; line-height: 1.8; color: #c4c4c4; }
+.who-card p { margin: 0 0 10px; font-size: 13px; line-height: 1.8; color: #000; }
 .who-card p b { color: var(--ink); }
 .who-note {
-  background: #161616; border-left: 2px solid var(--chip-hi);
+  background: #4a1010; border-left: 2px solid var(--chip-hi);
   padding: 8px 12px; font-size: 12px !important; color: var(--mut) !important;
 }
-.who-note em { display: block; margin-top: 3px; font-style: normal; color: #6f6f6f; }
+.who-note em { display: block; margin-top: 3px; font-style: normal; color: #c09a9a; }
 .who-go { display: flex; gap: 14px; flex-wrap: wrap; margin: 0 !important; }
 .who-go a { color: var(--accent); font-size: 13px; font-weight: 700; }
 .who-go a:hover { color: var(--accent-hi); text-decoration: underline; }
@@ -446,7 +457,7 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
   font-size: 12px; font-weight: 700; transition: background .15s;
 }
 .who-links a i {
-  font-style: normal; font-weight: 400; color: var(--mut);
+  font-style: normal; font-weight: 400; color: #e0bcbc;
   font-size: 10px; margin-left: 5px;
 }
 .who-links a:hover { background: var(--accent); }
@@ -460,8 +471,8 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: var(--accent); cursor
   .hero-art img { object-position: 50% 60%; }
   .hero-art::after {
     background:
-      linear-gradient(0deg, rgba(13,13,13,.97) 0%, rgba(13,13,13,.94) 34%, rgba(13,13,13,.55) 54%, rgba(13,13,13,.12) 78%, rgba(13,13,13,.02) 100%),
-      linear-gradient(0deg, var(--bg) 0%, rgba(13,13,13,0) 26%);
+      linear-gradient(0deg, rgba(96,24,24,.97) 0%, rgba(96,24,24,.94) 34%, rgba(96,24,24,.55) 54%, rgba(96,24,24,.12) 78%, rgba(96,24,24,.02) 100%),
+      linear-gradient(0deg, var(--bg) 0%, rgba(96,24,24,0) 26%);
   }
   .hero-in { padding-top: 190px; }
   .hero-say { font-size: 13px; }
@@ -484,7 +495,7 @@ footer.site::before {
 footer.site b { color: #ccc; }
 footer.site .wink { color: #555; }
 .empty { padding: 60px 0; text-align: center; color: var(--mut); }
-.empty b { color: var(--accent); }
+.empty b { color: #fff; }
 
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
