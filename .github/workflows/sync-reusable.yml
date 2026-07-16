@@ -1,0 +1,65 @@
+name: "Sync (reusable)"
+# 四個站外同步共用的骨架。各來源有自己的排程檔（sync-*.yml）呼叫這裡，
+# 分散在不同天：一個來源掛掉不影響其他三個，也能在 UI 單獨重跑。
+on:
+  workflow_call:
+    inputs:
+      label:
+        description: "來源名稱（用在步驟名與 commit message）"
+        required: true
+        type: string
+      script:
+        description: "site/scripts/ 底下的同步腳本檔名"
+        required: true
+        type: string
+      paths:
+        description: "commit 時要 git add 的路徑（空白分隔）"
+        required: true
+        type: string
+    secrets:
+      FB_PAGE_TOKEN:
+        required: false
+
+permissions:
+  contents: write
+
+# 四個來源共用一組：排程雖分開，但手動同時 dispatch 兩個時會排隊而不是互撞 push
+concurrency:
+  group: "content-sync"
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Install site dependencies
+        run: npm ci
+        working-directory: site
+
+      - name: Sync ${{ inputs.label }}
+        run: node scripts/${{ inputs.script }}
+        working-directory: site
+        env:
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+
+      - name: Commit changes (if any)
+        run: |
+          git add -A ${{ inputs.paths }}
+          if git diff --cached --quiet; then
+            echo "no new content"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git commit -m "Content sync: ${{ inputs.label }} ($(date -u +%Y-%m-%d))"
+            git push
+          fi

@@ -1,0 +1,18 @@
+name: "Sync Facebook"
+on:
+  # 每月 25 號 04:30 UTC（12:30 台灣時間）
+  schedule:
+    - cron: "30 4 25 * *"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    uses: ./.github/workflows/sync-reusable.yml
+    with:
+      label: fb
+      script: sync-facebook.mjs
+      paths: archive/facebook
+    secrets:
+      FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+    permissions:
+      contents: write

@@ -1,0 +1,16 @@
+name: "Sync Bahamut"
+on:
+  # 每月 20 號 04:30 UTC（12:30 台灣時間）
+  schedule:
+    - cron: "30 4 20 * *"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    uses: ./.github/workflows/sync-reusable.yml
+    with:
+      label: baha
+      script: sync-baha.mjs
+      paths: archive/baha
+    permissions:
+      contents: write

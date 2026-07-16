@@ -1,0 +1,16 @@
+name: "Sync Pixiv"
+on:
+  # 每月 10 號 04:30 UTC（12:30 台灣時間）
+  schedule:
+    - cron: "30 4 10 * *"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    uses: ./.github/workflows/sync-reusable.yml
+    with:
+      label: pixiv
+      script: sync-pixiv.mjs
+      paths: site/src/content/galleries
+    permissions:
+      contents: write

@@ -1,0 +1,16 @@
+name: "Sync YouTube"
+on:
+  # 每月 5 號 04:30 UTC（12:30 台灣時間）
+  schedule:
+    - cron: "30 4 5 * *"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    uses: ./.github/workflows/sync-reusable.yml
+    with:
+      label: youtube
+      script: sync-youtube.mjs
+      paths: site/src/data/videos.json
+    permissions:
+      contents: write

@@ -1,9 +1,22 @@
 # 站外內容同步（YouTube / Pixiv / 巴哈）
 
-每月 15 號 `content-sync.yml` 自動跑（也可在 Actions 手動 dispatch），
-比照 ZMediumToMarkdown 模式：sync → commit main → workflow_run 接力觸發 pages-deploy。
-全部匿名抓取、只收「本來就公開、正常向」的內容；三支腳本都是**增量**（已存在就跳過），
-sync 失敗會紅燈但不影響既有資料。
+四個來源**各自一個 workflow、各自排程在不同天**（也可在 Actions 個別手動 dispatch），
+邏輯共用 `sync-reusable.yml`：sync → commit main → workflow_run 接力觸發 pages-deploy。
+
+| Workflow | 每月 | 來源 |
+|---|---|---|
+| `sync-youtube.yml` | 5 號 | YouTube |
+| `sync-pixiv.yml` | 10 號 | Pixiv |
+| `sync-baha.yml` | 20 號 | 巴哈 |
+| `sync-facebook.yml` | 25 號 | FB 粉專 |
+
+（15 號留給 ZMediumToMarkdown。）**新增來源時要同步補進 `pages-deploy.yml` 的
+`workflow_run.workflows` 清單**，否則同步會 commit 但站台不會重建。
+
+分開的理由：原本四個來源串在同一個 job，任一步 throw 就整包中止——2026-07-15 YouTube RSS
+被 CI 機房 IP 擋（本機打同一網址是 200），害 Pixiv/巴哈/FB 連跑都沒跑到。拆開後彼此不相干，
+失敗的那個也能單獨重跑。全部匿名抓取、只收「本來就公開、正常向」的內容；腳本都是**增量**
+（已存在就跳過），sync 失敗會紅燈但不影響既有資料。
 
 | 腳本 | 來源 | 去向 | 上站？ |
 |---|---|---|---|

@@ -9,8 +9,9 @@ on:
       - LICENSE
   workflow_dispatch:
   workflow_run:
-    # 兩個內容同步 workflow 用 GITHUB_TOKEN push，不會觸發上面的 push event，靠這裡接力部署
-    workflows: [ZMediumToMarkdown, Content Sync]
+    # 內容同步 workflow 用 GITHUB_TOKEN push，不會觸發上面的 push event，靠這裡接力部署。
+    # 站外同步已拆成四個各自排程的 workflow，新增來源時記得補進這份清單。
+    workflows: [ZMediumToMarkdown, Sync YouTube, Sync Pixiv, Sync Bahamut, Sync Facebook]
     types:
       - completed
 
