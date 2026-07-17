@@ -7,22 +7,25 @@
    只是照抄 nhentai 沿用至今。現在的紅取樣自使用者自己畫的
    〈狂三 禮服〉#78990595 的禮服主色 #601818（H0° 純血紅）。
    卡片色原本是取樣色提亮後的 #e33939，太飽和刺眼（header 整天貼著頭頂）；
-   第一次降飽和降到 #bd7575，使用者覺得太淡、飽和度想拉回來一點，改成
-   直接取樣自使用者喜歡的桌布〈Nightmare〉（狂三，Arthur 繪）禮服的珊瑚色
-   #dd866a（H14.6° S52 V87，比 #bd7575 更飽和、也更暖／偏橘，不是純紅）。
+   降飽和到 #bd7575 又被覺得太淡，改取樣自桌布〈Nightmare〉禮服珊瑚色
+   #dd866a 又被覺得該再調；最後定案 **#ea9999**（使用者指定，H0° S66 L76，
+   很淡但保留足夠彩度，不是灰粉）。
 
-   ── 為什麼要分兩層紅（不是風格選擇，是對比度算出來的）──
-   · 深紅 #601818 ＋ 白字 12.80:1；但配黑字只有 1.64:1 ⇒ 深紅區只能放白字
-   · 黑字要過 AA 4.5:1，卡片紅（--card #dd866a）給黑字 7.69:1（比 #bd7575 的
-     5.97:1、原始 #e33939 的 4.91:1 都更寬裕——更飽和沒有犧牲可讀性）
-   · 白字在 --card 上只有 2.73:1 ⇒ 亮紅區仍只能放黑字
-   ⇒ 牆/header 以外的深紅區＝白字；卡片＝亮紅＋黑字。兩者用純黑線段界定
-     （兩種紅之間 4.69:1，邊界仍靠黑線撐，比 #bd7575 版的 3.63:1 更清楚）。
-   · 亮紅上做不出次要色層次 ⇒ 引入 --mut-card（#400a0a，卡片上專用的次要
-     文字色，對 --card 6.08:1）取代 --mut 在卡片內的誤用（--mut 在卡片上只有
-     1.4:1，別在 .p-desc/.linkcard 之類的卡片內用 --mut）
-   · 金在卡片紅上只有 1.30:1 會消失 ⇒ 金只在深紅系背景（--bg/--panel/--chip）
-     上當「字」用，卡片上仍是黑字＋accent-hi 當 hover（6.85:1）
+   ── 分兩層紅的規則（不是風格選擇，是對比度算出來的）──
+   · 深紅（--bg/--panel/--chip 這些）只能放白字／淺色字，絕不放黑字：
+     --bg #601818 配白字 12.80:1，配黑字僅 1.64:1（404 頁曾誤用，已修）。
+     這條規則不因卡片變淡而改變——深紅區跟卡片是兩個獨立的色階，各自的字色規則
+     互不影響。
+   · 卡片紅（--card #ea9999）只能放黑字：配黑字 9.51:1（比之前任何版本都寬裕），
+     配白字僅 2.21:1、配金字僅 1.05:1（都會消失）。
+   ⇒ 牆/header 以外的深紅區＝白字；卡片＝淡紅＋黑字。兩者用純黑線段界定
+     （兩種紅之間 5.80:1，比之前任何版本都更清楚，黑線邊界其實已經不是必要，
+     但保留是既定視覺語言，不是靠它撐對比度）。
+   · 亮紅上做不出次要色層次 ⇒ --mut-card（#400a0a，卡片上專用的次要文字色，
+     對 --card 7.52:1）取代 --mut 在卡片內的誤用（--mut 在卡片上只有 1.4:1，
+     別在 .p-desc/.linkcard 之類的卡片內用 --mut）
+   · 金在卡片紅上只有 1.05:1 會消失 ⇒ 金只在深紅系背景（--bg/--panel/--chip）
+     上當「字」用，卡片上仍是黑字＋accent-hi 當 hover（8.48:1）
 
    金字／超連結一律用 --gold（在 --bg 6.08:1、--panel 5.45:1、--chip 4.86:1，
    三種深紅背景都穩穩過 AA）。卡片（--card）背景上的文字語意上等同「按鈕/標題」
@@ -35,18 +38,18 @@
 :root {
   --bg: #601818;
   --panel: #6d1c1c;
-  --card: #dd866a;
+  --card: #ea9999;
   --line: #000000;
   --accent: #000000;      /* 強調＝純黑：線段、邊框、標記、badge/按鈕的底 */
   --accent-hi: #2a0505;   /* hover（亮紅卡片上的深色 hover） */
   --accent-deep: #601818; /* ＝ --bg 的深紅，保留給需要明確指名深紅的地方 */
   --gold: #d4af37;        /* 狂三左眼時鐘的金＝全站「重點字／超連結」的統一色，
                              只在深紅系背景（--bg/--panel/--chip）上用；
-                             在卡片（--card）上僅 1.30:1 會消失，卡片維持黑字。
+                             在卡片（--card）上僅 1.05:1 會消失，卡片維持黑字。
                              當「底」用＋黑字＝9.99:1（搜尋按鈕）。 */
   --ink: #ffffff;
   --mut: #c09a9a;         /* 深紅系背景上的次要文字（--bg/--panel/--chip 用） */
-  --mut-card: #400a0a;    /* 卡片（--card）上的次要文字，6.08:1；--mut 在卡片上
+  --mut-card: #400a0a;    /* 卡片（--card）上的次要文字，7.52:1；--mut 在卡片上
                              只有 1.4:1，別在 .p-desc/.linkcard 之類的卡片內用 --mut */
   --chip: #7a2020;
   --chip-hi: #8a2828;
@@ -54,7 +57,8 @@
   --mono: Consolas, "Courier New", monospace;
   /* 線段＝一條純黑實線（曾試過紅黑斜條紋，使用者否決）。
      用於 hero 收邊、.who-card 頂邊、h2.sec 標記、footer 收邊。
-     在這個配色裡它不只是裝飾：兩種紅之間僅 4.69:1，黑線同時在界定區塊邊界。 */
+     在這個配色裡它不只是裝飾：兩種紅之間 5.80:1，黑線是既定視覺語言，
+     不是靠它撐對比度（現在色差已經夠大，黑線純粹是風格選擇）。 */
   --stripe: #000000;
 }
 
@@ -94,7 +98,7 @@ header.site {
   height: 58px;
 }
 .logo { font-weight: 900; font-size: 24px; letter-spacing: -0.5px; white-space: nowrap; }
-/* 黑字不是漏改成金——header 底是 --card（亮紅），金字在上面只有 1.30:1 會消失 */
+/* 黑字不是漏改成金——header 底是 --card（亮紅），金字在上面只有 1.05:1 會消失 */
 .logo b { color: var(--accent); font-weight: 900; }
 .logo small {
   display: block; font-size: 9px; font-weight: 400;
@@ -186,10 +190,12 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: #fff; cursor: pointer
   overflow: hidden;
 }
 
-/* 純文字本封面（無圖文章） */
+/* 純文字本封面（無圖文章）——獨立於 --card 之外的紅，因為這裡是漸層不是純色。
+   黑字（.tc-title）在漸層最深處（d63030）曾只有 4.32:1、剛好卡在 AA 邊界下面，
+   2026-07-18 微調亮一點到 da3535（4.54:1）過關。 */
 .text-cover {
   position: absolute; inset: 0;
-  background: linear-gradient(160deg, #ef5555, #d63030 70%);
+  background: linear-gradient(160deg, #ef5555, #da3535 70%);
   border-top: 4px solid var(--accent);
   display: flex; flex-direction: column; justify-content: center;
   padding: 14px 12px; gap: 10px;
@@ -321,9 +327,9 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: #fff; cursor: pointer
 .r-zone { position: absolute; top: 0; bottom: 0; width: 34%; cursor: pointer; z-index: 2; background: none; border: 0; }
 .r-zone.l { left: 0; }
 .r-zone.r { right: 0; }
-/* 曾寫死 rgba(227,57,57,…) ＝舊 --card e33939，2026-07-18 改跟卡片色連動 */
-.r-zone.l:hover { background: linear-gradient(90deg, rgba(221, 134, 106, 0.12), transparent); }
-.r-zone.r:hover { background: linear-gradient(-90deg, rgba(221, 134, 106, 0.12), transparent); }
+/* 曾寫死 rgba(227,57,57,…) ＝舊 --card e33939，2026-07-18 改跟卡片色連動（現為 ea9999） */
+.r-zone.l:hover { background: linear-gradient(90deg, rgba(234, 153, 153, 0.12), transparent); }
+.r-zone.r:hover { background: linear-gradient(-90deg, rgba(234, 153, 153, 0.12), transparent); }
 .r-bot { background: var(--panel); padding: 8px 16px; display: flex; justify-content: center; gap: 6px; font-size: 12px; color: var(--mut); }
 
 /* ---------- blog prose ---------- */
@@ -466,8 +472,11 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: #fff; cursor: pointer
 }
 .who-card p { margin: 0 0 10px; font-size: 13px; line-height: 1.8; color: #000; }
 /* 曾用 var(--ink) 白字（3.52:1，卡片上不夠亮），改黑字＋金色底線——
-   金字本身在卡片上只有 1.30:1 會消失，底線不受這條限制，一樣讀得出「這裡是金色重點」 */
-.who-card p b {
+   金字本身在卡片上只有 1.05:1 會消失，底線不受這條限制，一樣讀得出「這裡是金色重點」。
+   :not(.who-note) 是必須的：.who-note 是卡片內另一個深紅色的內嵌框（見下），
+   曾經沒排除，這條規則就把 .who-note 裡的 <b> 也強制成黑字，疊在深紅上只有
+   1.37:1，幾乎看不見——2026-07-18 抓到並修正。 */
+.who-card p:not(.who-note) b {
   color: #000;
   text-decoration: underline;
   text-decoration-color: var(--gold);
@@ -478,9 +487,12 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: #fff; cursor: pointer
   background: #4a1010; border-left: 2px solid var(--chip-hi);
   padding: 8px 12px; font-size: 12px !important; color: var(--mut) !important;
 }
+/* .who-note 底是深紅（#4a1010），跟卡片本身的亮紅不是同一個色階 ⇒ 這裡的
+   強調字遵守「深紅背景用金字」規則，不是黑字＋底線那套（金字在此 7.27:1）。 */
+.who-note b { color: var(--gold); }
 .who-note em { display: block; margin-top: 3px; font-style: normal; color: #c09a9a; }
 .who-go { display: flex; gap: 14px; flex-wrap: wrap; margin: 0 !important; }
-/* 黑字不是漏改成金——這兩個連結疊在 .who-card 的亮紅底上，金字只有 1.30:1 會消失 */
+/* 黑字不是漏改成金——這兩個連結疊在 .who-card 的亮紅底上，金字只有 1.05:1 會消失 */
 .who-go a { color: var(--accent); font-size: 13px; font-weight: 700; }
 .who-go a:hover { color: var(--accent-hi); text-decoration: underline; }
 .who-links { display: flex; flex-wrap: wrap; gap: 8px; }
