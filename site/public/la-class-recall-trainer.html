@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LA Class Recall Trainer · SIGGRAPH 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0d17; --card:rgba(22,28,45,.6); --card2:rgba(30,37,58,.7);
+  --primary:#6366f1; --primary2:#818cf8; --glow:rgba(99,102,241,.35);
+  --success:#10b981; --success-bg:rgba(16,185,129,.14);
+  --warn:#f59e0b; --danger:#ef4444; --danger-bg:rgba(239,68,68,.14);
+  --gold:#fbbf24; --text:#f3f4f6; --muted:#9ca3af; --line:rgba(255,255,255,.08);
+  --disp:'Outfit',sans-serif; --sans:'Inter','Noto Sans TC',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;
+  background-image:radial-gradient(at 0% 0%,rgba(99,102,241,.16) 0,transparent 45%),
+    radial-gradient(at 100% 100%,rgba(16,185,129,.10) 0,transparent 45%);
+  background-attachment:fixed;line-height:1.5}
+header{padding:.9rem 1.6rem;display:flex;justify-content:space-between;align-items:center;
+  gap:1rem;border-bottom:1px solid var(--line);backdrop-filter:blur(12px);
+  position:sticky;top:0;z-index:50;background:rgba(11,13,23,.65);flex-wrap:wrap}
+.brand h1{font-family:var(--disp);font-size:1.15rem;font-weight:800;letter-spacing:-.4px;
+  background:linear-gradient(135deg,#a5b4fc,#6366f1,#34d399);-webkit-background-clip:text;
+  background-clip:text;-webkit-text-fill-color:transparent}
+.brand p{font-size:.7rem;color:var(--muted);margin-top:1px}
+.stats{display:flex;gap:.6rem;flex-wrap:wrap}
+.stat{background:rgba(255,255,255,.04);border:1px solid var(--line);padding:.35rem .7rem;
+  border-radius:10px;font-size:.72rem;font-weight:600;display:flex;align-items:center;gap:.35rem}
+.stat b{font-family:var(--disp);font-size:1rem;color:var(--primary2)}
+.wrap{display:grid;grid-template-columns:290px 1fr;gap:1.2rem;max-width:1400px;margin:0 auto;
+  padding:1.2rem 1.6rem;width:100%}
+.side{display:flex;flex-direction:column;gap:1rem;max-height:calc(100vh - 90px);overflow-y:auto;
+  padding-right:.3rem;position:sticky;top:78px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1rem}
+.panel h2{font-family:var(--disp);font-size:.8rem;text-transform:uppercase;letter-spacing:.5px;
+  color:var(--muted);margin-bottom:.7rem;display:flex;align-items:center;gap:.4rem}
+.btn{cursor:pointer;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--text);
+  border-radius:10px;padding:.5rem .8rem;font-size:.8rem;font-weight:600;font-family:var(--sans);
+  transition:.15s;width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:.5rem}
+.btn:hover{border-color:var(--primary);background:var(--glow)}
+.btn.mini{width:auto;padding:.4rem .7rem;text-align:center;justify-content:center}
+.cram{background:linear-gradient(135deg,#6366f1,#4f46e5);border:none;margin-bottom:.5rem}
+.cram:hover{filter:brightness(1.1)}
+.marked{background:linear-gradient(135deg,#d97706,#b45309);border:none}
+select{width:100%;background:var(--card2);color:var(--text);border:1px solid var(--line);
+  border-radius:10px;padding:.55rem;font-size:.8rem;font-family:var(--sans);margin-bottom:.6rem}
+.scenes{display:flex;flex-wrap:wrap;gap:.35rem}
+.scene-chip{cursor:pointer;font-size:.68rem;font-weight:600;padding:.28rem .55rem;border-radius:20px;
+  border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted);transition:.15s}
+.scene-chip:hover{border-color:var(--primary);color:var(--text)}
+.scene-chip.active{background:var(--glow);border-color:var(--primary);color:#c7d2fe}
+.tutor-chip:hover{border-color:var(--gold);color:var(--text)}
+.tutor-chip.active{background:rgba(251,191,36,.16);border-color:var(--gold);color:#fde68a}
+.modeswitch{display:flex;background:rgba(255,255,255,.04);border:1px solid var(--line);
+  border-radius:12px;padding:.25rem;gap:.25rem;flex-wrap:wrap}
+.modeswitch button{flex:1;border:none;background:transparent;color:var(--muted);font-weight:700;
+  font-size:.8rem;padding:.5rem;border-radius:9px;cursor:pointer;font-family:var(--sans);transition:.15s}
+.modeswitch button.active{background:var(--primary);color:#fff;box-shadow:0 4px 14px var(--glow)}
+.modeswitch button#m-rp{flex-basis:100%}
+.modeswitch button#m-rp.active{background:linear-gradient(135deg,#e11d48,#be123c);
+  box-shadow:0 4px 14px rgba(225,29,72,.4)}
+/* ---- roleplay / rapid-fire mode ---- */
+.dice{background:linear-gradient(135deg,#e11d48,#9f1239);border:none;margin-bottom:.5rem;
+  font-size:.85rem;justify-content:center;padding:.7rem}
+.dice:hover{filter:brightness(1.12)}
+.sclist{display:flex;flex-direction:column;gap:.35rem}
+.sc-btn{cursor:pointer;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);
+  border-radius:10px;padding:.5rem .65rem;font-size:.75rem;font-weight:600;font-family:var(--sans);
+  transition:.15s;text-align:left;display:flex;align-items:center;gap:.45rem;width:100%}
+.sc-btn:hover{border-color:#e11d48;background:rgba(225,29,72,.14)}
+.sc-btn.active{border-color:#e11d48;background:rgba(225,29,72,.2)}
+.sc-btn .n{color:var(--muted);font-weight:500;margin-left:auto;font-size:.68rem}
+.setup{background:rgba(225,29,72,.1);border:1px solid rgba(225,29,72,.3);border-radius:12px;padding:.9rem 1rem}
+.setup .lbl{font-size:.7rem;font-weight:700;color:#fda4af;letter-spacing:.4px;margin-bottom:.35rem}
+.setup .txt{font-size:.88rem;line-height:1.65}
+.opener{margin-top:.6rem;padding-top:.6rem;border-top:1px dashed rgba(225,29,72,.3);
+  font-size:.8rem;color:var(--muted)}
+.opener b{color:#fecdd3;font-family:var(--disp);font-size:.95rem;font-weight:700}
+.opener .en{font-style:italic;color:var(--muted)}
+/* bilingual: English line sits under the Chinese one, smaller & muted */
+.txt.en,.throw .zh.en{font-size:.78rem;color:var(--muted);font-style:italic;
+  line-height:1.55;margin-top:.4rem;padding-top:.4rem;border-top:1px dashed rgba(255,255,255,.08)}
+/* opening line — who speaks first */
+.openbox{border-radius:12px;padding:.9rem 1.1rem;border:1px solid var(--line);
+  background:rgba(255,255,255,.03)}
+.openbox.tutor{border-color:rgba(129,140,248,.45);background:rgba(99,102,241,.12)}
+.openbox.you{border-color:rgba(52,211,153,.45);background:rgba(16,185,129,.1)}
+.openbox .whotag{font-size:.68rem;font-weight:800;letter-spacing:.6px;margin-bottom:.4rem}
+.openbox.tutor .whotag{color:#a5b4fc}
+.openbox.you .whotag{color:#6ee7b7}
+.openbox .line{font-family:var(--disp);font-size:1.25rem;font-weight:700;line-height:1.45}
+details.ammo{border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.02)}
+details.ammo summary{cursor:pointer;padding:.55rem .8rem;font-size:.75rem;font-weight:600;
+  color:var(--muted);list-style:none}
+details.ammo summary::-webkit-details-marker{display:none}
+details.ammo summary:hover{color:var(--text)}
+details.ammo[open] summary{border-bottom:1px solid var(--line);color:var(--text)}
+details.ammo ul{margin:0;padding:.6rem .8rem .7rem 1.9rem;display:flex;flex-direction:column;gap:.3rem}
+details.ammo li{font-size:.8rem;color:#c7d2fe;line-height:1.5}
+/* 5-minute conversation stopwatch */
+.rpclock{border:1px solid var(--line);border-radius:12px;padding:.8rem 1rem;background:rgba(255,255,255,.03)}
+.rpclock-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}
+.rpclock-lbl{font-size:.72rem;color:var(--muted);font-weight:600}
+.rpclock-time{font-family:var(--disp);font-size:1.5rem;font-weight:800;color:var(--primary2)}
+.rpclock.goal .rpclock-time{color:var(--gold)}
+.rpclock-bar{height:6px;background:rgba(255,255,255,.07);border-radius:5px;overflow:hidden;margin-bottom:.7rem}
+.rpclock-bar>div{height:100%;width:0;background:linear-gradient(90deg,#6366f1,#34d399);transition:width .3s linear}
+.rpclock.goal .rpclock-bar>div{background:linear-gradient(90deg,#fbbf24,#f59e0b)}
+.rpclock-actions{display:flex;gap:.5rem}
+.rpclock-actions .act{padding:.5rem .8rem;font-size:.78rem}
+.throw{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);border-radius:12px;
+  padding:.75rem .9rem;margin-top:.2rem}
+.throw .lbl{font-size:.7rem;font-weight:700;color:#6ee7b7;margin-bottom:.3rem}
+.throw .q{font-family:var(--disp);font-size:.95rem;font-weight:600;color:#d1fae5}
+.throw .zh{font-size:.72rem;color:var(--muted);margin-top:.15rem}
+.noscript{text-align:center;padding:1.6rem 1rem;color:var(--muted);font-size:.82rem;
+  border:1px dashed var(--line);border-radius:12px}
+.noscript b{color:#fda4af;display:block;font-size:1rem;margin-bottom:.3rem;font-family:var(--disp)}
+.chain{display:flex;gap:.25rem;flex-wrap:wrap;margin-top:.5rem}
+.chain span{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.12)}
+.chain span.done{background:var(--success)}
+.chain span.cur{background:#e11d48;box-shadow:0 0 0 3px rgba(225,29,72,.25)}
+main{min-height:60vh;display:flex;flex-direction:column;gap:1rem}
+.deckbar{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+.deckttl{font-family:var(--disp);font-weight:700;font-size:1rem}
+.deckttl span{color:var(--muted);font-weight:500;font-size:.8rem}
+.progress{height:6px;background:rgba(255,255,255,.06);border-radius:5px;overflow:hidden;flex:1;min-width:120px;max-width:260px}
+.progress>div{height:100%;background:linear-gradient(90deg,#6366f1,#34d399);width:0;transition:.3s}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:1.6rem;
+  display:flex;flex-direction:column;gap:1rem;min-height:340px;position:relative}
+.meta{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;font-size:.72rem;color:var(--muted)}
+.tag{font-size:.7rem;font-weight:700;padding:.25rem .6rem;border-radius:20px;
+  background:var(--glow);color:#c7d2fe;border:1px solid rgba(99,102,241,.3)}
+.tag.tutor{background:rgba(52,211,153,.14);color:#6ee7b7;border-color:rgba(52,211,153,.3)}
+.speaker{font-size:.72rem;font-weight:700;color:var(--warn);text-transform:uppercase;letter-spacing:.4px}
+.question{font-family:var(--disp);font-size:1.5rem;font-weight:600;line-height:1.35}
+.qzh{font-size:.9rem;color:var(--muted)}
+.intent{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:10px;
+  padding:.6rem .8rem;font-size:.85rem;color:#fcd34d}
+.hintrow{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center}
+.hintlabel{font-size:.72rem;color:var(--muted);font-weight:600}
+.kw{font-size:.8rem;font-weight:600;padding:.3rem .6rem;border-radius:8px;
+  background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.35);color:var(--gold)}
+.spacer{flex:1}
+.reveal{display:flex;flex-direction:column;gap:.9rem;border-top:1px dashed var(--line);padding-top:1rem;
+  animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.answer{font-size:1.25rem;font-weight:500;line-height:1.5}
+.answer mark{background:rgba(99,102,241,.18);color:#c7d2fe;font-weight:700;padding:.05rem .25rem;border-radius:5px}
+.answer mark.key,.cloze mark.key{background:rgba(251,191,36,.16);color:#fde68a}
+.clozewrap{border-left:3px solid var(--gold);background:rgba(251,191,36,.06);border-radius:8px;padding:.55rem .8rem}
+.cloze{font-size:1.12rem;line-height:1.95;margin-top:.35rem;color:#e5e7eb}
+.blank{display:inline-block;min-width:70px;text-align:center;color:#c7d2fe;font-weight:700;font-size:.82rem;
+  background:rgba(99,102,241,.16);border:1px dashed var(--primary);border-radius:6px;padding:.05rem .5rem;margin:0 .15rem;vertical-align:middle}
+.reuselist{display:flex;flex-direction:column;gap:.4rem}
+.reuse{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;font-size:.78rem;background:rgba(99,102,241,.07);
+  border:1px solid rgba(99,102,241,.2);border-radius:9px;padding:.4rem .6rem}
+.chip-lego{color:#c7d2fe;font-weight:700}
+.reuse-meta{color:var(--muted)}
+.mini-link{cursor:pointer;background:none;border:none;color:var(--primary2);font-weight:700;font-size:.78rem;font-family:var(--sans);padding:0}
+.mini-link:hover{text-decoration:underline}
+.kwbtn{margin-bottom:.35rem;font-size:.76rem;padding:.42rem .6rem}
+.kwbtn .cnt{background:var(--glow);color:#c7d2fe;border-radius:6px;padding:.05rem .4rem;font-family:var(--disp);font-weight:700;flex:none}
+.chunks{display:flex;flex-wrap:wrap;gap:.4rem}
+.chunk{font-size:.8rem;padding:.35rem .65rem;border-radius:8px;background:rgba(255,255,255,.05);
+  border:1px solid var(--line);color:#e5e7eb}
+.note{font-size:.85rem;color:#a7f3d0;background:var(--success-bg);border:1px solid rgba(16,185,129,.25);
+  border-radius:10px;padding:.6rem .8rem}
+.note.correction{color:#fca5a5;background:var(--danger-bg);border-color:rgba(239,68,68,.25)}
+.actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:auto}
+.act{cursor:pointer;border:none;border-radius:11px;padding:.7rem 1.1rem;font-size:.85rem;font-weight:700;
+  font-family:var(--sans);transition:.15s;flex:1;min-width:110px}
+.act:disabled{opacity:.4;cursor:not-allowed}
+.act.primary{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff}
+.act.ok{background:var(--success);color:#04231a}
+.act.again{background:rgba(239,68,68,.16);color:#fca5a5;border:1px solid rgba(239,68,68,.3)}
+.act.ghost{background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--line)}
+.act:hover:not(:disabled){filter:brightness(1.12);transform:translateY(-1px)}
+.icon-btn{cursor:pointer;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--text);
+  border-radius:9px;width:38px;height:38px;font-size:1.05rem;display:grid;place-items:center;transition:.15s}
+.icon-btn:hover{border-color:var(--primary);background:var(--glow)}
+/* question TTS */
+.qrow{display:flex;align-items:flex-start;gap:.55rem}
+.qrow .question{flex:1;min-width:0}
+.qspk{width:34px;height:34px;font-size:.95rem;flex:0 0 auto;margin-top:.1rem}
+.qspk.playing{border-color:var(--primary);background:var(--glow)}
+.autoq{display:flex;align-items:center;gap:.4rem;margin-top:.5rem;cursor:pointer;
+  font-size:.72rem;color:var(--muted);user-select:none}
+.autoq input{accent-color:var(--primary);cursor:pointer}
+/* assembly */
+.slots{min-height:64px;border:2px dashed var(--line);border-radius:12px;padding:.6rem;display:flex;
+  flex-wrap:wrap;gap:.45rem;align-content:flex-start;background:rgba(0,0,0,.15)}
+.slots:empty::after{content:'點下方語塊，依序拼出你的回答…';color:var(--muted);font-size:.85rem;padding:.3rem}
+.bank{display:flex;flex-wrap:wrap;gap:.5rem}
+.piece{cursor:pointer;font-size:.9rem;padding:.5rem .8rem;border-radius:10px;border:1px solid var(--line);
+  background:var(--card2);color:var(--text);font-weight:500;transition:.12s;font-family:var(--sans)}
+.piece:hover{border-color:var(--primary);background:var(--glow)}
+.piece.used{opacity:.25;pointer-events:none}
+.piece.inslot{background:var(--glow);border-color:var(--primary)}
+.piece.good{background:var(--success-bg);border-color:var(--success);color:#6ee7b7}
+.piece.bad{background:var(--danger-bg);border-color:var(--danger);color:#fca5a5}
+.piece.okpart{background:rgba(245,158,11,.16);border-color:var(--warn);color:#fcd34d}
+.piece.lego{border-color:var(--primary);background:rgba(99,102,241,.15);color:#c7d2fe;font-weight:600}
+.piece.lego::before{content:'🧩 ';font-size:.8em;opacity:.9}
+.piece.keyword{border-color:var(--gold);background:rgba(251,191,36,.12);color:#fde68a;font-weight:600}
+.piece.keyword::before{content:'🔑 ';font-size:.78em;opacity:.85}
+.banner{border-radius:12px;padding:.8rem 1rem;font-size:.9rem;font-weight:600;display:none}
+.banner.show{display:block;animation:fade .2s}
+.banner.good{background:var(--success-bg);border:1px solid rgba(16,185,129,.35);color:#6ee7b7}
+.banner.bad{background:var(--danger-bg);border:1px solid rgba(239,68,68,.35);color:#fca5a5}
+.banner.part{background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.42);color:#fcd34d}
+.empty{color:var(--muted);text-align:center;padding:3rem 1rem;font-size:.95rem}
+.kbd{font-size:.68rem;color:var(--muted);margin-top:.4rem}
+.kbd b{background:rgba(255,255,255,.08);padding:.05rem .35rem;border-radius:4px;color:#e5e7eb;font-family:var(--disp)}
+@media(max-width:860px){
+  .wrap{grid-template-columns:1fr;padding:1rem}
+  .side{position:static;max-height:none;order:2}
+  main{order:1}
+  .question{font-size:1.25rem}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <h1>🎧 LA Class Recall Trainer</h1>
+    <p id="brand-sub">SIGGRAPH 2026 · 實戰課問答語庫</p>
+  </div>
+  <div class="stats">
+    <div class="stat">🃏 已練 <b id="s-done">0</b></div>
+    <div class="stat">🎯 正確率 <b id="s-acc">0%</b></div>
+    <div class="stat">🔥 連擊 <b id="s-streak">0</b></div>
+    <div class="stat">⭐ 已標記 <b id="s-marked">0</b></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <aside class="side">
+    <div class="panel">
+      <h2>🧠 模式</h2>
+      <div class="modeswitch">
+        <button id="m-flash" class="active" onclick="setMode('flash')">快閃回想</button>
+        <button id="m-asm" onclick="setMode('asm')">語塊拼句</button>
+        <button id="m-rp" onclick="setMode('rp')">🎲 情境快問快答 (上課用)</button>
+      </div>
+      <p class="kbd" id="mode-hint" style="margin-top:.6rem"></p>
+      <label class="autoq" title="換到新題目時自動唸出問句（括號任務提示不唸）">
+        <input type="checkbox" id="autoq" onchange="setAutoQ(this.checked)"> 🔊 自動朗讀問句（Q 重播）
+      </label>
+    </div>
+
+    <div class="panel" id="panel-rp" style="display:none">
+      <h2>🎲 抽情境 Roleplay</h2>
+      <button class="btn dice" onclick="rollScenario()">🎲 隨機抽一個情境</button>
+      <div class="sclist" id="sc-list"></div>
+      <p class="kbd" style="margin-top:.7rem">情境說明<b style="color:#fda4af">中英文都有</b>，你跟老師都看得懂；抽到的<b style="color:#6ee7b7">開場白只是起頭</b>，講完那句之後兩人自由發揮，目標撐滿 5 分鐘。</p>
+    </div>
+
+    <div class="panel">
+      <h2>⚡ 快速牌組</h2>
+      <button class="btn cram" onclick="deckAll(true)">🔀 全部隨機衝刺 (Cram All)</button>
+      <button class="btn marked mini" style="width:100%" onclick="deckMarked()">⭐ 只複習我標記的</button>
+    </div>
+
+    <div class="panel">
+      <h2>🧩 常用語塊 Top 12</h2>
+      <p class="kbd" style="margin:-.35rem 0 .55rem">只列語塊(非關鍵字)；數字=出現題數。點它 → 練所有用法</p>
+      <div id="top-kw"></div>
+    </div>
+
+    <div class="panel">
+      <h2>📅 依課堂</h2>
+      <select id="lesson-select" onchange="deckLesson(this.value)"></select>
+    </div>
+
+    <div class="panel">
+      <h2>👩‍🏫 依老師</h2>
+      <p class="kbd" style="margin:-.35rem 0 .55rem">同一位老師教過的所有題目混在一起隨機練。</p>
+      <div class="scenes" id="tutor-list"></div>
+    </div>
+
+    <div class="panel">
+      <h2>🏷️ 依情境</h2>
+      <p class="kbd" style="margin:-.35rem 0 .55rem">同一個情境跨課堂混在一起隨機練。</p>
+      <div class="scenes" id="scene-list"></div>
+    </div>
+
+    <div class="panel">
+      <h2>🔁 進度</h2>
+      <button class="btn mini" style="width:100%;margin-bottom:.4rem" onclick="resetProgress()">清除所有標記與統計</button>
+      <p class="kbd">標記與統計會存在本機瀏覽器 (localStorage)。</p>
+    </div>
+  </aside>
+
+  <main>
+    <div class="deckbar">
+      <div class="deckttl" id="deck-title">—</div>
+      <div class="progress"><div id="deck-bar"></div></div>
+    </div>
+    <div id="card-host"></div>
+  </main>
+</div>
+
+<script id="data">
+// Auto-extracted Q&A bank from Practice Logs 2026-06-18 -> 2026-07-13
+// Schema per item: { scene, q, qzh, intent, a, kw:[], note }
+//  - q: incoming English question (or a "Gino Asks" prompt described in intent)
+//  - qzh: Chinese gloss of the question (optional)
+//  - intent: Chinese hint of what to say (optional)
+//  - a: Gino's gold answer (English)
+//  - kw: array of S-tier collocation chunks to highlight
+//  - note: coaching tip (optional)
+// Assembly-mode chunks are auto-generated from `a` at runtime.
+
+const LESSONS = [
+  // ===================== BATCH 3 (clean recent logs) =====================
+  {
+    id: "20260710", date: "2026-07-10", tutor: "Vivian", lesson: "Lesson 7",
+    title: "Pre-LA Casual Connection Drill",
+    focus: "工作日常、創意 vs 工程、電繪愛好、好奇心與動力；短句彈性回應",
+    items: [
+      { scene: "Work Small Talk", q: "Oh nice! How long have you been doing that?", qzh: "哦不錯耶！你做這個很久了嗎？", intent: "回答資歷約兩三年", a: "I have been an engineer for two or three years, give or take.", kw: ["give or take"], note: "give or take = 大約、上下" },
+      { scene: "Work Small Talk", q: "Cool! How do you like it so far?", qzh: "酷喔！你喜歡你的工作嗎？", intent: "肯定＋公司尊重你的想法", a: "As of now, I totally like my work. My company respects my ideas and gives me the freedom to research and implement the latest technologies.", kw: ["As of now", "gives me the freedom to"], note: "As of now = 目前為止" },
+      { scene: "Work Small Talk", q: "Must be pretty busy! Do you work crazy hours?", qzh: "感覺很忙！你們工時很長嗎？", intent: "看情況，但大多正常工時", a: "It depends, but I would say mostly we have normal working hours.", kw: ["It depends", "mostly we have normal working hours"] },
+      { scene: "Work Small Talk", q: "Are you based in Taipei, or do you work remotely?", qzh: "你在台北上班還是遠端？", intent: "台北、混合辦公", a: "I'm based in Taipei. We work hybrid, so we get one work-from-home day every week, plus 20 free WFH days per year that we can choose.", kw: ["I'm based in", "work hybrid", "work-from-home day"] },
+      { scene: "Work Small Talk", q: "What's a typical day like for you?", qzh: "你平常一天大概長怎樣？", intent: "取決於在家或辦公室", a: "My typical day differs depending on whether I'm working from home or at the office. If I'm at the office, my typical day will start with reviewing what I'm supposed to be doing. When I'm working from home, I structure my time in rigid blocks to stay focused.", kw: ["differs depending on whether", "supposed to be doing", "structure my time in rigid blocks"], note: "with 後接 -ing；supposed to be doing" },
+      { scene: "Work Small Talk", q: "Do you work more on the creative side or the engineering side?", qzh: "你偏創意還是工程那塊？", intent: "工程為主，因創意難量化；但也欣賞創意→電繪", a: "I work more on the engineering side. The reason being that as an engineer, I am unable to quantify the results because creativity is so subjective. Having said that, I also appreciate creativity, and as a result of this, I express it through digital painting as a hobby.", kw: ["The reason being that", "unable to quantify", "so subjective", "Having said that", "as a result of this"], note: "appreciate creativity（名詞）；having said that（過去分詞）" },
+      { scene: "Work Small Talk", q: "Did you study computer science in college?", qzh: "你大學念資工嗎？", intent: "是", a: "Yes, I studied computer science in college.", kw: ["studied computer science", "in college"] },
+      { scene: "Work Small Talk", q: "Is your company big, or a startup?", qzh: "公司很大還是新創？", intent: "新創，去年加入", a: "My company is a startup. I joined them last year.", kw: [] },
+      { scene: "Work Small Talk", q: "What's the most interesting part of your job?", qzh: "工作最好玩的地方？", intent: "能跟不同領域的人合作", a: "The most interesting part is that I get to work with people from different fields, like digital artists, videographers, and business people.", kw: ["get to work with", "people from different fields"] },
+      { scene: "Work Small Talk", q: "Do you guys work a lot with international teams?", qzh: "常跟國外團隊合作嗎？", intent: "有，但我不直接跟他們合作", a: "Yes, we do, but I don't work with them directly.", kw: ["work with them directly"] },
+      { scene: "Hobby / Digital Painting", q: "That sounds awesome! How did you get into that?", qzh: "聽起來超讚！你怎麼接觸到的？", intent: "出於興趣，喜歡動畫想學畫", a: "I got into that out of interest. I love anime and animation, so I wanted to learn how to draw and create something like that.", kw: ["got into that", "out of interest"] },
+      { scene: "Hobby / Digital Painting", q: "Wow, so do you do that mostly on the weekends?", qzh: "所以你大都週末畫嗎？", intent: "自嘲：我想每週末畫但沒有", a: "I want to do this every weekend, but I don't.", kw: ["I want to..., but I don't"], note: "帶點幽默無奈的接話方式" },
+      { scene: "Hobby / Digital Painting", q: "Are you self-taught, or did you take classes?", qzh: "自學還是上課？", intent: "上很多課學藝術理論", a: "I took a lot of classes to learn different art theories and improve my skills.", kw: ["take classes", "art theories"] },
+      { scene: "Hobby / Digital Painting", q: "Do you do it just to relax, or are you working on a side project?", qzh: "純放鬆還是在做小作品？", intent: "兩者皆有，最近偏放鬆", a: "A bit of both, but since my engineering work is busy right now, I focus more on digital painting for relaxation.", kw: ["A bit of both", "for relaxation"] },
+      { scene: "Hobby / Digital Painting", q: "Do you have any hobbies that get you away from the screen?", qzh: "有沒有不用盯螢幕的休閒？", intent: "沒有，白天工程師晚上電繪", a: "Not really, I cannot get away from the screen! By day, I work as an engineer, and by night, I paint as a digital artist.", kw: ["cannot get away from the screen", "By day..., by night..."] },
+      { scene: "Hobby / Digital Painting", q: "Do you share your stuff online anywhere?", qzh: "有在網路上放作品嗎？", intent: "有，Pixiv 和 FB 粉專", a: "Yes, I do. I post my art on Pixiv, and I also have a Facebook fan page.", kw: ["post my art on"] },
+      { scene: "Hobby / Digital Painting", q: "Is that something popular among engineers in Taiwan?", qzh: "台灣工程師也愛玩這個嗎？", intent: "不太普遍", a: "No, it's not very popular among engineers in Taiwan.", kw: [] },
+      { scene: "Motivation", q: "What keeps you motivated to keep learning new stuff?", qzh: "是什麼動力讓你一直嘗試新東西？", intent: "好奇心，半途放棄也能學到東西，最近在學英文", a: "Curiosity. I love trying new things. Even if I fail or give up halfway, I can still learn something from it. Recently, I'm learning English!", kw: ["Curiosity", "give up halfway", "learn something from it"] }
+    ]
+  },
+  {
+    id: "20260711", date: "2026-07-11", tutor: "Ricky", lesson: "Lesson 5",
+    title: "Explaining Your Work + LinkedIn Networking",
+    focus: "白話解說圖學/數位雙生、演講後交換 LinkedIn；美式隨性搭訕很正常",
+    items: [
+      { scene: "Explaining Work", q: "What do you do for a living?", qzh: "你是做什麼的？", intent: "白話：把真實世界資料變 3D 模型", a: "Simply saying, I work on turning real-world data into 3D models.", kw: ["Simply saying", "turning real-world data into 3D models"], note: "simply saying（分詞插入語），不是 simply say" },
+      { scene: "Explaining Work", q: "Oh, what kind of real-world data?", qzh: "哪些真實數據？", intent: "白話：把 2D 藍圖變 3D，可先模擬再蓋", a: "We recreate environments digitally by turning 2D blueprints into 3D models. It's useful for simulation before building it in the real world.", kw: ["recreate environments digitally", "turning 2D blueprints into 3D models"] },
+      { scene: "Explaining Work", q: "And do you enjoy what you are doing?", qzh: "你享受你的工作嗎？", intent: "是，很有成就感讓虛擬變真實", a: "Yeah, I really do. It gives me a great sense of achievement to make something virtual become real.", kw: ["a great sense of achievement", "make something virtual become real"] },
+      { scene: "Explaining Work", q: "What do you find most satisfying about your work?", qzh: "最有成就感的是什麼？", intent: "能跟不同領域的人合作，整合各自的專業", a: "The most satisfying thing is that I get to work with people from different fields. We combine our domain knowledge to build and iterate digital assets.", kw: ["get to work with", "combine our domain knowledge", "iterate digital assets"] },
+      { scene: "Explaining Work", q: "What about the most challenging part of your job?", qzh: "最困難的部分是什麼？", intent: "跟不同背景的人找到共識再前進", a: "The thing I find most challenging is finding common ground with people of different backgrounds. We need to align before taking the next step.", kw: ["The thing I find most challenging is", "finding common ground", "align before taking the next step"], note: "common ground/consensus ≠ common sense（常識）" },
+      { scene: "Explaining Work", q: "Do you think this industry has a good future?", qzh: "這行業未來趨勢如何？", intent: "數位雙生是趨勢，導入 AI 前要先把一切數位化", a: "Yes, digital twins is a huge trend. To integrate AI into our workflow, we must digitize everything first. AI will eventually automate the tedious data conversion.", kw: ["a huge trend", "integrate AI into our workflow", "digitize everything first"] },
+      { scene: "LinkedIn Networking", q: "Hi Andrew, I really enjoyed your talk. That was a great presentation.", qzh: "（你主動稱讚講者）", intent: "稱讚對方對數位雙生的切入點", a: "I liked your approach to digital twins.", kw: ["I liked your approach to"] },
+      { scene: "LinkedIn Networking", q: "Thank you. And what did you think of the talk?", qzh: "講者反問：你覺得演講如何？", intent: "很新穎、啟發我，你用 AI 加速而我們用傳統流程", a: "I think your approach is very novel. It inspired me because you're using AI to accelerate the workflow, while we still use traditional methods.", kw: ["very novel", "It inspired me", "using AI to accelerate the workflow"] },
+      { scene: "LinkedIn Networking", q: "Interesting. What's your background?", qzh: "你的背景是？", intent: "核心是圖學，最近專注數位雙生", a: "My core background is in computer graphics, but lately I've been focusing on digital twins.", kw: ["My core background is in", "lately I've been focusing on"], note: "background（涵蓋職涯）比 major（僅學術）得體" },
+      { scene: "LinkedIn Networking", q: "Are you publishing anything? I'd love to see your work.", qzh: "你有發表什麼嗎？", intent: "有，作品放在 LinkedIn", a: "Yes, I post details about my projects on LinkedIn. I'd love to share my profile with you.", kw: ["I'd love to", "post details about my projects", "share my profile with you"] },
+      { scene: "LinkedIn Networking", q: "Sure, can I add you on LinkedIn?", qzh: "能加你 LinkedIn 嗎？", intent: "當然，掃 QR code，也給名片", a: "Sure! You can scan my LinkedIn QR code here. I can also give you my business card.", kw: ["scan my LinkedIn QR code", "give you my business card"] }
+    ]
+  },
+  {
+    id: "20260712", date: "2026-07-12", tutor: "Vivian", lesson: "Lesson 8",
+    title: "Final Pre-LA Refinement (Birthday Session)",
+    focus: "工程 vs 創意收束、班機閒聊、電梯/走廊十連問、In-N-Out 點餐、漫畫店破冰",
+    items: [
+      { scene: "Birthday Chat", q: "Why are you taking classes today? You're supposed to be out!", qzh: "今天生日怎麼還來上課？", intent: "沒辦法，出國前最後一堂，要把握", a: "I didn't want to, but I have no choice—this is the last class before my trip. I need to take this chance to do more practice with you.", kw: ["I have no choice", "take this chance to"] },
+      { scene: "Birthday Chat", q: "Did you do anything fun for your birthday? Did you go out?", qzh: "生日有做什麼好玩的嗎？", intent: "跟家人去餐廳、吃了小派", a: "Yeah, I ate at a restaurant with my family and ate a pie... a small one that four people can share.", kw: ["a small one that four people can share"] },
+      { scene: "Self-Intro", q: "Do you prefer working on the engineering side or the creative side?", qzh: "偏工程還是創意？", intent: "工程為主（需量化、依框架），但也重創意→電繪，雙重背景是加分", a: "I work more on the engineering side because we need to qualify everything to ensure that everything is on schedule. It's a more controlled environment where we stick to laid-out frameworks. Having said that, I also appreciate creativity, and as a result of that, I am a digital painter in my free time. This dual background actually helps me bridge the gap between engineering precision and artistic design on digital twin projects.", kw: ["qualify everything", "a more controlled environment where we stick to laid-out frameworks", "as a result of that", "bridge the gap between engineering precision and artistic design"], note: "是 as a result of that（冠詞 a），不是 as the result of that" },
+      { scene: "Self-Intro", q: "What keeps you motivated to keep learning new stuff?", qzh: "什麼支持你不斷學習？", intent: "好奇心，半途放棄也學得到", a: "Curiosity. I love trying new things. Even if I give up halfway, I can learn something from it.", kw: ["Curiosity", "give up halfway", "learn something from it"] },
+      { scene: "Self-Intro", q: "On top of work and your digital painting hobby, what have you learned recently?", qzh: "除了工作跟電繪，最近還學了什麼？", intent: "誠懇又幽默：最近在學英文", a: "Recently, I'm learning English!", kw: ["Recently, I'm learning English!"], note: "被追問時用真實情境回答，誠懇又幽默" },
+      { scene: "Conference Corridor", q: "Is this your first time at SIGGRAPH?", qzh: "第一次來 SIGGRAPH 嗎？", intent: "是第一次，但參加過 SIGGRAPH Asia", a: "Yes, it is my first time at SIGGRAPH, but I have attended other international conferences, like SIGGRAPH Asia.", kw: ["my first time at", "attended other international conferences"] },
+      { scene: "Conference Corridor", q: "How was your flight over? That's a long trip!", qzh: "飛過來蠻遠的吧？班機還好嗎？", intent: "簡短正面：還可以，雖然長途", a: "My flight over was okay although it was a long trip.", kw: ["My flight over was okay", "although it was a long trip"], note: "只是暖場 small talk，簡短正面回答即可，不要長篇解釋飛行" },
+      { scene: "Conference Corridor", q: "Are you enjoying LA so far?", qzh: "目前喜歡 LA 嗎？", intent: "一直很享受，人很熱情", a: "I have been enjoying LA because the people are enthusiastic and welcoming.", kw: ["I have been enjoying LA", "enthusiastic and welcoming"] },
+      { scene: "Conference Corridor", q: "What do you think of the conference this year?", qzh: "今年大會辦得怎樣？", intent: "以新手角度來說很好", a: "The conference is very good from a first-timer's perspective.", kw: ["from a first-timer's perspective"] },
+      { scene: "Conference Corridor", q: "Have you attended any cool talks so far today?", qzh: "今天有聽到厲害的演講嗎？", intent: "有，一場關於更快建數位雙生，很有啟發", a: "Yes, I have! It was the talk about 'how to build a digital twin faster', and I thought it was very impactful and useful.", kw: ["impactful and useful"] },
+      { scene: "Conference Corridor", q: "Are you here by yourself, or with your team?", qzh: "一個人還是跟同事？", intent: "跟朋友一起", a: "I am here with my friends.", kw: [] },
+      { scene: "Conference Corridor", q: "How are you holding up with the jet lag?", qzh: "時差調得過來嗎？", intent: "還沒調好／或撐得住", a: "I am not holding up well. I am still jet-lagged.", kw: ["holding up well", "jet-lagged"], note: "撐得住=holding up well；否定=I am not holding up well / I am still jet-lagged" },
+      { scene: "Conference Corridor", q: "Are you staying around downtown?", qzh: "住在市中心附近嗎？", intent: "是，住 The Live Hotel", a: "Yes, I am. I am staying in The Live Hotel downtown.", kw: [] },
+      { scene: "Conference Corridor", q: "Do you get any free time to explore California after the conference?", qzh: "開完會有時間逛加州嗎？", intent: "有，會後四天逛好萊塢、聖塔莫尼卡", a: "We do. We plan to explore Hollywood, Santa Monica and other places. We have four days after the conference for sightseeing.", kw: [] },
+      { scene: "Conference Corridor", q: "Where are you heading next after this?", qzh: "聊完你等下要去哪？", intent: "去周邊商品區買 merch（自然收尾）", a: "I am heading to the merchandise table as I plan to buy some merch.", kw: ["I am heading to", "merch / merchandise table"], note: "告知下一站是自然結束對話的最佳藉口" },
+      { scene: "In-N-Out Ordering", q: "In-N-Out Burgers. How can I help you? Would you like a menu?", qzh: "（店員招呼）", intent: "先問有沒有 Animal Style 套餐、含不含飲料", a: "Do you have the Animal Style burger combo? Does it come with drinks?", kw: ["Does it come with drinks?"], note: "分層提問：先問有沒有，再問含不含飲料" },
+      { scene: "In-N-Out Ordering", q: "(ordering)", intent: "點 Animal Style 套餐，飲料先上", a: "I'm ordering the Animal Style combo. Can I have my drinks first while I wait for the burger?", kw: ["Can I have my drinks first"] },
+      { scene: "Comic Shop", q: "(you open the conversation)", intent: "表明新手、想讀美漫、求推薦", a: "Hello! I'm a first-timer in LA, and I would like to read some American comics. What's your recommendation?", kw: ["I'm a first-timer", "What's your recommendation?"] },
+      { scene: "Comic Shop", q: "I can help you look! Do you prefer standalone graphic novels or monthly series?", qzh: "你喜歡單本還是月刊連載？", intent: "反問拉近關係：你也看漫畫嗎？最愛哪部？", a: "Do you enjoy reading comics as well? What is your favorite comic?", kw: ["What is your favorite comic?"], note: "聽完推薦後主動反問，是把單向問答變朋友交流的神技" }
+    ]
+  },
+  {
+    id: "20260707", date: "2026-07-07", tutor: "Shannon", lesson: "Lesson 5",
+    title: "Sponsorship Negotiation, Milk Economics & Rapid-Fire Q&A",
+    focus: "公司經費贊助 ROI、台灣牛奶為何貴、廣讀、軟體推薦、克服 rambling",
+    items: [
+      { scene: "Sponsorship", q: "Why should the company sponsor your trip?", qzh: "公司為何要贊助你？", intent: "能吸收尖端技術並帶回公司需要的情報", a: "Going there lets me absorb the most cutting-edge technology and bring back what the company wants.", kw: ["cutting-edge technology", "bring back what the company wants"], note: "company wants（單三加 s）" },
+      { scene: "Cross-Cultural", q: "Why is milk so expensive in Taiwan?", qzh: "台灣牛奶為何貴？", intent: "氣候太熱不適合乳牛，產乳量少", a: "Because our climate is hot and humid, cows are not suited to the hot climate, so they produce less milk than in the US.", kw: ["are not suited to the hot climate", "produce less milk"], note: "be suited to；milk 不可數用 less（不用 fewer）；produce（不用 generate）" },
+      { scene: "Software Rec", q: "I'm a beginner — what software should I use for 3D and digital painting?", qzh: "新手該用什麼軟體？", intent: "3D 用 Blender，iPad 電繪用 Procreate", a: "For 3D graphics, I recommend Blender because it's powerful and open-source. For 2D digital painting, Procreate on the iPad is extremely intuitive for beginners.", kw: ["open-source", "extremely intuitive for beginners"], note: "Clip Studio Paint 語序；Krita 也是開源選項" },
+      { scene: "Rapid-Fire", q: "Any tips for digital painters?", qzh: "給電繪新手的建議？", intent: "極簡有力", a: "Keep drawing and learning.", kw: ["Keep drawing and learning"], note: "Shannon 讚賞：講完重點立刻煞車" },
+      { scene: "Rapid-Fire", q: "Does painting help your CG job?", qzh: "畫畫對你 CG 工作有幫助嗎？", intent: "目前沒直接幫助，但在探索如何結合", a: "Currently it doesn't help my job directly, but I'm exploring how to combine them.", kw: ["doesn't help my job directly", "exploring how to combine them"] },
+      { scene: "Rapid-Fire", q: "Would you become a professional artist?", qzh: "你會成為職業畫家嗎？", intent: "想，但薪水比工程低，所以維持工程並帶入美感", a: "I'd love to, but the salary is too low compared to engineering. So I stay an engineer while bringing artistic taste into my work.", kw: ["I'd love to", "compared to engineering", "bringing artistic taste into my work"] }
+    ]
+  },
+  {
+    id: "20260708", date: "2026-07-08", tutor: "Ricky", lesson: "Lesson 4",
+    title: "Conference Registration & Peer Networking (No-Script Reflex)",
+    focus: "報到金句、美式委婉拒絕、同行破冰、lately/though/background 語感",
+    items: [
+      { scene: "Registration", q: "Are you picking up a pre-registered badge or registering on-site?", qzh: "報到領證還是現場註冊？", intent: "極簡：來領證，登記在我名下", a: "Just picking up my badge. It should be under Gino Chang.", kw: ["Just picking up my badge", "It should be under"], note: "說「登記在名下」而非「I am Gino Chang」" },
+      { scene: "Registration", q: "Would you like parking validation today?", qzh: "需要折抵停車費嗎？", intent: "委婉正向謝絕（Claire English）", a: "I'm good, thanks. It's all good.", kw: ["I'm good, thanks", "It's all good"], note: "美西用正向短句委婉謝絕，取代冷硬的 No" },
+      { scene: "Registration", q: "(you ask for directions)", intent: "問路：廁所/會展中心在哪", a: "Do you know where the toilet is? And do you know where the convention center is?", kw: ["Do you know where the toilet is"], note: "where the toilet is（間接問句語序）" },
+      { scene: "Peer Networking", q: "So what do you do?", qzh: "你是做什麼的？", intent: "軟體工程師，做圖學，專注渲染與 3D pipeline", a: "I am a software engineer working in computer graphics. I focus mostly on rendering and 3D pipelines.", kw: ["working in computer graphics", "focus mostly on rendering and 3D pipelines"] },
+      { scene: "Peer Networking", q: "What have you been working on?", qzh: "最近在忙什麼？", intent: "最近投入數位雙生，但核心還是圖學", a: "Lately, I have been getting into digital twins. I'm still more on the graphics side though.", kw: ["Lately, I have been getting into", "graphics side though"], note: "lately 帶目的性投入；句尾 though = 轉折補充" },
+      { scene: "Peer Networking", q: "What brought you to SIGGRAPH today?", qzh: "什麼原因來 SIGGRAPH？", intent: "主動破冰回問對方", a: "I'm here to learn about the latest trends. What brought you to SIGGRAPH today?", kw: ["I'm here to", "What brought you to SIGGRAPH today?"] },
+      { scene: "Peer Networking", q: "(reacting to a peer)", intent: "建立技術同理", a: "That sounds pretty cool. I've seen something similar.", kw: ["That sounds pretty cool", "I've seen something similar"] },
+      { scene: "Corridor Surprise", q: "Hey, fancy seeing you here!", qzh: "沒想到在這遇到你！", intent: "沒料到會遇見你", a: "I didn't expect to see you here. What an unexpected surprise!", kw: ["I didn't expect to see you here", "What an unexpected surprise"], note: "過去意料之外用 didn't expect" }
+    ]
+  },
+  {
+    id: "20260709", date: "2026-07-09", tutor: "Shannon", lesson: "Lesson 6",
+    title: "Conference First-Timer Q&A + Technical Deep Dive",
+    focus: "颱風假閒聊、大會寒暄簡答法、數位雙生/攝影測量/LiDAR、碩論重建樹木、LA 安全",
+    items: [
+      { scene: "Small Talk", q: "I heard Taiwan has typhoon holidays — how does that work?", qzh: "颱風假是怎麼運作的？", intent: "市長宣布；選舉年更愛宣布以爭取選票", a: "Since it's an election year, the mayor is more likely to announce a holiday to win votes.", kw: ["an election year", "to win votes"], note: "win voters' favor / votes（不是 host favor）" },
+      { scene: "Conference", q: "What do you think about this conference so far?", qzh: "目前覺得大會怎樣？", intent: "只是暖場句，極簡回答：很棒、看到很多有趣的東西", a: "It's been amazing so far. I've already seen a lot of interesting technology.", kw: ["It's been amazing so far"], note: "這只是 how are you 等級的暖場，不要長篇學術申論" },
+      { scene: "Technical", q: "What exactly is a digital twin?", qzh: "數位雙生到底是什麼？", intent: "實體世界與數位有一對雙胞胎並同步資料", a: "A digital twin is a digital representation of something in the physical world, and we keep the data in sync between them.", kw: ["a digital representation", "keep the data in sync"] },
+      { scene: "Technical", q: "How do you build these 3D models from the real world?", qzh: "怎麼從真實世界建 3D 模型？", intent: "用無人機拍大量照片，再用演算法重建", a: "We use drones to take a lot of photos, and then algorithms reconstruct the 3D model. That process is called photogrammetry.", kw: ["reconstruct the 3D model", "photogrammetry"] },
+      { scene: "Technical", q: "What about LiDAR? Is it better?", qzh: "LiDAR 更好嗎？", intent: "很精準但沒色彩，需搭配相機", a: "While LiDAR provides very precise data, it lacks RGB color information, so we need to combine it with a camera.", kw: ["provides very precise data", "lacks RGB color information"], note: "LiDAR 單數：doesn't have / lacks" },
+      { scene: "Technical", q: "So what's the difference between a digital artist and a CG engineer?", qzh: "數位藝術家與 CG 工程師差別？", intent: "前者手動拉模型，後者寫程式自動生成", a: "Digital artists manually build models with a mouse or stylus, whereas CG engineers generate models using programming and algorithms.", kw: ["manually build models", "generate models using programming and algorithms"] },
+      { scene: "Personal Story", q: "How did you get into CG? / What was your master's thesis about?", qzh: "你怎麼進 CG／碩論做什麼？", intent: "碩論用無人機重建樹木，公認難題", a: "For my master's thesis, I used drones to reconstruct trees, which is a well-known hard problem because leaves and branches have complex geometries and material reflections.", kw: ["reconstruct trees", "complex geometries", "material reflections"] },
+      { scene: "Safety", q: "Are you worried about safety in LA?", qzh: "擔心 LA 治安嗎？", intent: "晚上有點擔心，但只要不去特定區域並保持警覺就好", a: "I'm a little worried it can be dangerous at night, but as long as I stay alert and avoid certain areas, it should be fine.", kw: ["dangerous at night", "stay alert"] }
+    ]
+  },
+  {
+    id: "20260713", date: "2026-07-13", tutor: "Shannon", lesson: "Lesson 5 (Spontaneous Drill)",
+    title: "Hotel, Outlet Shopping, Fast Food & Meta Glasses",
+    focus: "主動開場＋極簡簡答、飯店領行李、商場防禦推銷、點餐聽不懂求救、智慧眼鏡",
+    items: [
+      { scene: "Hotel Check-in", q: "Are you checking in?", qzh: "您要辦入住嗎？", intent: "極簡：辦入住，登記在 Gino 名下", a: "Hi, checking in. It should be under Gino.", kw: ["checking in", "It should be under"], note: "不用 'I want to check in and...'，直接講動作" },
+      { scene: "Hotel Check-in", q: "Do you have a reservation with us? How long are you staying?", qzh: "有訂房嗎？住幾晚？", intent: "有訂房、名下 Gino、護照、透過 Hotels.com 訂", a: "Yes, I have a reservation. It should be under Gino. Here is my passport. I reserved through Hotels.com.", kw: ["I reserved through"] },
+      { scene: "Hotel Check-in", q: "(you ask about breakfast)", intent: "問早餐幾點供應", a: "What time is breakfast served?", kw: ["What time is breakfast served?"] },
+      { scene: "Hotel Luggage", q: "(you ask to store luggage)", intent: "能寄放行李到今晚/兩天嗎", a: "Is it possible that you can store my luggage here for two days or till tonight?", kw: ["Is it possible that you can store my luggage"] },
+      { scene: "Hotel Luggage", q: "(you come back for your bags)", intent: "極簡：我來領行李（不要 get back）", a: "I'm here to get my luggage. Here is my claim tag.", kw: ["I'm here to", "get my luggage", "claim tag"], note: "get back 生硬；用 I'm here to get / Could I get my luggage" },
+      { scene: "Hotel Uber", q: "(you ask where to catch Uber)", intent: "極簡：去哪搭 Uber（不用 rideshare pickup zone）", a: "Where can I meet my Uber?", kw: ["Where can I meet my Uber?"], note: "飯店不需講技術性的 rideshare pickup zone" },
+      { scene: "Outlet Shopping", q: "What size do you need? Do you want to try them on?", qzh: "要什麼尺寸？要試穿嗎？", intent: "想看其他顏色、要試穿", a: "Could I see the other colors also? Yes, I want to try them on.", kw: ["try them on"], note: "試穿是 try on（不是 try up）" },
+      { scene: "Outlet Shopping", q: "Would you like to open a store credit card today to get 20% off?", qzh: "要辦聯名卡打 8 折嗎？", intent: "微笑堅定拒絕", a: "No, thank you.", kw: ["No, thank you"], note: "聯名卡/隱私對旅客無益，一律微笑說 No, thank you" },
+      { scene: "Outlet Shopping", q: "May I have your phone number and email address?", qzh: "可以給電話和 Email 嗎？", intent: "拒絕、只用一般卡付、不用袋子", a: "Just paying with my regular card, no bag needed. No, thank you.", kw: ["Just paying with my regular card"] },
+      { scene: "Fast Food", q: "Can I take your order?", qzh: "可以幫您點餐了嗎？", intent: "直接報出想要的品項", a: "I want a hamburger, I want fries, and I want a Coca-Cola. That's all.", kw: ["That's all"] },
+      { scene: "Fast Food", q: "(they speak too fast about sides)", intent: "請對方放慢重講", a: "I'm sorry, can you say that slower again for me?", kw: ["can you say that slower again for me?"], note: "聽不清別自己猜，直接請對方放慢" },
+      { scene: "Fast Food", q: "(you confirm what they mean)", intent: "核對對方意思（不是 your meaning is）", a: "You mean spicy sauce? You mean combo?", kw: ["You mean...?"], note: "You mean X?（不加 is）；或直接尾音上揚念單字：Fries?" },
+      { scene: "Meta Glasses", q: "(you try on the glasses)", intent: "來試戴，可以戴嗎", a: "Hello! I'm here to try on Meta glasses. May I try them on? It looks good so far.", kw: ["I'm here to", "try on", "May I try them on?"] },
+      { scene: "Meta Glasses", q: "(you start product small talk)", intent: "請對方介紹眼鏡特色", a: "Can you show me the features of these glasses?", kw: ["show me the features of these glasses"], note: "features 加 s；these glasses 恆複數" },
+      { scene: "Meta Glasses", q: "(you ask about popular functions)", intent: "問最熱門的功能", a: "What are the most popular features of these glasses? Are they popular?", kw: ["What are the most popular features"] },
+      { scene: "Wrap-up", q: "(you signal time is up)", intent: "極簡：時間到了", a: "Our time is up.", kw: ["Time is up", "Our time is up"], note: "不是 The time is ending" }
+    ]
+  },
+  {
+    id: "20260715", date: "2026-07-15", tutor: "Ricky", lesson: "Lesson 6",
+    title: "Casual Small Talk, Laundromat & Ping-Pong Transition",
+    focus: "排隊破冰、大會規模與初次訪客、自助洗衣 vs 兩件行李、工作年資與簡介、聽不懂單字與 Google 翻譯應變",
+    items: [
+      { scene: "LA Travel Prep", q: "Are you planning to do laundry in America?", qzh: "你打算去美國當地自助洗衣嗎？", intent: "不，自助洗衣太貴太久；我會帶兩件行李，回台灣再洗", a: "No, going to a laundromat takes too much time and money. I will bring two pieces of luggage and do the laundry when I come back to Taiwan.", kw: ["laundromat", "two pieces of luggage", "do the laundry when I come back"], note: "laundromat 自助洗衣店；two pieces of luggage 兩件行李（不加 s）" },
+      { scene: "Hallway Small Talk", q: "This line is pretty long, right? / It's really busy today.", qzh: "這隊伍好長喔！／今天人真多。", intent: "贊同並吐槽：我猜今年可能有超過十萬人來參加大會！", a: "Yeah, I guess maybe there are more than 100,000 people joining the conference this year!", kw: ["more than", "joining the conference"], note: "排隊破冰起手式：順著吐槽或猜測人數" },
+      { scene: "Hallway Small Talk", q: "This conference is huge! Have you been here before?", qzh: "這大會超壯觀！你之前來過嗎？", intent: "其實沒有，這是我第一次來 LA，我是初次訪客", a: "No, not really. This is my first time in LA, and I am a first-time visitor. I've never seen such a big conference before!", kw: ["first-time visitor", "never seen such a big conference before"], note: "初次訪客是 first-time visitor（絕對不是 first-time timer，timer 是倒數計時器！）" },
+      { scene: "Hallway Small Talk", q: "There's a lot going on. It's kind of overwhelming.", qzh: "場次活動超多，資訊量爆炸快應接不暇了。", intent: "贊同：確實，要決定去哪一場真的很難選", a: "Yeah, definitely. It is really hard to choose between sessions when there's so much going on.", kw: ["overwhelming", "hard to choose between sessions", "so much going on"], note: "overwhelming 形容情緒/感官應接不暇；overload 是指工作量過載" },
+      { scene: "Hallway Small Talk", q: "Seen anything good so far? / What's been your favorite session?", qzh: "看到什麼精彩的嗎？／最喜歡哪場演講？", intent: "我還沒完全決定，但我剛看到很多關於渲染的場次，打算挑兩三場", a: "I haven't decided yet, but I just saw a lot of events about rendering. I'm planning to pick two or three to attend.", kw: ["haven't decided yet", "events about rendering", "pick two or three to attend"] },
+      { scene: "Area of Work", q: "What's your area of work? / What are you working on lately?", qzh: "你做哪一個專業領域？／最近負責什麼？", intent: "我做數位雙生，專注於 AI 工廠與資料中心應用", a: "I am working on digital twins, specifically focused on AI factory and data center applications.", kw: ["area of work", "working on digital twins", "focused on AI factory"], note: "area of work / field 是問專業領域，切勿誤會成問地理位置" },
+      { scene: "Area of Work", q: "How long have you been working in this area? And what did you do before?", qzh: "這領域做多久了？之前做什麼？", intent: "不到一年/快一年；之前我是做自駕車 AR 的圖學工程師", a: "I've been in this role for less than a year, almost a year. Before this, I was a computer graphics engineer working on self-driving automobiles focusing on AR.", kw: ["less than a year", "almost a year", "computer graphics engineer", "focusing on AR"] },
+      { scene: "Emergency Q&A", q: "(you didn't catch or understand a specific word they said)", intent: "詢問剛剛那單字是什麼意思", a: "Excuse me, what do you mean by that word?", kw: ["what do you mean by"], note: "聽不懂某字時的第一道防禦反問" },
+      { scene: "Emergency Q&A", q: "(you want to look up the word they just explained)", intent: "請對方拼字，我來查一下", a: "Could you tell me how to spell that? I am going to check.", kw: ["tell me how to spell that", "I am going to check"] },
+      { scene: "Emergency Q&A", q: "(you still can't get it and need to use your phone)", intent: "有禮貌地詢問能否拿手機用 Google 翻譯", a: "Do you mind if I use Google Translator real quick?", kw: ["Do you mind if I use Google Translator"], note: "Ricky 在歐洲吃飯也天天用 Google 翻譯問拼字與查菜名，老美超習慣，大膽放心用！" },
+      { scene: "LA Travel Prep", q: "Do you need to sign up in advance?", qzh: "你去研討會要事先報名註冊嗎？", intent: "是的，我已經在網路上先註冊並拿到確認單，待會只要去領證件", a: "Yes, I registered online in advance and got my confirmation voucher. I just need to pick up my badge.", kw: ["registered online", "in advance", "confirmation voucher", "pick up my badge"], note: "Ricky 筆記要點：sign up in advance / register / voucher / pick up badge" },
+      { scene: "LA Travel Prep", q: "(you ask for advice on luggage / laundry / travel)", intent: "請教對方意見反問：如果你是我，你會怎麼做？", a: "If you were me, what would you do?", kw: ["If you were me, what would you do?"], note: "超實用的請教意見與反問起手式（虛擬語句 If you were me）" },
+      { scene: "LA Travel Prep", q: "Are you bringing check-in bags or just a carry-on?", qzh: "你是託運行李還是只帶手提登機箱？", intent: "我有兩個 23 公斤的託運行李箱和一個手提登機箱", a: "I have two 23 kg check-in bags and one carry-on trolley.", kw: ["check-in bags", "carry-on trolley"], note: "Ricky 筆記單字：carry-on（隨身手提行李）、trolley（有輪子的行李/手推箱）" },
+      { scene: "Extended Ping-Pong Flow", q: "Yeah, there's a lot going on at SIGGRAPH.", qzh: "對啊，SIGGRAPH 這邊活動超多。", intent: "承接你剛說『這是我第一次來，有點應接不暇』的鋪墊，對方附和後，你順勢極簡自介＋煞車反問：我是做圖學與數位雙生軟體工程師，你呢？", a: "I'm a software engineer working in computer graphics. I've been looking into digital twins, but I'm still more on the CG side. What about you?", kw: ["working in computer graphics", "looking into digital twins", "on the CG side", "What about you?"], note: "完整情境（5 輪對話）：你先開場問對方是否首次參展 → 對方回答 → 你說『第一次來，有點應接不暇』→ 對方附和『活動真的很多』→ 你順勢自介＋丟球。Extended Example 實戰節奏：簡短 2 句結論 + 立刻丟球問 What about you?" }
+    ]
+  },
+  {
+    id: "20260716", date: "2026-07-16", tutor: "Shannon", lesson: "Lesson 6",
+    title: "Speak Economically, Heavy Business Slang & Recording Ethics",
+    focus: "經濟型極簡口說、聽不懂時的心態解脫、飯店步行過去式語感、商務行話 punt/circle back、加州錄影授權",
+    items: [
+      { scene: "Mindset & Economy", q: "(you don't know the answer to a technical/business question)", intent: "極簡回答：不知道就是不知道，直接停止（不要長篇解釋理由）", a: "I don't know. I wish I knew, but I don't know.", kw: ["I don't know", "I wish I knew, but I don't know"], note: "Speak Economically 經濟型口說法則：用最少單字講完重點即停止，不需解釋猜測與理由" },
+      { scene: "Mindset & Economy", q: "(you are confused by what is happening or what they said)", intent: "坦率發問：抱歉我不清楚意思，能請你解釋嗎？", a: "I'm sorry, I didn't understand what you said or want. Could you please tell me what you mean?", kw: ["didn't understand what you said", "tell me what you mean?"], note: "心態解脫：聽不懂往往不只因為英文，而是不熟悉該地作業流程，大方請問即可" },
+      { scene: "Badge Pickup", q: "Are you picking up a pre-registered badge or registering on-site?", qzh: "領取事先報名證件，還是現場註冊？", intent: "極簡：對，我來領事先註冊的名牌", a: "Yes, I am picking up a pre-registered badge.", kw: ["picking up a pre-registered badge"], note: "直接利用對方問句裡的名詞作為簡答核心" },
+      { scene: "Hotel & Walking", q: "Are you staying around downtown?", qzh: "你住在市中心附近嗎？", intent: "住會展中心附近，走路大約 15 分鐘，正是當初選這飯店的原因", a: "Yes, I am staying near the convention center. I can walk there in about 15 minutes. This is why I chose this hotel.", kw: ["walk there in about 15 minutes", "why I chose this hotel"], note: "in about 15 minutes（加上 in/about）；當初選擇用過去式 chose" },
+      { scene: "Small Talk & Shows", q: "(you want to ask why they enjoy thrillers/dramas)", intent: "詢問：你為什麼喜歡這種類型的劇？", a: "Why do you like these kinds of shows?", kw: ["Why do you like these kinds of shows?"], note: "不是 why you are so like" },
+      { scene: "Networking Wrap", q: "Could I have your LinkedIn profile?", qzh: "能加個 LinkedIn 嗎？", intent: "好啊，我們可以保持聯絡（不可講 keep our touch）", a: "Sure, I can share my LinkedIn profile with you. We can keep in touch.", kw: ["keep in touch", "stay in touch"], note: "絕對不能加 our (keep our touch 錯誤)；一定要用 keep in touch / stay in touch" },
+      { scene: "Heavy Idiom Decode", q: "The demo went sideways on us so we had to punt on the deadline and circle back the next quarter.", qzh: "（高階商務俚語聽解）", intent: "Demo 搞砸了，所以我們戰略性推遲死線，下季再回頭處理", a: "It means the demonstration went wrong, so we intentionally missed the deadline and will deal with it next quarter.", kw: ["went sideways", "punt on the deadline", "circle back the next quarter"], note: "went sideways 搞砸/偏離正軌；punt 戰略性推遲/棄踢；circle back 繞回來處理" },
+      { scene: "California Ethics", q: "(you want to record video/audio with GO Ultra camera)", intent: "徵求授權神句：我可以錄這段對話嗎？因為我在學英文", a: "May I record this conversation? Because I am learning English.", kw: ["May I record this conversation?", "Because I am learning English"], note: "加州為嚴格雙方同意州 (Two-Party Consent)，錄影錄音務必事先詢問" }
+    ]
+  },
+  {
+    id: "20260717", date: "2026-07-17", tutor: "Shannon", lesson: "Lesson 7 (Final Pre-Departure Drill)",
+    title: "Idioms for Specialty, Breakfast Buffet, Side Changes & PM Bridge",
+    focus: "表達「非專長」三大片語、早餐櫃台詢問包裝、速食點餐換副餐與比較級、電繪反問修復、直飛與轉機",
+    items: [
+      { scene: "Idiom / Specialty", q: "(you want to express that something is not your specialty/area)", intent: "道地慣用語：這不是我的強項／專長", a: "It's not my strong suit.", kw: ["It's not my strong suit."], note: "美國日常/職場最常使用的慣用語。也可說 It's not my forte. 或 It's not really my thing." },
+      { scene: "Hotel Breakfast", q: "(you ask front desk about breakfast hours politely)", intent: "禮貌詢問：請問能告訴我早餐幾點供應嗎？", a: "Would you please tell me what time breakfast is served?", kw: ["Would you please tell me", "what time breakfast is served?"], note: "面對前台加上 Would you please tell me 會讓禮貌度大增" },
+      { scene: "Hotel Breakfast", q: "(you confirm breakfast items and crowdedness)", intent: "會有牛奶和肉類嗎？早上會很擠嗎？", a: "Will milk and meat be available? And is it busy in the morning?", kw: ["Will milk and meat be available?", "Is it busy in the morning?"], note: "buffet 自助餐發音為 /bəˈfeɪ/；尖峰通常是 8:00-9:30" },
+      { scene: "Fast Food Side", q: "It comes with a drink and a side of fries. Would you like to change anything?", qzh: "套餐附飲料跟薯條，要換什麼嗎？", intent: "我能換副餐嗎？我不想薯條，能換成沙拉嗎？我覺得這比較健康", a: "Can I change the side? Maybe I don't want french fries. Can I change that to salad? I feel this is healthier.", kw: ["Can I change the side?", "change that to salad", "healthier"], note: "healthy 比較級為 healthier（不用 more health）" },
+      { scene: "Fast Food Portion", q: "The chili cheeseburger is quite big.", qzh: "辣醬起司漢堡蠻大的。", intent: "詢問自己一個人吃不吃得完、吃不完能否打包外帶", a: "Will I be able to eat it by myself? And if I cannot finish, can I take it out?", kw: ["Will I be able to eat it by myself?", "can I take it out?"], note: "一個人吃完用 by myself（非 with myself）；打包 leftover 可以用 take out / take away" },
+      { scene: "Question Repair", q: "How long has digital painting been around?", qzh: "電繪這門技術／領域存在多久了？", intent: "確認對方問題核心（非問自己學多久）並誠實簡答", a: "Let me double-check what your last question was. Did you mean how long digital painting has existed as a field? I'm not sure about that.", kw: ["Did you mean how long digital painting has existed as a field?", "I'm not sure about that"], note: "動態修復示範：聽錯不用慌，主動反問確認問句本意即可" },
+      { scene: "PM Bridge Role", q: "How do your programming skills help with marketing or talking to clients?", qzh: "程式技能如何幫你做行銷與溝通？", intent: "PM/行銷是客戶與工程師的橋樑，客戶不懂技術，只在乎產品如何運作", a: "The project manager and marketing team act as a go-between for the client and the programmers. Clients don't understand technical details; they only care about how the product works.", kw: ["act as a go-between for the client and the programmers", "only care about how the product works"] },
+      { scene: "Flight Talk", q: "Is it a non-stop flight to LA?", qzh: "是直飛洛杉磯的航班嗎？", intent: "是的，這是直飛，中間沒有轉機", a: "Yes, it is a non-stop flight with no transit.", kw: ["a non-stop flight", "no transit"], note: "轉機是 transit / transfer（絕對不是 transmit 傳遞訊號）" }
+    ]
+  },
+  // ===================== BATCH 2 (0626-0706) =====================
+  {
+    id: "20260626", date: "2026-06-26", tutor: "Vivian", lesson: "Lesson 3",
+    title: "De-memorization, KISS & Conference Networking Etiquette",
+    focus: "拋棄背誦、保持神秘感留白、爭取思考時間、connections vs friends",
+    items: [
+      { scene: "Small Talk", q: "What do you enjoy doing?", qzh: "你平常喜歡做什麼？", intent: "極簡回答（留白），只給核心，讓對方追問", a: "I sometimes share my artwork on Pixiv.", kw: ["share my artwork on Pixiv"], note: "KISS／保持神秘感：先給核心，細節留給對方好奇追問" },
+      { scene: "Small Talk", q: "What's Pixiv?", qzh: "Pixiv 是什麼？", intent: "對方追問後才補充說明", a: "It's a platform where people share anime and illustration artwork.", kw: ["a platform where people share"] },
+      { scene: "Conference Networking", q: "So why are you here at the conference?", qzh: "你為什麼來這個大會？", intent: "建立連結（不是交朋友），之後可能發展友誼", a: "I'm here to network with people who have similar interests, and possibly build a lasting friendship from the connection.", kw: ["I'm here to", "network with people who have similar interests", "build a lasting friendship from the connection"], note: "專業大會別說 make friends；用 network / make connections" },
+      { scene: "Buy Time", q: "(a hard question you need a moment for)", intent: "把問題變直述句爭取思考時間", a: "That's a very good question. What I do for work is...", kw: ["That's a very good question", "What I do for work is"], note: "用 filler / 複述問題買時間，避免亂講一通" },
+      { scene: "Conference Networking", q: "Why are you attending SIGGRAPH?", qzh: "你為什麼來 SIGGRAPH？", intent: "朋友有展位；知道這是頂級大會", a: "I'm here because my friend has a stand. I know SIGGRAPH is a top-tier conference with a lot of heavyweights in attendance.", kw: ["has a stand", "a top-tier conference", "heavyweights in attendance"] }
+    ]
+  },
+  {
+    id: "20260628", date: "2026-06-28", tutor: "Ricky", lesson: "Lesson 2",
+    title: "Airport Customs, Itinerary, Uber & Fast Food Small Talk",
+    focus: "海關動機與行程、美式 small talk 一定要回問、點餐用 get/have、Junk words 爭取時間",
+    items: [
+      { scene: "Customs", q: "Why did you register for this conference?", qzh: "你為什麼報名這個大會？", intent: "台灣圖學工程師很少，想來美國交流新技術", a: "There are few computer graphics engineers in Taiwan, so I want to come to the US to exchange new technologies like digital twins and AI agents.", kw: ["There are few", "exchange new technologies"], note: "there are（不是 they are / there have）" },
+      { scene: "Customs", q: "Do you have any specific plans or activities?", qzh: "有特定的行程或活動嗎？", intent: "前四天參加大會，之後逛聖塔莫尼卡與西好萊塢", a: "From the first day to the fourth day, we're attending SIGGRAPH, and after that we'll travel around Santa Monica and West Hollywood.", kw: ["From the first day to the fourth day", "West Hollywood"], note: "itinerary /aɪˈtɪnərəri/；是 West（不是 waste）Hollywood" },
+      { scene: "Customs / Hotel", q: "Where are you staying?", qzh: "你住哪裡？", intent: "透過 Hotels.com 訂的 The Live Hotel", a: "I booked my hotel through Hotels.com. It's called The Live Hotel.", kw: ["booked ... through Hotels.com", "It's called"] },
+      { scene: "Uber / Server Small Talk", q: "How has your day been?", qzh: "你今天過得如何？", intent: "隨性帶過並一定要回問", a: "I had a tough day at the conference—my brain is completely fried! What about you?", kw: ["my brain is completely fried", "What about you?"], note: "美式 small talk 一定要 ask back；brain is fried 比 exploded 地道" },
+      { scene: "Fast Food", q: "Hi, what can I get for you?", qzh: "（店員點餐）", intent: "用 get/have 點餐（少用 order）", a: "Can I get a Double-Double combo? And I'll have a Coke.", kw: ["Can I get a", "I'll have"], note: "點餐用 get / have，order 太生硬正式" }
+    ]
+  },
+  {
+    id: "20260629", date: "2026-06-29", tutor: "Vivian", lesson: "Lesson 4",
+    title: "General-to-Technical Self-Intro, Hobby-Work Link & R&D Deliverables",
+    focus: "依對象切換自介、用興趣帶出熱情、AI 話題是 KISS 例外、講出交付價值",
+    items: [
+      { scene: "Self-Intro (Casual)", q: "So, what do you do?", qzh: "你是做什麼的？（閒聊）", intent: "興趣起頭再連結工作", a: "I'm a digital painting amateur—I draw my favorite characters on my iPad. It actually connects to my job as a computer graphics engineer.", kw: ["a digital painting amateur", "on my iPad"], note: "casual 場合用興趣起頭更流暢；characters 複數、on my iPad" },
+      { scene: "Self-Intro (Technical)", q: "What do you do exactly? (to a peer)", qzh: "你具體做什麼？（同行）", intent: "R&D 主管，講出交付價值", a: "I'm the R&D team lead. I explore new frontiers and implement the latest technical papers, which ensures our company stays at the forefront of technology.", kw: ["the R&D team lead", "explore new frontiers", "stays at the forefront of technology"], note: "別只說讀論文/寫演算法，要講 deliverable outcomes" },
+      { scene: "AI Deep Dive", q: "How do you use AI in your work?", qzh: "你工作上怎麼用 AI？", intent: "AI 是 KISS 的例外，可大膽多說對比", a: "I use AI agents to build automated workflows. Automating the tedious parts, as opposed to doing them manually, ensures that my productivity is always at its peak.", kw: ["build automated workflows", "as opposed to doing them manually", "productivity is always at its peak"], note: "AI 是熱門焦點，這題可展現專業度多說一點" }
+    ]
+  },
+  {
+    id: "20260630", date: "2026-06-30", tutor: "Shannon", lesson: "Lesson 3",
+    title: "Human-AI Co-working, Extensive Reading & Writing to Speak",
+    focus: "人機協作理想介面、廣讀策略、寫作預演、英文啟蒙動機、放慢語速",
+    items: [
+      { scene: "AI Deep Dive", q: "How do you imagine humans and AI working together?", qzh: "你怎麼想像人機協作？", intent: "人定義 I/O 與審查，AI 負責開發與測試", a: "Humans define the inputs and outputs in a README and review the commits, while one AI agent handles development and another writes the tests.", kw: ["define the inputs and outputs", "review the commits", "handles development"], note: "AI 用 it/they，不是 he" },
+      { scene: "Reading", q: "What are you reading these days?", qzh: "你最近在讀什麼？", intent: "廣讀 Goosebumps 系列，只讀劇情不查字", a: "I'm reading a novel series called Goosebumps. I just read for the plot without looking up every word.", kw: ["a novel series called", "read for the plot"], note: "read 過去式發音 /rɛd/；廣讀 = extensive reading" },
+      { scene: "Personal Story", q: "How did you get into learning English?", qzh: "你怎麼開始學英文的？", intent: "兩年前想聽懂英文 VTuber", a: "I started watching English VTubers two years ago because I really wanted to understand what they were saying.", kw: ["started watching English VTubers", "understand what they were saying"] },
+      { scene: "Personal Story", q: "What's a precious experience for you?", qzh: "對你來說珍貴的經歷？", intent: "2024 東京 SIGGRAPH Asia", a: "Attending SIGGRAPH Asia 2024 in Tokyo was a precious experience for me.", kw: ["a precious experience"], note: "是 precious（珍貴）不是 pressure（壓力）" }
+    ]
+  },
+  {
+    id: "20260702", date: "2026-07-02", tutor: "Shannon", lesson: "Lesson 4",
+    title: "Agentic AI Storytelling, Why-Engineer (Creativity) & 5-Year Goal",
+    focus: "Agentic vs Gen AI、個人 AI 工作流、為何當工程師（創造力）、五年願景遠端接案",
+    items: [
+      { scene: "Self-Intro Deep", q: "Why did you become an engineer?", qzh: "你為什麼成為工程師？", intent: "工程是創造力，把數學物理帶進虛擬軟體", a: "For me, engineering is about creativity. I love bringing mathematical formulas and physics into virtual software like game engines to create something real and visually interactive. It's a fascinating combination of art and science.", kw: ["engineering is about creativity", "combination of art and science"] },
+      { scene: "AI Deep Dive", q: "What's the difference between agentic AI and generative AI?", qzh: "代理式 AI 和生成式 AI 差在哪？", intent: "Agentic 有推理與情境處理，Gen AI 只是進什麼出什麼", a: "Agentic AI has more reasoning ability and can handle runtime input and context, whereas generative AI is just garbage in, garbage out.", kw: ["more reasoning ability", "runtime input and context", "garbage in, garbage out"], note: "generative AI（不是 generated）；AI 用 it" },
+      { scene: "AI Deep Dive", q: "Have you actually used agentic AI yourself?", qzh: "你自己有用過代理式 AI 嗎？", intent: "用 AI agent 轉錄課程並分析語病", a: "Yes. I use an AI agent to transcribe my lessons and analyze the mistakes I made, and it helps me prepare what to say.", kw: ["transcribe my lessons", "analyze the mistakes", "prepare what to say"], note: "transcribe（動詞）/ transcript（名詞）；analyze /'ænəlaɪz/" },
+      { scene: "Career", q: "Where do you see yourself in five years?", qzh: "五年後你想做什麼？", intent: "繼續當工程師，進國際大廠或台灣遠端接軌世界", a: "I want to keep being an engineer, ideally at an international company or doing remote work from Taiwan, connecting with people around the world in English.", kw: ["doing remote work from Taiwan", "connecting with people around the world"], note: "沒聽清可說 Could you say that again?" }
+    ]
+  },
+  {
+    id: "20260703", date: "2026-07-03", tutor: "Vivian", lesson: "Lesson 5",
+    title: "AI Art Perspectives, Startups as Disruptors & Perception of Beauty",
+    focus: "AI 藝術雙重觀點、新創破壞者思維、審美感知自介金句、先發問再給觀點",
+    items: [
+      { scene: "AI Art Discussion", q: "What do you think about AI art?", qzh: "你怎麼看 AI 藝術？", intent: "雙重觀點：藝術家憂心、工程師看到潛力（含優缺點與結論）", a: "It's interesting that I have two totally different perspectives about AI art. As an artist, I hate that AI generates massive junk in the form of art, and as a result, people's aesthetic senses have progressively gotten worse. As an engineer, I can see the potential of AI from a technical perspective. I'm excited, and I can predict that AI can do anything I want it to do.", kw: ["as a result", "two totally different perspectives", "generates massive junk", "progressively gotten worse", "see the potential of AI", "from a technical perspective"], note: "有爭議話題要含 Pros、Cons、結論；先反問對方再給自己 take" },
+      { scene: "Self-Intro (Creative)", q: "How would you describe yourself as a creative?", qzh: "你怎麼形容自己的創作面？", intent: "審美感知金句", a: "As a creative person working in a digital environment, it has influenced how I interpret art. Human perception of beauty differs. I like to turn my ideas into reality and interpret beauty according to how I am feeling in the moment.", kw: ["Human perception of beauty differs", "turn my ideas into reality", "according to how I am feeling in the moment"], note: "perception /pər'sɛpʃən/；being photo-realistic doesn't equal beauty" },
+      { scene: "Tech Opinion", q: "Aren't startups afraid of being left behind by big AI players?", qzh: "新創不怕被大廠的 AI 甩開嗎？", intent: "新創本身就是破壞者", a: "Being a startup is already risky. To be a startup, you're already a disruptor, because you're starting something new from the ground up.", kw: ["already risky", "already a disruptor", "from the ground up"], note: "risky 是形容詞前不加 a；disruptor /dɪs'rʌptər/" }
+    ]
+  },
+  {
+    id: "20260705", date: "2026-07-05", tutor: "Ricky", lesson: "Lesson 3",
+    title: "Fast Food Customizing, Acceptable vs Afford & Lego Chunking",
+    focus: "客製點餐、not against it 接受、That's all for now、how do I get to 萬用問路",
+    items: [
+      { scene: "Fast Food", q: "How spicy would you like it?", qzh: "要多辣？", intent: "不辣", a: "Can I get it non-spicy, please?", kw: ["non-spicy"], note: "不辣是 non-spicy / not spicy；no spice = 不要任何香料（錯）" },
+      { scene: "Fast Food", q: "Is it okay if it comes with pickles and jalapenos?", qzh: "附酸黃瓜和墨西哥辣椒可以嗎？", intent: "可以接受（不是 afford）", a: "It's acceptable. I'm not against it.", kw: ["It's acceptable", "I'm not against it"], note: "afford 只用於金錢負擔得起；接受度用 acceptable / not against it" },
+      { scene: "Fast Food", q: "(you check what a combo includes)", intent: "問附餐（最道地）", a: "What comes with that?", kw: ["What comes with that?"], note: "比 What's included 更道地自然" },
+      { scene: "Fast Food", q: "(you order first, may add more later)", intent: "先點這些，晚點可能再加", a: "That's all for now.", kw: ["That's all for now"], note: "留下菜單、暗示晚點可能加點" },
+      { scene: "Restaurant Rapport", q: "(you ask the server for a suggestion)", intent: "請益推薦＋確認不踩雷（破冰）", a: "What do you recommend? Is this a popular one?", kw: ["What do you recommend?", "Is this a popular one?"], note: "請益推薦是絕佳 small talk 破冰器" },
+      { scene: "Navigation", q: "(you need directions anywhere in LA)", intent: "萬用問路骨架，替換目的地", a: "Excuse me, how do I get to the convention center?", kw: ["how do I get to"], note: "樂高骨架 How do I get to [目的地]？替換名詞即可" }
+    ]
+  },
+  {
+    id: "20260706", date: "2026-07-06", tutor: "Vivian", lesson: "Lesson 6",
+    title: "Script-vs-Library & Answering Sequential (Trigger-to-Chunk) Questions",
+    focus: "劇本是語意庫非逐字背、把問題連結到對的積木、AI 藝術先發問再給觀點",
+    items: [
+      { scene: "Self-Intro Follow-up", q: "So how did you come into digital painting as a computer graphics engineer?", qzh: "身為圖學工程師，你怎麼會踏進數位繪畫？", intent: "答案其實就在自介庫：因為愛視覺事物", a: "Because I love visual things such as pictures and images.", kw: ["I love visual things"], note: "把追問連結到既有積木，不要背下一段不相干的稿" },
+      { scene: "AI Art Discussion", q: "What do you think about AI art?", qzh: "你怎麼看 AI 藝術？", intent: "先反問對方，聽完再給自己雙重觀點", a: "What do you think about AI art? ... For me, as an artist I dislike the massive junk it generates, but as an engineer I can see its potential.", kw: ["What do you think about AI art?", "see its potential"], note: "與其生硬陳述觀點，不如先當發問者，等對方答再給 take" },
+      { scene: "Conversation Skill", q: "(mid-conversation, reading the other person)", intent: "講完第一層先觀察對方肢體語言", a: "I'm a computer graphics engineer, and also a digital painting amateur.", kw: ["a digital painting amateur"], note: "講完 A、B 先停，觀察對方有無興趣（read body language）再深入" }
+    ]
+  },
+  // ===================== BATCH 1 (0618-0625) =====================
+  {
+    id: "20260618", date: "2026-06-18", tutor: "Vivian", lesson: "Trial / Assessment",
+    title: "Level Assessment & The Detroit Ordering Freeze",
+    focus: "B1 診斷、點餐聽不懂的救命句、This-or-That 破冰、溝通是雙向的",
+    items: [
+      { scene: "Survival", q: "(the cashier speaks too fast, you froze after asking twice)", intent: "第三道防線：坦白母語非英文請對方放慢", a: "I'm really sorry, English is not my first language. Could you say that a little bit more slowly?", kw: ["English is not my first language", "Could you say that a little bit more slowly?"], note: "溝通是雙向的，別把對方的不耐煩歸咎自己" },
+      { scene: "Survival", q: "(you didn't catch what they said)", intent: "禮貌請對方重複（不是命令句）", a: "Sorry, could you say that again? Could you repeat that?", kw: ["Could you say that again?", "Could you repeat that?"], note: "別說 you can say it again（像命令句）" },
+      { scene: "This-or-That", q: "Working from home or working at the office?", qzh: "在家還是進辦公室？", intent: "在家，能自由安排時間", a: "I like working from home because I am free to manage my own time.", kw: ["free to manage my own time"], note: "like working（動名詞）；free to（形容詞前加 be）" },
+      { scene: "This-or-That", q: "In-person meetings or online meetings?", qzh: "面對面還是線上會議？", intent: "面對面，能讀非語言線索建立信任", a: "In person, because I can read non-verbal cues like facial expressions and eye contact to build trust.", kw: ["In person", "non-verbal cues", "build trust"], note: "面對面說 in person（不是 offline）" },
+      { scene: "Small Talk", q: "(you want to chat casually with someone)", intent: "與人閒聊用 have（不是 give）", a: "I'd love to have a small talk with people at the conference.", kw: ["I'd love to", "have a small talk with"], note: "give a small talk = 發表簡短演講（語意不同）" }
+    ]
+  },
+  {
+    id: "20260619", date: "2026-06-19", tutor: "Shannon", lesson: "Trial / Onboarding",
+    title: "Explaining Digital Twin & Fast-Food Vocabulary Gaps",
+    focus: "向 IT 背景者解釋數位雙生、點餐特定詞彙、多師分工策略",
+    items: [
+      { scene: "Explaining Work", q: "What is a digital twin?", qzh: "數位雙生是什麼？", intent: "把實體數位化成 3D 模型，加上物理參數模擬", a: "A digital twin is digitalizing physical objects into a 3D model. You can attach physical parameters to it to simulate it, or create animations for demonstration.", kw: ["digitalizing physical objects into a 3D model", "attach physical parameters", "for demonstration"], note: "attach ... to（不是 into）；create animations" },
+      { scene: "Fast Food", q: "Would you like extra hot sauce? Diet or regular Coke?", qzh: "要加辣醬嗎？無糖還是一般可樂？", intent: "熟悉速食店特定詞彙，聽到直接回答", a: "No extra sauce, thanks. A regular Coke is fine.", kw: ["regular Coke"], note: "底特律卡關其實是缺速食詞彙，多做 role-play 就能解決" }
+    ]
+  },
+  {
+    id: "20260620", date: "2026-06-20", tutor: "Amita", lesson: "Trial / Onboarding",
+    title: "Digital Twin for Robot Training & LinkedIn Phrasing",
+    focus: "用機器人訓練講數位雙生的商業價值、LinkedIn 加好友說法",
+    items: [
+      { scene: "Explaining Work", q: "What exactly does your work do?", qzh: "你的工作具體在做什麼？", intent: "複製實體到虛擬世界模擬，安全訓練 AI 機器人", a: "A digital twin copies real objects into the virtual world using reconstruction or synthesis, so we can simulate it before we deploy—because we want to train AI robots safely and cheaply.", kw: ["copies real objects into the virtual world", "reconstruction or synthesis", "before we deploy"] },
+      { scene: "Conference Networking", q: "Let's stay in touch — LinkedIn?", qzh: "保持聯絡，加 LinkedIn？", intent: "加好友的地道說法", a: "Sure, let's add each other on LinkedIn.", kw: ["add each other on LinkedIn"], note: "add each other on LinkedIn / exchange LinkedIn details" },
+      { scene: "Conference Networking", q: "Do you want to go to the poster session?", qzh: "要去海報區嗎？", intent: "there 是副詞，前面不加 to", a: "Yes, I want to go there.", kw: ["go there"], note: "go there（不是 go to there）" }
+    ]
+  },
+  {
+    id: "20260621b", date: "2026-06-21", tutor: "Jay", lesson: "Trial / Assessment",
+    title: "Translating Technical Concepts to a Layperson",
+    focus: "向非技術者解釋圖學/渲染/數位雙生、honed 磨練技能、be on my own",
+    items: [
+      { scene: "Explaining Work", q: "What do you actually do for a living?", qzh: "你到底是做什麼的？", intent: "白話：重建滑鼠到虛擬世界模擬，低成本訓練 AI 機器人", a: "Simply put, we rebuild real objects like a mouse into a virtual world and simulate them, so we can train AI robots at a low cost.", kw: ["rebuild real objects into a virtual world", "at a low cost"] },
+      { scene: "Self-Intro (Technical)", q: "What's your background?", qzh: "你的背景是？", intent: "主修圖學渲染，磨練四年", a: "I have a background in graphics rendering, a skill which I have honed for four years.", kw: ["a background in graphics rendering", "honed for four years"], note: "majored in（介係詞 in）；hone /hoʊn/ = 磨練精進" },
+      { scene: "Conference", q: "Did you go with your team last year?", qzh: "去年跟團隊一起去嗎？", intent: "獨自一人（地道正面說法）", a: "Last year I was on my own when I went to this conference.", kw: ["I was on my own"], note: "be on my own 比 alone 更有獨立正面感" }
+    ]
+  },
+  {
+    id: "20260621a", date: "2026-06-21", tutor: "Ricky", lesson: "Trial / Onboarding",
+    title: "Forced-Association Output Method & Breaking Taiwanese Habits",
+    focus: "強迫使用生字的聯想輸出練習法、破除慣性台式接話（okay / makes sense）",
+    items: [
+      { scene: "Learning Method", q: "How can I actually push new words into my active vocabulary?", qzh: "怎麼把新單字塞進主動字彙庫？", intent: "給 AI 生字清單，回答時強迫用上 5 個", a: "I give the AI a word list and force myself to use five of the new words in every answer.", kw: ["force myself to use", "in every answer"], note: "強迫聯想訓練：在情境與新字間建立神經連結" }
+    ]
+  },
+  {
+    id: "20260622", date: "2026-06-22", tutor: "Vivian", lesson: "Lesson 1",
+    title: "K.I.S.S. — Summarize Your Day in Five Sentences",
+    focus: "極簡原則、用五句話講今天、習慣用現在式、有空複習",
+    items: [
+      { scene: "Small Talk", q: "Can you tell me about your day in five sentences?", qzh: "用五句話講你今天？", intent: "K.I.S.S. 連貫精簡", a: "Today I worked from home. In the morning I organized our team's tasks. In the afternoon we followed the schedule. After work I went jogging for about an hour. And now I'm learning English with Vivian.", kw: ["worked from home", "In the morning", "went jogging"], note: "in the morning（加 the）；go/went jogging" },
+      { scene: "Small Talk", q: "Do you have time to review this week?", qzh: "這週有空複習嗎？", intent: "有一些時間", a: "I have some time to review this week.", kw: ["have some time to review"] },
+      { scene: "Habit", q: "Do you exercise?", qzh: "你有運動嗎？", intent: "每週一慢跑（習慣用現在式）", a: "I go jogging every Monday, no matter how hot it is.", kw: ["go jogging every Monday", "no matter how hot it is"], note: "習慣用現在式 go jogging；一次性才用 went" }
+    ]
+  },
+  {
+    id: "20260623", date: "2026-06-23", tutor: "Shannon", lesson: "Lesson 1",
+    title: "R&D Team Lead Intro, Asking Back & the SIGGRAPH Dream",
+    focus: "team lead 分派任務、主動回問、SIGGRAPH 一生一次憧憬",
+    items: [
+      { scene: "Self-Intro (Technical)", q: "What's your role at work?", qzh: "你在公司的角色？", intent: "R&D 主管，分派任務給每位隊員", a: "I'm the R&D team lead. I assign a lot of tasks to each team member.", kw: ["the R&D team lead", "assign a lot of tasks to"], note: "team lead 比 team leader 地道；assign tasks to sb" },
+      { scene: "Small Talk", q: "(you initiate / ask the tutor back)", intent: "主動回問對方去過台灣嗎", a: "Have you ever been to Taiwan?", kw: ["Have you ever been to Taiwan?"], note: "主動 ask back 掌握對話節奏" },
+      { scene: "Conference", q: "Why do you want to go to SIGGRAPH so much?", qzh: "你為何這麼想去 SIGGRAPH？", intent: "一生一次的憧憬，去過 SIGGRAPH Asia", a: "Going to SIGGRAPH is a once-in-a-lifetime dream for me. I've been to SIGGRAPH Asia before, and I hope Taiwan can host it one day.", kw: ["a once-in-a-lifetime dream", "I've been to"], note: "have been to（去過）" }
+    ]
+  },
+  {
+    id: "20260624", date: "2026-06-24", tutor: "Vivian", lesson: "Lesson 2",
+    title: "Three Self-Intro Scripts: Casual / Salesman / Researcher",
+    focus: "五大自介問題 x 三種對象（社交 / 業務電梯簡報 / 研究交流）",
+    items: [
+      { scene: "Self-Intro (Casual)", q: "Nice to meet you! What's your name?", qzh: "很高興認識你，你叫什麼？", intent: "對稱回應（別用 And 起頭）", a: "Nice to meet you too. I'm Gino, from Taiwan.", kw: ["Nice to meet you too"], note: "不要 And nice to meet you" },
+      { scene: "Self-Intro (Casual)", q: "What do you enjoy doing?", qzh: "你喜歡做什麼？", intent: "部落格＋畫畫，平台分享", a: "I enjoy writing articles on my Medium blog, and I also love drawing pictures. I sometimes share my artwork on Pixiv.", kw: ["writing articles on my Medium blog", "share my artwork on Pixiv"], note: "Medium 前不加 the；articles/pictures 複數；也 also 別唸成 always" },
+      { scene: "Self-Intro (Casual)", q: "Why are you at the conference?", qzh: "你為何來大會？", intent: "朋友有攤位，也想跟同行建立聯繫", a: "I'm here because my friend has a stand, and it's a good opportunity to connect with fellow engineers and researchers like you.", kw: ["my friend has a stand", "connect with fellow engineers and researchers"] },
+      { scene: "Self-Intro (Salesman)", q: "(quick elevator pitch — who are you?)", intent: "第一句就包姓名職位來源", a: "I'm Gino, a digital twin engineer from MetAI. We're a startup from Taiwan, and we're developing software to convert 2D CAD files into 3D models.", kw: ["a digital twin engineer from MetAI", "convert 2D CAD files into 3D models"], note: "電梯簡報要極度簡潔；are developing（進行式）" },
+      { scene: "Self-Intro (Salesman)", q: "What's your vision for the project?", qzh: "你們專案的願景？", intent: "把專案商品化", a: "Our team is building a project called MetGen, and we want to turn this project into a product.", kw: ["turn this project into a product"], note: "turn ... into / commercialize" },
+      { scene: "Self-Intro (Researcher)", q: "What's your academic background?", qzh: "你的學術背景？", intent: "四年前拿到圖學碩士", a: "I got my master's degree in computer graphics four years ago.", kw: ["got my master's degree in", "four years ago"], note: "majored in（過去式）；合併簡化" },
+      { scene: "Self-Intro (Researcher)", q: "What are you passionate about technically?", qzh: "你技術上的熱情？", intent: "讀論文並把理論落實", a: "I enjoy reading papers and implementing the theories into real-world applications.", kw: ["reading papers", "implementing the theories into real-world applications"], note: "enjoy + V-ing" },
+      { scene: "Self-Intro (Researcher)", q: "What do you hope to get from this poster session?", qzh: "你想從海報交流得到什麼？", intent: "與同行研究者交流資訊", a: "I want to exchange information with fellow digital twin researchers.", kw: ["exchange information with fellow"], note: "fellow / in the field（不是 related ... people）" }
+    ]
+  },
+  {
+    id: "20260625", date: "2026-06-25", tutor: "Shannon", lesson: "Lesson 2",
+    title: "Why-Engineer Passion, Pokemon & Speaking Slower",
+    focus: "從興趣連到成為工程師的成就感、最愛的遊戲、放慢語速的關鍵字支點",
+    items: [
+      { scene: "Self-Intro Deep", q: "Why did you become a graphics engineer?", qzh: "你為什麼成為圖學工程師？", intent: "從遊戲動畫到 CS/CG 實驗室，畫出三角形的成就感", a: "I got into it because I love video games and animation. I studied computer science, joined a computer graphics lab, and I felt a strong sense of accomplishment the first time I rendered a triangle.", kw: ["I got into it", "a strong sense of accomplishment", "rendered a triangle"], note: "feel a sense of accomplishment / achievement" },
+      { scene: "Small Talk", q: "What's your favorite game?", qzh: "你最愛的遊戲？", intent: "寶可夢，12 歲玩到現在，是童年的一部分", a: "My favorite game is Pokemon. I started playing when I was 12, and I still play it—it's a big part of my childhood.", kw: ["started playing when I was 12", "a big part of my childhood"], note: "when I was 12（不是 start from 12）" },
+      { scene: "Tech Opinion", q: "Can you explain a cool AI technique in graphics?", qzh: "講一個圖學裡很酷的 AI 技術？", intent: "DLSS：只渲染低解析度再靠 AI 放大", a: "DLSS is a good example. Instead of rendering at a high resolution, we only render a low-resolution image and let AI do the super-resolution.", kw: ["Instead of rendering at a high resolution", "super-resolution"] },
+      { scene: "Learning", q: "What are you working on with your English?", qzh: "你英文在練什麼？", intent: "習慣放慢語速", a: "I need to get used to speaking slower so my brain has time to organize the sentence.", kw: ["get used to speaking slower"], note: "get used to + V-ing" }
+    ]
+  },
+];
+
+</script>
+<script>
+/* ============ flatten & helpers ============ */
+const ALL = [];
+LESSONS.forEach((l,li)=>l.items.forEach((it,ii)=>ALL.push({...it,_l:li,_i:ii,
+  id:l.id+'-'+ii, lesson:l.lesson, tutor:l.tutor, date:l.date, ltitle:l.title})));
+const SCENES = [...new Set(ALL.map(a=>a.scene))];
+const TUTORS = [...new Set(ALL.map(a=>a.tutor))].sort((a,b)=>
+  ALL.filter(x=>x.tutor===b).length - ALL.filter(x=>x.tutor===a).length);
+
+/* ============ 🎲 ROLEPLAY SCENARIOS ============
+   12 個彼此「主題錨點」不重疊的情境，涵蓋題庫裡原本 72 題完全沒被用到的素材
+   （速食點餐、飯店入住、AI 辯論、興趣深聊、逛街購物、生活閒聊…），避免每次都滑回
+   「你的工作 → LinkedIn」。抽情境 → 從題庫抽一句真實句子當開場白（你先講或老師先講皆可能）
+   → 開場之後完全自由發揮，目標是就這個話題撐滿 5 分鐘。
+   每個情境：role/roleEn(老師扮演誰) / setup/setupEn(情境說明) / scenes(題庫池)
+            / youOpen(你可以先講的英文開場句) / tutorOpen(補充給老師的英文開場句，選填)
+            / discipline/disciplineEn(這個情境的練習紀律，選填，沒填用預設文字)
+   中英文都顯示 — 中文給 Gino 秒懂，英文給老師直接讀。 */
+const RP_DEFAULT_DISCIPLINE = '這句只是開場白。接下來不看稿，兩人就這個話題自由發揮，目標是撐滿 <b style="color:#6ee7b7">5 分鐘</b>的對話——主動追問細節、分享自己的經驗、反問對方，把話題撐開來。不要講兩三句就想結束或換話題。';
+const RP_DEFAULT_DISCIPLINE_EN = 'This is only the opening line. From here on, no script — both of you riff on the topic freely, aiming for a full <b style="color:#6ee7b7">5 minutes</b> of conversation. Ask follow-up questions, share your own experience, and throw questions back to keep it going. Don\'t wrap up after two or three sentences.';
+
+const SCENARIOS=[
+  { id:'line', icon:'🎫', name:'排隊破冰',
+    role:'排在你附近、素不相識的與會者', roleEn:'A stranger standing near you in line',
+    setup:'你在 SIGGRAPH 會場排隊等領證件（badge）或買咖啡，旁邊站著一個從沒見過的陌生人。隊伍很長、動得很慢，正好找話題閒聊、互相吐槽一下。',
+    setupEn:'You\'re stuck in a long line at the SIGGRAPH badge desk (or coffee line), next to a total stranger. The line barely moves — the perfect excuse to complain a little and start chatting.',
+    scenes:['Hallway Small Talk','Conference Corridor','Small Talk','Corridor Surprise','Conference'],
+    youOpen:['This line is pretty long, right?','It\'s really busy today, isn\'t it?','Is this your first SIGGRAPH?','Hey, have you been waiting long?'] },
+
+  { id:'work', icon:'💼', name:'工作與領域深聊',
+    role:'完全不懂圖學、單純好奇的與會者', roleEn:'An attendee with zero background in graphics, just curious',
+    setup:'對方對你的專業領域很感興趣，想知道你實際上在做什麼、做多久了、學術或職涯背景是什麼。他完全外行，聽到術語會直接反問，逼你用白話重講一次。',
+    setupEn:'Someone is genuinely curious about your job — what you actually do, how long you\'ve been at it, your academic or career background. They know nothing about graphics, so plain English only — they\'ll push back if you use jargon.',
+    scenes:['Area of Work','Explaining Work','Work Small Talk','Self-Intro (Technical)','Technical','Self-Intro (Researcher)','Career','Self-Intro Deep'],
+    youOpen:['So what\'s your area of work?','What do you do for a living?','What brought you to SIGGRAPH this year?'] },
+
+  { id:'linkedin', icon:'🔗', name:'演講後搭訕換聯絡方式',
+    role:'剛講完演講、正在收拾東西準備離開的講者', roleEn:'A speaker who just finished presenting on stage',
+    setup:'一場演講剛結束，你走向台上的講者，稱讚他切入點很棒，試著在被人潮打斷、對方被拉走之前，把兩分鐘的閒聊變成真正的連結——加 LinkedIn 或換名片。',
+    setupEn:'A talk just ended and you walk up to the speaker to compliment their approach. Before they get pulled away by the crowd, try to turn a two-minute chat into a real connection — a LinkedIn add or a business card.',
+    scenes:['LinkedIn Networking','Peer Networking','Conference Networking','Sponsorship','Self-Intro (Salesman)'],
+    youOpen:['Hi, I really enjoyed your talk. That was a great presentation.','I liked your approach to digital twins.','Are you publishing anything? I\'d love to see your work.','Can I add you on LinkedIn?'] },
+
+  { id:'sos', icon:'🚨', name:'聽不懂救命三件套',
+    role:'講話很快、滿口俚語與行話的老美', roleEn:'A fast-talking American full of slang and jargon',
+    setup:'⚠️ 老師請刻意講快、夾雜俚語或你大概率沒聽過的行話，不要放慢速度或主動解釋。你的任務不是點頭裝懂硬撐過去，而是打斷、問清楚意思或拼法，之後再把話題導回正軌。',
+    setupEn:'⚠️ Tutor: please speak fast and drop in slang or jargon Gino likely won\'t know — don\'t slow down or explain unless asked. His job is to interrupt and dig himself out, not nod along and freeze.',
+    scenes:['Emergency Q&A','Buy Time','Survival','Conversation Skill'],
+    // 題庫裡 Emergency Q&A 幾乎全是舞台指示，沒有真台詞可抽 → 額外給老師明確的俚語開場句
+    tutorOpen:['Yeah, we ended up just ballparking the render budget and shipping it — the whole pipeline was pretty janky, honestly.',
+               'The demo went sideways on us, so we had to punt on the deadline and circle back next quarter.',
+               'We were burning the midnight oil trying to get the deliverable over the line before the whole thing got scrapped.'],
+    youOpen:['Excuse me, what do you mean by that word?','Could you tell me how to spell that? I am going to check.','Do you mind if I use Google Translator real quick?'],
+    discipline:'老師先丟一句夾雜俚語/行話的開場白。聽不懂 → 立刻用三道防禦追問（問意思 → 問拼字 → 掏手機翻譯），問清楚後<b style="color:#6ee7b7">把話題接回去繼續聊滿 5 分鐘</b>，不要問完就結束。',
+    disciplineEn:'Tutor opens with a line full of slang/jargon. When you don\'t catch it, run the three-step rescue (ask what it means → ask for the spelling → grab your phone to translate), then <b style="color:#6ee7b7">steer the conversation back and keep going for the full 5 minutes</b> — don\'t just stop once you\'ve asked.' },
+
+  { id:'trip', icon:'🧳', name:'行前打包、報到與入境',
+    role:'去過美國的朋友、同事，或是入境審查官', roleEn:'A friend/colleague who\'s been to the US, or a customs officer',
+    setup:'你這趟 LA 行只剩兩天，還在猶豫行李要不要帶滿、大會有沒有先報名、飯店訂在哪。也可能是入境海關問你來意與行程規劃。',
+    setupEn:'Only two days left before your LA flight and you\'re still packing — torn between bringing enough clothes or doing laundry at a laundromat there. Could also be conference registration, or a customs officer asking about your trip.',
+    scenes:['LA Travel Prep','Registration','Hotel Luggage','Customs','Customs / Hotel','Hotel Uber'],
+    youOpen:['Have you ever been to LA? Any recommendations?','Is a laundromat really that expensive over there?','If you were me, what would you do?'] },
+
+  { id:'fastfood', icon:'🍔', name:'速食店點餐 (In-N-Out)',
+    role:'速食店櫃檯店員', roleEn:'Fast-food counter cashier',
+    setup:'你走進速食店櫃檯前準備點餐。店員可能講很快、用很多你沒聽過的詞（combo、Animal Style、jalapenos），你得聽懂、確認附餐內容，必要時請對方放慢重講。',
+    setupEn:'You\'re at the counter of a fast-food place ready to order. The cashier might talk fast and use words you\'ve never heard (combo, Animal Style, jalapeños) — you need to understand, confirm what\'s included, and ask them to slow down if needed.',
+    scenes:['Fast Food','In-N-Out Ordering','Restaurant Rapport'],
+    youOpen:['Do you have the Animal Style burger combo?','Can I get a hamburger, fries, and a Coke?','What do you recommend? Is this a popular one?'] },
+
+  { id:'hotel', icon:'🏨', name:'飯店櫃檯入住',
+    role:'飯店櫃檯接待人員', roleEn:'Hotel front desk staff',
+    setup:'你風塵僕僕抵達飯店櫃檯辦理入住，需要確認訂房、出示護照、順便問問早餐供應時間跟其他設施。',
+    setupEn:'You\'ve just arrived, exhausted, at the hotel front desk to check in. You need to confirm your reservation, show your passport, and ask about breakfast hours and other amenities.',
+    scenes:['Hotel Check-in'],
+    youOpen:['Hi, checking in. It should be under Gino.','Yes, I have a reservation.','What time is breakfast served?'] },
+
+  { id:'shopping', icon:'🛍️', name:'展場攤位體驗 & Outlet 購物',
+    role:'展場攤位業務，或 Outlet 店員', roleEn:'Conference booth rep, or outlet store staff',
+    setup:'你在展場攤位想試戴新品眼鏡，問問熱門功能；或是在 Outlet 逛街試穿衣服。店員很熱情，可能會推銷會員卡或加購項目，你得禮貌但堅定地應對。',
+    setupEn:'You want to try on new glasses at a conference booth and ask about the most popular features — or you\'re browsing an outlet store. The staff is enthusiastic and may push a store card or upsell; be polite but firm.',
+    scenes:['Meta Glasses','Outlet Shopping','Comic Shop','Software Rec'],
+    youOpen:['Hi, I\'m here to try on the Meta glasses.','Could I see the other colors also?','I\'m a beginner — what software should I use for 3D and digital painting?'] },
+
+  { id:'hobby', icon:'🎨', name:'興趣與個人故事深聊',
+    role:'對你私下生活與興趣好奇的朋友', roleEn:'A friend curious about your personal life and hobbies',
+    setup:'話題轉向工作以外的事：電繪興趣怎麼開始的、碩論在做什麼、你怎麼學英文、最近在讀什麼。這是最適合講故事、講細節、順便自嘲的話題。',
+    setupEn:'The topic shifts away from work: how you got into digital painting, what your master\'s thesis was about, how you started learning English, what you\'re reading lately. Perfect for storytelling, details, and a little self-deprecating humor.',
+    scenes:['Hobby / Digital Painting','Personal Story','Motivation','Learning','Learning Method','Habit','Reading','Self-Intro (Creative)','Self-Intro Follow-up','Self-Intro'],
+    youOpen:['I actually have a hobby outside of engineering — digital painting.','How did you get into learning English?','What\'s a precious experience for you?'] },
+
+  { id:'aidebate', icon:'🤖', name:'AI 技術大辯論',
+    role:'對 AI 有自己看法、喜歡辯論的與會者', roleEn:'An attendee with strong opinions on AI who loves to debate',
+    setup:'話題聊到 AI：你工作上怎麼用 AI、agentic AI 跟 generative AI 差在哪、你怎麼看 AI 藝術。這是需要表態立場、給對比與結論的深度話題，不是自我介紹，記得先反問對方的立場再回應。',
+    setupEn:'The conversation turns to AI: how you use it at work, the difference between agentic and generative AI, what you think of AI art. This calls for a real stance with tradeoffs and a conclusion — not a self-intro. Ask for their take first.',
+    scenes:['AI Deep Dive','AI Art Discussion','Tech Opinion'],
+    youOpen:['How do you use AI in your work?','What do you think about AI art?','Aren\'t startups afraid of being left behind by big AI players?'] },
+
+  { id:'lifechat', icon:'🎂', name:'生活閒聊與文化差異',
+    role:'跟你熟一點的朋友、司機或服務生', roleEn:'A friend you know a bit better, a driver, or a server',
+    setup:'跟工作、大會完全無關的日常閒聊：生日過得如何、今天過得怎樣、會不會擔心 LA 治安、台灣牛奶為什麼那麼貴。練習不要把每個回答都硬拗回工作上。',
+    setupEn:'Everyday small talk that has nothing to do with work or the conference: how your birthday went, how your day\'s been, whether you\'re worried about safety in LA, why milk is so expensive in Taiwan. Practice not dragging every answer back to work.',
+    scenes:['Birthday Chat','Uber / Server Small Talk','Cross-Cultural','Safety','Navigation','Wrap-up'],
+    youOpen:['How has your day been?','Did you do anything fun for your birthday?','Are you worried about safety in LA?'] },
+
+  { id:'pingpong', icon:'🏓', name:'極簡煞車＋丟球節奏',
+    role:'任何人 — 快速切換話題，不按牌理出牌', roleEn:'Anyone at the conference — switching topics with no warning',
+    setup:'⭐ 純節奏訓練，不是深聊。老師會不斷丟短問句，話題隨時跳來跳去。你必須用一兩句短答，然後立刻反問把球丟回去——絕不能長篇大論。',
+    setupEn:'⭐ Pure rhythm drill, not a deep dive. The tutor fires off short questions and jumps topics with no warning. Answer in one or two sentences, then throw a question straight back — never a long monologue.',
+    scenes:['Extended Ping-Pong Flow','Rapid-Fire','This-or-That','Self-Intro (Casual)'],
+    youOpen:['Hey, is this your first SIGGRAPH?','What about you?','So what do you work on?'],
+    discipline:'維持你一句、我一句的短答＋丟球節奏；5 分鐘內請老師盡量多切換幾個不同子話題，別在同一個問題上停留太久——每次回答含反問<b style="color:#6ee7b7">控制在兩句以內</b>。',
+    disciplineEn:'Keep the one-line-each, throw-the-ball rhythm going. Over 5 minutes, the tutor should jump between as many different sub-topics as possible — don\'t linger on any one question. Each answer plus your question back should stay <b style="color:#6ee7b7">under two sentences</b>.' }
+];
+// ---- 語塊 (reusable collocation/pattern) whitelist; everything else in kw = 關鍵字(content) ----
+const LEGO_RAW=[
+"a bit of both","a once-in-a-lifetime dream","add each other on LinkedIn","although it was a long trip",
+"as a result","as a result of that","as a result of this","As of now","as opposed to doing them manually","at a low cost",
+"build trust","By day..., by night...","Can I get a","Can I have my drinks first","can you say that slower again for me?",
+"cannot get away from the screen","carry-on trolley","check-in bags","checking in","compared to engineering","confirmation voucher","Could you repeat that?",
+"Could you say that a little bit more slowly?","Could you say that again?","differs depending on whether",
+"Do you know where the toilet is","Does it come with drinks?","English is not my first language","force myself to use",
+"free to manage my own time","from a first-timer's perspective","from a technical perspective","from the ground up",
+"garbage in, garbage out","get to work with","get used to speaking slower","give or take","give up halfway",
+"gives me the freedom to","got into that","got into it","I got into it","graphics side though","have a small talk with",
+"have some time to review","Have you ever been to Taiwan?","Having said that","holding up well","how do I get to",
+"I am heading to","I didn't expect to see you here","I have been enjoying LA","I have no choice","I liked your approach to",
+"I reserved through","I want to..., but I don't","I was on my own","If you were me, what would you do?","I'll have","I'm a first-timer","I'm based in",
+"I'd love to","I'm good, thanks","I'm here to","I'm not against it","I've been to","in advance","try on",
+"I've seen something similar","In person","Instead of rendering at a high resolution","Is it possible that you can store my luggage",
+"Is this a popular one?","It depends","It inspired me","It should be under","It's acceptable","It's all good",
+"It's been amazing so far","It's called","Just picking up my badge","Keep drawing and learning","lately I've been focusing on",
+"Lately, I have been getting into","learn something from it","looking into digital twins","May I try them on?","my brain is completely fried",
+"My core background is in","my first time at","Nice to meet you too","no matter how hot it is","No, thank you","on the CG side",
+"Our time is up","Time is up","out of interest","pick up my badge","prepare what to say","registered online","Simply saying","stay alert","supposed to be doing",
+"take classes","take this chance to","That sounds pretty cool","That's a very good question","That's all","That's all for now",
+"The reason being that","The thing I find most challenging is","There are few","try them on","turn my ideas into reality",
+"turn this project into a product","went jogging","go jogging every Monday","go there","What about you?","What an unexpected surprise",
+"What are the most popular features","What brought you to SIGGRAPH today?","What comes with that?","What do you recommend?",
+"What do you think about AI art?","What I do for work is","What is your favorite comic?","What time is breakfast served?",
+"What's your recommendation?","Where can I meet my Uber?","worked from home","You mean...?"
+];
+const LEGO=new Set(LEGO_RAW.map(x=>normKw(x)));
+function isLego(k){return LEGO.has(normKw(k));}
+
+const LS='la_recall_v1';
+let store = JSON.parse(localStorage.getItem(LS)||'{}');
+store.marks = store.marks||{};        // id -> 'review'|'known'
+store.done = store.done||0;
+store.correct = store.correct||0;
+store.attempts = store.attempts||0;
+if(store.autoQ===undefined)store.autoQ=true;   // 預設自動朗讀問句
+function save(){localStorage.setItem(LS,JSON.stringify(store))}
+
+let mode='flash';         // 'flash' | 'asm'
+let deck=[];              // array of ALL indices
+let pos=0;
+let revealed=false;
+let selected=[];         // assembly chosen chunks
+let curChunks=[];        // assembly gold chunk strings (order)
+let curSeq=[];           // assembly gold as [{t,kw}]
+
+/* ============ chunker & distractors ============ */
+const CONNECTORS = new Set(['because','so','but','and','while','whereas','although','though','having','plus']);
+function chunkAnswer(a){
+  const words=a.trim().split(/\s+/);
+  const chunks=[]; let cur=[];
+  const push=()=>{if(cur.length){chunks.push(cur.join(' '));cur=[]}};
+  for(let w of words){
+    const bare=w.replace(/[^A-Za-z']/g,'').toLowerCase();
+    if(cur.length && CONNECTORS.has(bare)) push();
+    cur.push(w);
+    if(/[,;:.!?—]$/.test(w)) push();
+  }
+  push();
+  const out=[];                                   // fold lone-punctuation chunks into a neighbour
+  for(const c of chunks){
+    if(/^[^A-Za-z0-9]+$/.test(c)){ if(out.length) out[out.length-1]+=c; else out.push(c); }
+    else if(out.length===1 && /^[^A-Za-z0-9]+$/.test(out[0])){ out[0]=out[0]+' '+c; }
+    else out.push(c);
+  }
+  return out;
+}
+const TW_TRAPS=["I want to afford it","there have some","as the result of that","give a small talk",
+  "make friends","he say","tell he","related about","no spice","try up","your meaning is",
+  "I majored computer graphics","generated AI","how do I go toilet","rideshare pickup zone",
+  "I am engineer","go to there","inspire me a great deal"];
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function reEsc(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+// Build gold assembly sequence: 語塊(kw) become atomic pieces, gaps split smaller. -> [{t,kw}]
+function goldChunks(it){
+  const a=it.a;
+  const kws=(it.kw||[]).filter(k=>k && a.toLowerCase().includes(k.toLowerCase()));
+  if(!kws.length) return chunkAnswer(a).map(t=>({t,type:''}));
+  let spans=[];
+  kws.forEach(k=>{const li=a.toLowerCase().indexOf(k.toLowerCase());if(li>=0)spans.push([li,li+k.length,isLego(k)?'lego':'key']);});
+  spans.sort((x,y)=>x[0]-y[0]);
+  let keep=[],last=-1;
+  spans.forEach(s=>{if(s[0]>=last){keep.push(s);last=s[1];}});
+  let seq=[],cur=0;
+  const addGap=(g)=>{g=g.trim();if(!g)return;
+    if(/^[^A-Za-z0-9]+$/.test(g)&&seq.length){seq[seq.length-1].t+=g;}
+    else chunkAnswer(g).forEach(t=>seq.push({t,type:''}));};
+  keep.forEach(s=>{
+    if(s[0]>cur)addGap(a.slice(cur,s[0]));
+    seq.push({t:a.slice(s[0],s[1]).trim(),type:s[2]}); cur=s[1];
+  });
+  if(cur<a.length)addGap(a.slice(cur));
+  return seq;
+}
+// ---- reusable-語塊 global index ----
+const KWIDX={};
+function normKw(k){return (k||'').toLowerCase().replace(/["']/g,'').replace(/[.,!?;:—\s]+$/,'').trim();}
+/* 語塊合併：子集/相似變體視為同一個語塊，讓重複次數更有意義。
+   c = 合併後的鍵(不含引號，可安全放進 onclick)；lbl = 顯示標籤；m = 併入的變體。*/
+const CANON_GROUPS=[
+  {c:'try on', lbl:'try on', m:['try them on','May I try them on?','try on']},
+  {c:'get into', lbl:'get into', m:['got into that','got into it','I got into it']},
+  {c:'say that again/slower', lbl:'say that again / slower', m:['Could you say that again?','Could you say that a little bit more slowly?','can you say that slower again for me?']},
+  {c:'as a result', lbl:'as a result', m:['as a result of that','as a result of this','as a result']},
+  {c:'been to', lbl:'been to', m:["I've been to",'Have you ever been to Taiwan?']},
+  {c:'come with', lbl:'come with', m:['What comes with that?','Does it come with drinks?']},
+  {c:'thats all', lbl:"that's all", m:["That's all","That's all for now"]},
+  {c:'time is up', lbl:'time is up', m:['Time is up','Our time is up']},
+];
+const CANON_MAP={};
+CANON_GROUPS.forEach(g=>g.m.forEach(v=>{CANON_MAP[normKw(v)]={c:g.c,lbl:g.lbl};}));
+function canonKw(k){const n=normKw(k);const g=CANON_MAP[n];return g?g.c:n;}
+function buildKwIndex(){
+  ALL.forEach((it,i)=>(it.kw||[]).forEach(k=>{
+    if(!isLego(k)) return; const ck=canonKw(k); if(!ck) return;
+    const g=CANON_MAP[normKw(k)];
+    const e=KWIDX[ck]||(KWIDX[ck]={count:0,scenes:new Set(),items:[],ex:g?g.lbl:k});
+    e.count++; e.scenes.add(it.scene); if(!e.items.includes(i)) e.items.push(i);
+  }));
+}
+function topKw(n){return Object.entries(KWIDX).map(([k,v])=>({k,...v}))
+  .sort((a,b)=>b.items.length-a.items.length||a.ex.localeCompare(b.ex)).slice(0,n);}
+function deckByKw(nk){const info=KWIDX[nk];if(!info)return;toFlashIfRp();setActiveScene(null);setActiveTutor(null);
+  document.getElementById('lesson-select').value='';startDeck(info.items,`🧩 "${info.ex}"`,true);}
+
+/* ============ init UI ============ */
+function initSide(){
+  const sel=document.getElementById('lesson-select');
+  // LESSONS 陣列本身是分批貼上的（不照日期），下拉選單顯示順序改成依日期排序，索引值仍指回原陣列
+  const byDate=LESSONS.map((l,i)=>i).sort((a,b)=>LESSONS[a].date.localeCompare(LESSONS[b].date)||a-b);
+  sel.innerHTML='<option value="">— 選擇課堂 —</option>'+byDate.map(i=>{const l=LESSONS[i];
+    return `<option value="${i}">${l.date.slice(5)} ${l.tutor} · ${l.title.length>26?l.title.slice(0,26)+'…':l.title} (${l.items.length})</option>`}).join('');
+  document.getElementById('scene-list').innerHTML=SCENES.map(s=>
+    `<span class="scene-chip" data-s="${s}" onclick="deckScene('${s.replace(/'/g,"\\'")}')">${s}</span>`).join('');
+  document.getElementById('tutor-list').innerHTML=TUTORS.map(t=>
+    `<span class="scene-chip tutor-chip" data-t="${t}" onclick="deckTutor('${t.replace(/'/g,"\\'")}')">${esc(t)} <span style="opacity:.6">${ALL.filter(a=>a.tutor===t).length}</span></span>`).join('');
+  document.getElementById('sc-list').innerHTML=SCENARIOS.map(s=>
+    `<button class="sc-btn" data-sc="${s.id}" onclick="deckScenario('${s.id}')">
+      <span>${s.icon}</span><span>${esc(s.name)}</span><span class="n">${scIndices(s).length}</span></button>`).join('');
+  document.getElementById('top-kw').innerHTML=topKw(12).map(t=>
+    `<button class="btn kwbtn" onclick="deckByKw('${t.k}')"><span>🧩 ${esc(t.ex)}</span><span class="cnt">${t.items.length}×</span></button>`).join('')
+    || '<p class="kbd">（無重複語塊）</p>';
+}
+function setMode(m){
+  mode=m; revealed=false;
+  if(m!=='rp') stopRpTicking();
+  document.getElementById('m-flash').classList.toggle('active',m==='flash');
+  document.getElementById('m-asm').classList.toggle('active',m==='asm');
+  document.getElementById('m-rp').classList.toggle('active',m==='rp');
+  document.getElementById('panel-rp').style.display = m==='rp'?'':'none';
+  document.getElementById('mode-hint').innerHTML =
+    m==='flash' ? '<b style="color:var(--gold)">金色=關鍵字</b>(你已知，保留可見)；<b style="color:var(--primary2)">回想紫色空格的語塊</b>並唸出完整句，再翻開對照。'
+  : m==='asm'  ? '<b style="color:var(--primary2)">紫🧩=語塊</b>(要練)、<b style="color:var(--gold)">金🔑=關鍵字</b>(你已知)、白=其他；語塊全對即過關，<b>順序可彈性</b>。'
+  : '<b style="color:#fda4af">上課即時用</b>：抽情境 → 抽一句<b>開場白</b> → 之後<b>不看稿自由發揮</b>，目標撐滿 <b style="color:#6ee7b7">5 分鐘</b>。';
+  if(m==='rp' && !curScenario){ document.getElementById('card-host').innerHTML=rpIntro(); document.getElementById('deck-title').innerHTML='🎲 情境 Roleplay <span>· 按左邊抽情境</span>'; deck=[]; return; }
+  if(deck.length) render();
+}
+function rpIntro(){return `<div class="card"><div class="noscript" style="margin:auto;max-width:580px">
+  <b>🎲 情境 Roleplay — 跟老師上課即時用</b>
+  按左側「🎲 隨機抽一個情境」，或直接點一個情境開始。<br><br>
+  <div style="text-align:left;line-height:1.9;font-size:.8rem">
+  1. 情境設定<b style="color:#fecdd3">中英文都會顯示</b>，你跟老師都看得懂設定跟老師扮演的角色。<br>
+  2. 卡片會抽一句<b style="color:#fecdd3">真實課堂句子</b>當<b>開場白</b>（英文），並標明<b>你先講</b>還是<b>老師先講</b>。<br>
+  3. <b style="color:#fda4af">開場白只是起頭</b>——講完那一句之後就沒有稿了，兩人要順著話題自由發揮。<br>
+  4. 目標：就這一個話題<b style="color:#6ee7b7">撐滿 5 分鐘</b>對話，不要兩三句就想結束或換話題。</div>
+  <p class="kbd" style="margin-top:1rem">12 個情境彼此主題不重疊（點餐、入住、AI 辯論、興趣深聊、生活閒聊…），避免每次都滑回「你的工作」。</p>
+</div></div>`}
+function setActiveScene(s){document.querySelectorAll('.scene-chip:not(.tutor-chip)').forEach(c=>c.classList.toggle('active',c.dataset.s===s))}
+function setActiveTutor(t){document.querySelectorAll('.tutor-chip').forEach(c=>c.classList.toggle('active',c.dataset.t===t))}
+// 依課堂/依老師/依情境 這些選擇器是給快閃回想/語塊拼句用的；若目前停在情境 Roleplay 模式，先切回快閃回想才看得到結果
+function toFlashIfRp(){if(mode==='rp')setMode('flash')}
+
+/* ============ deck builders ============ */
+function startDeck(indices,title,shuf){
+  deck = shuf?shuffle([...indices]):[...indices];
+  pos=0; document.getElementById('deck-title').innerHTML=title+` <span>· ${deck.length} 題</span>`;
+  render();
+}
+function deckAll(sh){toFlashIfRp();setActiveScene(null);setActiveTutor(null);document.getElementById('lesson-select').value='';
+  startDeck(ALL.map((_,i)=>i),'🔀 全部隨機衝刺',sh)}
+function deckLesson(li){if(li==='')return;toFlashIfRp();setActiveScene(null);setActiveTutor(null);
+  const idx=ALL.map((a,i)=>a._l==li?i:-1).filter(i=>i>=0);
+  const L=LESSONS[li];startDeck(idx,`📅 ${L.date.slice(5)} ${L.tutor} · ${L.title}`,false)}
+function deckScene(s){toFlashIfRp();setActiveScene(s);setActiveTutor(null);document.getElementById('lesson-select').value='';
+  const idx=ALL.map((a,i)=>a.scene===s?i:-1).filter(i=>i>=0);startDeck(idx,`🏷️ ${s}`,true)}
+function deckTutor(t){toFlashIfRp();setActiveTutor(t);setActiveScene(null);document.getElementById('lesson-select').value='';
+  const idx=ALL.map((a,i)=>a.tutor===t?i:-1).filter(i=>i>=0);startDeck(idx,`👩‍🏫 ${esc(t)}`,true)}
+/* ---- 🎲 roleplay: scenario briefing (English, shown to the tutor) ---- */
+let curScenario=null, curOpener=null;
+function scIndices(sc){
+  const has=new Set(sc.scenes);
+  const idx=ALL.map((a,i)=>has.has(a.scene)?i:-1).filter(i=>i>=0);
+  // 0715 Ricky (Lesson 6) 的題目優先，其餘隨機
+  const fresh=idx.filter(i=>ALL[i].date==='2026-07-15');
+  const rest=idx.filter(i=>ALL[i].date!=='2026-07-15');
+  return [...shuffle(fresh),...shuffle(rest)];
+}
+// 舞台指示（如 "(you didn't catch the word)"）不是真的台詞，不能拿來當開場白
+function isStageDir(q){return /^\s*[（(]/.test(q||'')}
+function tutorLines(sc){
+  return [...(sc.tutorOpen||[]), ...scIndices(sc).map(i=>ALL[i]).filter(a=>!isStageDir(a.q)).map(a=>a.q)];
+}
+function pickOpener(sc){
+  const tl=tutorLines(sc), yl=sc.youOpen||[];
+  // 老師先開口 vs 你先開口 ≈ 各半；沒素材時自動退回另一邊
+  const youFirst = yl.length && (!tl.length || Math.random()<.5);
+  const pool = youFirst?yl:tl;
+  return {who:youFirst?'you':'tutor', line:pool[Math.floor(Math.random()*pool.length)]};
+}
+function deckScenario(id){
+  const sc=SCENARIOS.find(s=>s.id===id); if(!sc)return;
+  if(mode!=='rp')setMode('rp');
+  curScenario=sc; curOpener=pickOpener(sc); rpTimerReset();
+  setActiveScene(null); document.getElementById('lesson-select').value='';
+  document.querySelectorAll('.sc-btn').forEach(b=>b.classList.toggle('active',b.dataset.sc===id));
+  deck=[]; pos=0;
+  document.getElementById('deck-title').innerHTML=`${sc.icon} ${esc(sc.name)} <span>· 自由發揮</span>`;
+  document.getElementById('deck-bar').style.width='0';
+  renderRp();
+}
+function rollScenario(){
+  const pool=SCENARIOS.filter(s=>!curScenario||s.id!==curScenario.id);
+  deckScenario(pool[Math.floor(Math.random()*pool.length)].id);
+}
+function newOpener(){if(!curScenario)return;curOpener=pickOpener(curScenario);rpTimerReset();renderRp()}
+function deckMarked(){toFlashIfRp();setActiveScene(null);setActiveTutor(null);document.getElementById('lesson-select').value='';
+  const idx=ALL.map((a,i)=>store.marks[a.id]==='review'?i:-1).filter(i=>i>=0);
+  if(!idx.length){document.getElementById('card-host').innerHTML='<div class="card"><div class="empty">目前沒有標記為「再複習」的題目。<br>在快閃模式按「↺ 再複習」即可加入。</div></div>';
+    document.getElementById('deck-title').innerHTML='⭐ 複習清單 <span>· 0 題</span>';deck=[];return}
+  startDeck(idx,'⭐ 複習清單',true)}
+
+/* ============ rendering ============ */
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function highlight(ans,kw){let out=esc(ans);(kw||[]).forEach(k=>{if(!k)return;
+  const cls=isLego(k)?'':'key';
+  const e=esc(k).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  out=out.replace(new RegExp(e,'i'),m=>`<mark class="${cls}">${m}</mark>`)});return out}
+function isCorrection(note){return /糾正|糾錯|不是|別|不要|錯|勿|切勿|不可|不用/.test(note||'')}
+
+function updateStats(){
+  document.getElementById('s-done').textContent=store.done;
+  document.getElementById('s-acc').textContent=(store.attempts?Math.round(store.correct/store.attempts*100):0)+'%';
+  document.getElementById('s-marked').textContent=Object.values(store.marks).filter(v=>v==='review').length;
+}
+let streak=0;
+function bar(){document.getElementById('deck-bar').style.width=deck.length?((pos)/deck.length*100)+'%':'0'}
+
+function render(){
+  if(mode==='rp'){renderRp();return}   // rp 不是牌組驅動，是單張情境簡報
+  bar(); updateStats();
+  const host=document.getElementById('card-host');
+  if(!deck.length){host.innerHTML='<div class="card"><div class="empty">從左側選一個牌組開始 👈<br><br>建議：出發前用「🔀 全部隨機衝刺」把 151 題滾一輪。</div></div>';return}
+  if(pos>=deck.length){host.innerHTML=`<div class="card"><div class="empty">🎉 這個牌組跑完了！（${deck.length} 題）<br><br>
+    <button class="act primary" style="max-width:220px;margin:1rem auto 0" onclick="pos=0;render()">↻ 再跑一輪</button></div></div>`;
+    document.getElementById('deck-bar').style.width='100%';return}
+  const it=ALL[deck[pos]];
+  document.getElementById('s-streak').textContent=streak;
+  revealed=false; selected=[]; curSeq=goldChunks(it); curChunks=curSeq.map(s=>s.t);
+  const meta=`<div class="meta">
+    <span class="tag">🏷️ ${esc(it.scene)}</span>
+    <span class="tag tutor">${esc(it.tutor)} · ${esc(it.lesson)}</span>
+    <span>${esc(it.date)}</span>
+    <span style="margin-left:auto">${pos+1} / ${deck.length}</span></div>`;
+  if(mode==='flash') host.innerHTML=flashCard(it,meta);
+  else host.innerHTML=asmCard(it,meta);
+  autoSpeakQ();
+}
+
+/* ---- 🎲 scenario briefing card — Chinese setup, English opener quote ---- */
+function renderRp(){
+  document.getElementById('card-host').innerHTML = curScenario?rpCard():rpIntro();
+  if(curScenario) updateRpClock();
+}
+function rpCard(){
+  const sc=curScenario, op=curOpener, youFirst=op.who==='you';
+  const ammo=tutorLines(sc).slice(0,10);
+  const discipline = sc.discipline || RP_DEFAULT_DISCIPLINE;
+  const disciplineEn = sc.disciplineEn || RP_DEFAULT_DISCIPLINE_EN;
+  return `<div class="card">
+    <div class="meta">
+      <span class="tag">${sc.icon} ${esc(sc.name)}</span>
+      <span class="tag tutor">🎭 自由發揮，不看稿</span>
+      <span style="margin-left:auto">${ammo.length} 句備用問句</span>
+    </div>
+
+    <div class="setup">
+      <div class="lbl">🎬 情境設定 · The scene</div>
+      <div class="txt">${esc(sc.setup)}</div>
+      <div class="txt en">${esc(sc.setupEn)}</div>
+      <div class="opener">老師扮演 / Tutor plays: <b>${esc(sc.role)}</b> <span class="en">(${esc(sc.roleEn)})</span></div>
+    </div>
+
+    <div class="speaker">🗣️ 開場白（抽自真實課堂句子）· Opening line</div>
+    <div class="openbox ${youFirst?'you':'tutor'}">
+      <div class="whotag">${youFirst?'👤 你先開口 · You speak first':'🎧 老師先開口 · Tutor, please start us off'}</div>
+      <div class="line">“${esc(op.line)}”</div>
+    </div>
+
+    <div class="throw">
+      <div class="lbl">📌 練習重點 · The rule</div>
+      <div class="zh">${discipline}</div>
+      <div class="zh en">${disciplineEn}</div>
+    </div>
+
+    <div id="rp-clock" class="rpclock">
+      <div class="rpclock-top">
+        <span class="rpclock-lbl">⏱️ 對話計時 · 目標 5:00</span>
+        <span class="rpclock-time" id="rp-time">0:00</span>
+      </div>
+      <div class="rpclock-bar"><div id="rp-bar"></div></div>
+      <div class="rpclock-actions">
+        <button class="act primary" id="rp-timer-btn" onclick="rpTimerToggle()">▶️ 開始計時</button>
+        <button class="act ghost" style="max-width:100px" onclick="rpTimerReset()">↺ 重設</button>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+    <details class="ammo"><summary>📋 老師可以拿來問我的問題（選用，來自課堂筆記）</summary>
+      <ul>${ammo.map(q=>`<li>${esc(q)}</li>`).join('')}</ul>
+    </details>
+
+    <div class="actions">
+      <button class="act primary" style="background:linear-gradient(135deg,#e11d48,#9f1239)" onclick="rollScenario()">🎲 換一個情境 (R)</button>
+      <button class="act ghost" onclick="newOpener()">🔁 換一句開場白 (Space)</button>
+      <button class="icon-btn" title="朗讀開場白 (P)" onclick="speak()">🔊</button>
+    </div>
+    <p class="kbd">快捷鍵：<b>R</b> 換情境 · <b>Space</b> 換開場白 · <b>P</b> 朗讀開場白</p>
+  </div>`;
+}
+
+/* ---- 5-minute stopwatch (counts up; goal marker at 5:00, doesn't force-stop) ---- */
+let rpElapsed=0, rpTimerHandle=null, rpTimerRunning=false;
+function stopRpTicking(){clearInterval(rpTimerHandle);rpTimerHandle=null;rpTimerRunning=false}
+function rpTimerReset(){stopRpTicking();rpElapsed=0;updateRpClock()}
+function rpTimerToggle(){
+  if(rpTimerRunning)stopRpTicking();
+  else{rpTimerRunning=true;rpTimerHandle=setInterval(()=>{rpElapsed++;updateRpClock()},1000)}
+  updateRpClock();
+}
+function updateRpClock(){
+  const timeEl=document.getElementById('rp-time'); if(!timeEl)return;
+  const m=Math.floor(rpElapsed/60), s=rpElapsed%60;
+  timeEl.textContent=m+':'+String(s).padStart(2,'0');
+  const bar=document.getElementById('rp-bar'); if(bar)bar.style.width=Math.min(100,rpElapsed/300*100)+'%';
+  const wrap=document.getElementById('rp-clock'); if(wrap)wrap.classList.toggle('goal',rpElapsed>=300);
+  const btn=document.getElementById('rp-timer-btn'); if(btn)btn.textContent=rpTimerRunning?'⏸️ 暫停':(rpElapsed?'▶️ 繼續':'▶️ 開始計時');
+}
+
+function clozeFront(it){
+  const lego=(it.kw||[]).filter(isLego);
+  if(!lego.length)return null;
+  let masked=it.a,n=0,blanked=0;const total=it.a.split(/\s+/).length;
+  lego.forEach(k=>{const re=new RegExp(reEsc(k),'i');if(re.test(masked)){n++;blanked+=k.split(/\s+/).length;masked=masked.replace(re,'«'+n+'»');}});
+  if(!n||blanked/total>0.7)return null;
+  let html=esc(masked);
+  (it.kw||[]).filter(k=>!isLego(k)).forEach(k=>{const e=reEsc(esc(k));html=html.replace(new RegExp(e,'i'),m=>`<mark class="key">${m}</mark>`);});
+  return html.replace(/«(\d+)»/g,'<span class="blank">語塊 $1</span>');
+}
+function flashCard(it,meta){
+  const clz=clozeFront(it); const nkw=(it.kw||[]).filter(isLego).length;
+  const hints=clz
+    ? `<div class="clozewrap"><div class="hintlabel">✍️ 其餘是你已知的<b style="color:var(--gold)">關鍵字</b>；把 <b style="color:var(--primary2)">空格的語塊</b> 回想並唸出來：</div><div class="cloze">${clz}</div></div>`
+    : `<div class="hintrow"><span class="hintlabel">✍️ 憑情境與意圖，回想完整的道地說法${nkw?`（含 ${nkw} 個語塊）`:''}。</span></div>`;
+  return `<div class="card">${meta}
+    <div class="speaker">對方問 / 你的任務</div>
+    <div class="qrow"><div class="question">${esc(it.q)}</div>${qBtn(it.q)}</div>
+    ${it.qzh?`<div class="qzh">${esc(it.qzh)}</div>`:''}
+    ${it.intent?`<div class="intent">💡 意圖：${esc(it.intent)}</div>`:''}
+    ${hints}
+    <div class="spacer"></div>
+    <div id="rev"></div>
+    <div class="actions" id="flash-actions">
+      <button class="act primary" onclick="doReveal()">👁️ 翻開黃金答案 (Space)</button>
+    </div>
+    <p class="kbd">快捷鍵：<b>Space</b> 翻開/下一題 · <b>1</b> 再複習 · <b>2</b> 已掌握 · <b>Q</b> 朗讀問句 · <b>P</b> 朗讀正解</p>
+  </div>`;
+}
+function doReveal(){
+  const it=ALL[deck[pos]]; revealed=true;
+  const seen=new Set();
+  const reuse=(it.kw||[]).map(k=>{if(!isLego(k))return '';const ck=canonKw(k);
+    if(seen.has(ck))return '';const info=KWIDX[ck];
+    if(!info||info.items.length<2)return '';seen.add(ck);
+    const sc=[...info.scenes].slice(0,4).map(esc).join('、');
+    return `<div class="reuse"><span class="chip-lego">🧩 ${esc(info.ex)}</span>`
+      +`<span class="reuse-meta">🔁 ${info.items.length} 題 · ${info.scenes.size} 種情境：${sc}${info.scenes.size>4?'…':''}</span>`
+      +`<button class="mini-link" onclick="deckByKw('${ck}')">看全部 ▸</button></div>`;
+  }).filter(Boolean).join('');
+  document.getElementById('rev').innerHTML=`<div class="reveal">
+    <div class="answer">💬 ${highlight(it.a,it.kw)}</div>
+    ${reuse?`<div class="reuselist"><div class="hintlabel">🔁 這些語塊也能用在別的情境（點「看全部」跨情境練）：</div>${reuse}</div>`:''}
+    ${it.note?`<div class="note ${isCorrection(it.note)?'correction':''}">${isCorrection(it.note)?'🚨':'📝'} ${esc(it.note)}</div>`:''}
+  </div>`;
+  document.getElementById('flash-actions').innerHTML=`
+    <button class="act again" onclick="mark('review')">↺ 再複習 (1)</button>
+    <button class="act ok" onclick="mark('known')">✓ 已掌握 (2)</button>
+    <button class="icon-btn" title="朗讀 (P)" onclick="speak()">🔊</button>`;
+}
+function mark(v){const it=ALL[deck[pos]];store.marks[it.id]=v;store.done++;save();next()}
+
+function asmCard(it,meta){
+  const gold=curSeq.map(s=>({t:s.t,type:s.type}));
+  const goldT=new Set(gold.map(g=>g.t));
+  const others=deck.filter((_,i)=>i!==pos).flatMap(di=>goldChunks(ALL[di]).map(s=>s.t));
+  const distract=shuffle([...new Set(others)].filter(c=>!goldT.has(c))).slice(0,3).map(t=>({t,type:''}));
+  const traps=shuffle([...TW_TRAPS]).filter(t=>!goldT.has(t)).slice(0,2).map(t=>({t,type:''}));
+  const extra=[...distract,...traps].filter((v,i,a)=>a.findIndex(x=>x.t===v.t)===i);
+  const pieces=shuffle([...gold,...extra]);
+  window._pieces=pieces;
+  return `<div class="card">${meta}
+    <div class="speaker">對方問 / 你的任務</div>
+    <div class="qrow"><div class="question">${esc(it.q)}</div>${qBtn(it.q)}</div>
+    ${it.qzh?`<div class="qzh">${esc(it.qzh)}</div>`:''}
+    ${it.intent?`<div class="intent">💡 意圖：${esc(it.intent)}</div>`:''}
+    <div class="hintlabel" style="margin-top:.3rem"><span style="color:var(--primary2)">🧩 紫=語塊(要練)</span> · <span style="color:var(--gold)">🔑 金=關鍵字(你已知)</span> · 白=其他；語塊全對即過關，順序可彈性：</div>
+    <div class="slots" id="slots"></div>
+    <div class="banner" id="banner"></div>
+    <div class="hintlabel">語塊庫（含干擾項）：</div>
+    <div class="bank" id="bank">${pieces.map((p,i)=>`<button class="piece ${p.type==='lego'?'lego':p.type==='key'?'keyword':''}" data-i="${i}" onclick="pick(${i})">${esc(p.t)}</button>`).join('')}</div>
+    <div class="actions">
+      <button class="act ghost" onclick="clearSlots()">🧹 清空</button>
+      <button class="act primary" id="verify" onclick="verify()" disabled>✅ 驗證 (Enter)</button>
+    </div>
+    <p class="kbd">快捷鍵：<b>Enter</b> 驗證 · <b>Space</b> 下一題 · <b>Q</b> 朗讀問句 · <b>P</b> 朗讀正解</p>
+  </div>`;
+}
+function renderSlots(){
+  const s=document.getElementById('slots');
+  s.innerHTML=selected.map((t,i)=>`<button class="piece inslot" onclick="unpick(${i})">${esc(t)}</button>`).join('');
+  document.getElementById('verify').disabled=selected.length===0;
+}
+function pick(i){const el=document.querySelector(`.piece[data-i="${i}"]`);if(!el||el.classList.contains('used'))return;
+  el.classList.add('used');selected.push({t:window._pieces[i].t,i});renderSlots2();}
+// keep selected as objects for reliable unpick
+function renderSlots2(){
+  const s=document.getElementById('slots');
+  s.innerHTML=selected.map((o,idx)=>`<button class="piece inslot" onclick="unpick(${idx})">${esc(o.t)}</button>`).join('');
+  document.getElementById('verify').disabled=selected.length===0;
+}
+function unpick(idx){const o=selected[idx];const el=document.querySelector(`.piece[data-i="${o.i}"]`);
+  if(el)el.classList.remove('used');selected.splice(idx,1);renderSlots2();}
+function clearSlots(){selected.forEach(o=>{const el=document.querySelector(`.piece[data-i="${o.i}"]`);if(el)el.classList.remove('used')});
+  selected=[];renderSlots2();document.getElementById('banner').className='banner';}
+function verify(){
+  if(!selected.length)return;
+  const it=ALL[deck[pos]];
+  const got=selected.map(o=>o.t);
+  const exact=JSON.stringify(got)===JSON.stringify(curChunks);
+  const sameSet=JSON.stringify([...got].sort())===JSON.stringify([...curChunks].sort());
+  const good=exact||sameSet;               // 順序不重要：語塊全對即算過關
+  store.attempts++; if(good){store.correct++;streak++;}else{streak=0;}
+  store.done++; save(); document.getElementById('s-streak').textContent=streak;
+  const b=document.getElementById('banner');
+  document.querySelectorAll('#slots .piece').forEach((el,i)=>{
+    el.classList.remove('inslot');
+    if(exact) el.classList.add('good');
+    else if(sameSet) el.classList.add('okpart');
+    else el.classList.add(curChunks.includes(got[i])?'good':'bad');});
+  const noteHtml=it.note?'<br>'+(isCorrection(it.note)?'🚨 ':'📝 ')+esc(it.note):'';
+  const nextBtns=`<div style="margin-top:.6rem"><button class="act ok" style="max-width:160px" onclick="next()">下一題 ▸</button>
+      <button class="icon-btn" style="display:inline-grid;vertical-align:middle" onclick="speak()">🔊</button></div>`;
+  if(exact){
+    b.className='banner good show';
+    b.innerHTML=`✅ 完全正確！（語塊與順序都對）${noteHtml}${nextBtns}`;
+  }else if(sameSet){
+    b.className='banner part show';
+    b.innerHTML=`🟡 部分正確 — 關鍵語塊全選對了！只是順序和老師範例不同（實際對話中順序常可彈性調整）。<br>老師範例：<b style="color:#e5e7eb">${esc(it.a)}</b>${noteHtml}${nextBtns}`;
+  }else{
+    b.className='banner bad show';
+    b.innerHTML=`❌ 還差一點（漏掉關鍵語塊或選到干擾項）。正解：<br><b style="color:#e5e7eb">${esc(it.a)}</b>${noteHtml}
+      <div style="margin-top:.6rem"><button class="act again" style="max-width:130px" onclick="retry()">↺ 再試</button>
+      <button class="act ghost" style="max-width:130px" onclick="mark('review');">⭐ 標記複習</button>
+      <button class="act primary" style="max-width:130px" onclick="next()">略過 ▸</button></div>`;
+  }
+  updateStats();
+}
+function retry(){render()}
+
+function speakText(txt){if(!window.speechSynthesis||!txt)return;
+  speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(txt);u.lang='en-US';u.rate=.92;
+  const v=speechSynthesis.getVoices().find(v=>/en-US/i.test(v.lang));if(v)u.voice=v;speechSynthesis.speak(u);}
+function speak(){speakText(mode==='rp' ? (curOpener&&curOpener.line) : (ALL[deck[pos]]||{}).a);}
+// 括號內是給你的任務提示（例：「(you ask for directions)」），不是對方會說出口的話 -> 不朗讀
+function isSpokenQ(q){q=(q||'').trim();return !!q && !(q.startsWith('(')&&q.endsWith(')'));}
+function speakQ(){const it=ALL[deck[pos]];if(!it||!isSpokenQ(it.q))return;speakText(it.q);}
+function qBtn(q){return isSpokenQ(q)
+  ? `<button class="icon-btn qspk" title="朗讀問句 (Q)" onclick="speakQ()">🔊</button>` : '';}
+function setAutoQ(v){store.autoQ=!!v;save();}
+let lastSpokenKey=null;
+function autoSpeakQ(){                      // 換到新題目時自動朗讀問句
+  if(store.autoQ===false||mode==='rp')return;
+  const key=deck.length+'|'+pos+'|'+deck[pos];
+  if(key===lastSpokenKey)return;            // 同一張卡重繪（切模式/retry）不重念
+  lastSpokenKey=key; speakQ();
+}
+function next(){pos++;render()}
+
+/* keyboard */
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='SELECT')return;
+  if(e.key==='p'||e.key==='P'){speak();return;}
+  if(e.key==='q'||e.key==='Q'){speakQ();return;}
+  if(mode==='rp'){
+    if(e.key==='r'||e.key==='R')rollScenario();
+    else if(e.code==='Space'){e.preventDefault();newOpener();}
+    return;
+  }
+  if(mode==='flash'){
+    if(e.code==='Space'){e.preventDefault(); if(!revealed)doReveal(); else next();}
+    else if(e.key==='1'&&revealed)mark('review');
+    else if(e.key==='2'&&revealed)mark('known');
+  }else{
+    if(e.key==='Enter'){e.preventDefault();verify();}
+    else if(e.code==='Space'){e.preventDefault();next();}
+  }
+});
+function resetProgress(){if(confirm('確定清除所有標記與統計？')){store={marks:{},done:0,correct:0,attempts:0};save();streak=0;render();}}
+
+/* ============ boot ============ */
+buildKwIndex(); initSide(); setMode('flash');
+{const dates=LESSONS.map(l=>l.date).sort();
+ document.getElementById('brand-sub').textContent=
+   `SIGGRAPH 2026 · ${LESSONS.length} 堂實戰課問答語庫 (${dates[0].slice(5)} → ${dates[dates.length-1].slice(5)})`;}
+document.getElementById('autoq').checked = store.autoQ!==false;
+document.getElementById('card-host').innerHTML='<div class="card"><div class="empty">從左側選一個牌組開始 👈<br><br>建議：出發前用「🔀 全部隨機衝刺」把 '+ALL.length+' 題滾一輪。<br>或先挑一堂課、一個情境暖身。</div></div>';
+updateStats();
+if(window.speechSynthesis)speechSynthesis.getVoices();
+</script>
+</body>
+</html>
