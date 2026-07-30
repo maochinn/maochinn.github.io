@@ -81,8 +81,8 @@ img { max-width: 100%; }
 
 /* ---------- header ---------- */
 header.site {
-  background: var(--card);
-  color: #000;
+  background: #000;      /* 上面那條 bar 改純黑（原為亮紅 --card） */
+  color: #fff;
   border-bottom: 1px solid #000;
   padding: 0 16px;
   position: sticky;
@@ -98,18 +98,19 @@ header.site {
   height: 58px;
 }
 .logo { font-weight: 900; font-size: 24px; letter-spacing: -0.5px; white-space: nowrap; }
-/* 黑字不是漏改成金——header 底是 --card（亮紅），金字在上面只有 1.05:1 會消失 */
-.logo b { color: var(--accent); font-weight: 900; }
+/* header 已改黑底：金字在黑上約 8:1，換回狂三金當品牌強調（原亮紅底時只能用黑字） */
+.logo b { color: var(--gold); font-weight: 900; }
 .logo small {
   display: block; font-size: 9px; font-weight: 400;
-  color: #000; letter-spacing: 2px; margin-top: -4px;
+  color: var(--mut); letter-spacing: 2px; margin-top: -4px;
 }
 nav.site { display: flex; gap: 2px; flex-wrap: wrap; }
 nav.site a {
-  padding: 6px 12px; color: #000; font-weight: 700; font-size: 14px;
+  padding: 6px 12px; color: #eee; font-weight: 700; font-size: 14px;
   border-radius: 3px; cursor: pointer;
 }
-nav.site a:hover, nav.site a.on { background: var(--accent); color: #fff; }
+/* header 已改黑底：hover/當前頁用深紅膠囊（原黑底 --accent 在黑 bar 上會消失） */
+nav.site a:hover, nav.site a.on { background: var(--chip-hi); color: #fff; }
 .search { margin-left: auto; display: flex; min-width: 0; flex: 0 1 380px; }
 .search input {
   flex: 1; min-width: 0; background: var(--card);
@@ -190,12 +191,11 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: #fff; cursor: pointer
   overflow: hidden;
 }
 
-/* 純文字本封面（無圖文章）——獨立於 --card 之外的紅，因為這裡是漸層不是純色。
-   黑字（.tc-title）在漸層最深處（d63030）曾只有 4.32:1、剛好卡在 AA 邊界下面，
-   2026-07-18 微調亮一點到 da3535（4.54:1）過關。 */
+/* 純文字本封面（無圖文章）——改成與卡片一致的淡紅 --card（原為亮紅漸層 ef5555→da3535）。
+   讓「無圖卡」跟首頁 who-card／一般卡片同一個淡紅、視覺統一。黑字在 --card 上 9.51:1。 */
 .text-cover {
   position: absolute; inset: 0;
-  background: linear-gradient(160deg, #ef5555, #da3535 70%);
+  background: var(--card);
   border-top: 4px solid var(--accent);
   display: flex; flex-direction: column; justify-content: center;
   padding: 14px 12px; gap: 10px;
@@ -208,7 +208,7 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: #fff; cursor: pointer
 .text-cover .tc-mark {
   position: absolute; bottom: 10px; left: 12px; right: 12px;
   font-style: normal; font-size: 9px; letter-spacing: 2px;
-  color: var(--mut); text-transform: uppercase;
+  color: var(--mut-card); text-transform: uppercase;  /* 淡紅底改用卡片用的次要色（--mut 在淡紅上不夠對比）*/
 }
 
 /* R15/R18 遮罩 */
@@ -253,8 +253,22 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: #fff; cursor: pointer
 .detail { display: flex; gap: 26px; flex-wrap: wrap; }
 .d-cover { flex: 0 0 300px; max-width: 100%; }
 .d-cover .cover { border-radius: 3px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5); }
+/* 詳情封面頂邊黑條收邊（同 .who-card::before / .hero::before 的狂三條狀語言）。
+   只掛在 .d-cover .cover（詳情頁大封面），不影響首頁牆上的 .g-card .cover 小卡。 */
+.d-cover .cover::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 5px; background: var(--stripe); z-index: 4;
+}
 .d-info { flex: 1; min-width: 280px; }
-.d-info h1 { margin: 0 0 2px; font-size: 22px; line-height: 1.3; font-weight: 900; text-wrap: balance; }
+.d-info h1 {
+  margin: 0 0 2px; font-size: 22px; line-height: 1.3; font-weight: 900;
+  display: flex; align-items: baseline; gap: 10px;
+}
+/* 詳情標題掛狂三黑條標（與 h2.sec::before 同款），讓內頁節奏對齊首頁 */
+.d-info h1::before {
+  content: ''; align-self: center; flex: 0 0 auto;
+  width: 5px; height: 22px; border-radius: 1px; background: var(--stripe);
+}
 .d-info .alt { color: var(--mut); font-size: 14px; margin: 0 0 4px; }
 .gid { color: var(--mut); font-size: 13px; margin-bottom: 16px; }
 .meta { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
@@ -297,6 +311,8 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: #fff; cursor: pointer
   display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
   gap: 8px; margin-top: 26px;
 }
+/* 縮圖牆／內文若由 h2.sec 區塊條標領頭，收掉多餘上緣（條標自帶 margin） */
+.sec + .thumbs, .sec + .prose { margin-top: 8px; }
 .thumb {
   aspect-ratio: 320 / 456; border-radius: 3px; overflow: hidden;
   cursor: pointer; position: relative; background: #601818;
@@ -311,12 +327,12 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: #fff; cursor: pointer
 
 /* ---------- reader ---------- */
 #reader {
-  position: fixed; inset: 0; background: #000; z-index: 100;
+  position: fixed; inset: 0; background: var(--bg); z-index: 100;  /* 點開圖片的底色＝深紅牆 --bg（上下 bar 為黑） */
   display: none; flex-direction: column;
 }
 #reader.on { display: flex; }
 .r-top {
-  background: var(--panel); display: flex; align-items: center;
+  background: #000; display: flex; align-items: center;   /* 上 bar 黑（原深紅 --panel）＝淺紅底、上下黑 */
   gap: 14px; padding: 10px 16px; font-weight: 700;
 }
 .r-top .back { cursor: pointer; color: #fff; font-weight: 900; white-space: nowrap; background: none; border: 0; font-size: 15px; }
@@ -330,7 +346,7 @@ h2.sec .clear { margin-left: auto; font-size: 12px; color: #fff; cursor: pointer
 /* 曾寫死 rgba(227,57,57,…) ＝舊 --card e33939，2026-07-18 改跟卡片色連動（現為 ea9999） */
 .r-zone.l:hover { background: linear-gradient(90deg, rgba(234, 153, 153, 0.12), transparent); }
 .r-zone.r:hover { background: linear-gradient(-90deg, rgba(234, 153, 153, 0.12), transparent); }
-.r-bot { background: var(--panel); padding: 8px 16px; display: flex; justify-content: center; gap: 6px; font-size: 12px; color: var(--mut); }
+.r-bot { background: #000; padding: 8px 16px; display: flex; justify-content: center; gap: 6px; font-size: 12px; color: var(--mut); }  /* 下 bar 黑（原深紅 --panel） */
 
 /* ---------- blog prose ---------- */
 .prose { max-width: 760px; margin: 0 auto; }

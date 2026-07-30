@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import TokenLab from '../components/TokenLab.astro';
 
 interface Props {
   title?: string;
@@ -44,6 +45,8 @@ const fullTitle = title ? `${title} | STUDIO MAOCHINN` : 'STUDIO MAOCHINN';
       全站靜態生成 · 無伺服器 · 無資料庫<br />
       <span class="wink">本站不含任何本子，僅含本子的靈魂。懂的人都懂。</span>
     </footer>
+
+    <TokenLab />
 
     <script>
       // 隨機 🎲：從全站索引抽一本圖集

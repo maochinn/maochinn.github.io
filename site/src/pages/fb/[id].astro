@@ -137,6 +137,7 @@ const readerPages = images.map((img, i) => ({
     </div>
   </div>
 
+  {images.length > 0 && <h2 class="sec">內頁預覽 <span>pages · {images.length}</span></h2>}
   {
     images.length > 0 && (
       <div class="thumbs">
@@ -158,7 +159,8 @@ const readerPages = images.map((img, i) => ({
     )
   }
 
-  <article class="prose" id="article" style="margin-top:34px">
+  <h2 class="sec">全文 <span>full text</span></h2>
+  <article class="prose" id="article">
     <Content />
   </article>
 
