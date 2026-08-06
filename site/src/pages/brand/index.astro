@@ -1,0 +1,687 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+// 每個 token 在畫面上的角色說明。真正的色值一律不寫死——頁面載入後由 <script>
+// 讀 :root 的 CSS 變數即時算出 hex/OKLCH/對比度，這樣改 global.css（或用右下角
+// 🎨 TokenLab 現場試色）此頁的數字會跟著變，永遠不會跟真正上線的顏色兜不起來。
+
+// 頁內導覽——仿 Meta/Google 品牌資源站的 sticky sub-nav，id 對應下面各 h2.sec
+const SECTIONS: { id: string; label: string }[] = [
+  { id: 'hero', label: '品牌色' },
+  { id: 'architecture', label: '架構' },
+  { id: 'dna', label: '調性' },
+  { id: 'ratio', label: '比例' },
+  { id: 'scale', label: '色階' },
+  { id: 'neutrals', label: '中性色' },
+  { id: 'gold', label: '金色驗算' },
+  { id: 'inuse', label: '實際應用' },
+  { id: 'oklch', label: '感知驗算' },
+  { id: 'contrast', label: '對比矩陣' },
+  { id: 'dodont', label: "Do/Don't" },
+  { id: 'optionb', label: 'Option B' },
+  { id: 'backlog', label: '待收編' },
+  { id: 'workflow', label: '工作流程' },
+];
+
+// Primitive 色階編號——仿 Tailwind/Radix 的數字系統（越大越深）。
+// 100–500 之間留白：card 跟 chip-hi 之間目前沒有中間色階，故意不硬塞。
+const RAMP: { v: string; num: number; role: string; note: string }[] = [
+  { v: '--accent-hi', num: 950, role: '卡片 hover（最深）', note: '.g-card / .p-card 文字 hover 色' },
+  { v: '--mut-card', num: 900, role: '卡片次要文字', note: '卡片（--card）背景上的說明文字、次要資訊' },
+  { v: '--bg', num: 800, role: '品牌錨點・頁面主牆', note: '哥德紅本體，見上方 Hero Colors' },
+  { v: '--panel', num: 700, role: '次面板', note: 'blockquote 等次要色塊底' },
+  { v: '--chip', num: 600, role: 'Chip 底', note: '標籤膠囊預設狀態' },
+  { v: '--chip-hi', num: 500, role: 'Chip hover', note: '標籤膠囊 hover／目前頁 nav' },
+  { v: '--card', num: 100, role: '內容卡片', note: '圖集卡／文章卡／連結卡——全站唯一淺色卡片底，只放黑字' },
+];
+const MUTED = { v: '--mut', role: '次要文字（去飽和・off-ramp）', note: '深紅背景（--bg/--panel/--chip）上的次要文字，故意降飽和度製造「次要」的視覺層級，不算進主 ramp 的編號' };
+
+const HERO = [
+  {
+    v: '--bg', zh: '哥德紅', en: 'Gothic Red', dark: true,
+    note: '取樣自〈狂三 禮服〉#78990595 的禮服主色——全站唯一的錨點紅，其餘色階都從這裡往深、往淺推導。',
+  },
+  {
+    v: '--gold', zh: '時鐘金', en: 'Clockwork Gold', dark: false,
+    note: '狂三左眼的時鐘——全站唯一被允許當「重點色」的顏色，只在深紅系背景上用，卡片上讓位給黑字。',
+  },
+];
+
+const NEUTRAL: { v: string; role: string; note: string }[] = [
+  { v: '--accent', role: '純黑・結構強調', note: '線段／邊框／badge／按鈕底——不是「更深的紅」，是刻意跳出色相的純黑，狂三黑振袖的語言' },
+  { v: '--ink', role: '純白・主文字', note: '深紅系背景上的主文字' },
+];
+
+// 對比配對：fg/bg 是 token 名稱（不含 --），needs=null 表示只是相鄰色塊比較（非疊字），不判定 AA
+const PAIRS: { fg: string; bg: string; needs: number | null; label: string }[] = [
+  { fg: 'ink', bg: 'bg', needs: 4.5, label: '白字 · 頁面主牆' },
+  { fg: 'gold', bg: 'bg', needs: 4.5, label: '金字 · 頁面主牆' },
+  { fg: 'mut', bg: 'bg', needs: 4.5, label: '次要字 · 頁面主牆' },
+  { fg: 'ink', bg: 'panel', needs: 4.5, label: '白字 · 次面板' },
+  { fg: 'gold', bg: 'panel', needs: 4.5, label: '金字 · 次面板' },
+  { fg: 'gold', bg: 'chip', needs: 4.5, label: '金字 · Chip' },
+  { fg: 'ink', bg: 'chip', needs: 4.5, label: '白字 · Chip' },
+  { fg: 'accent', bg: 'card', needs: 4.5, label: '黑字 · 卡片' },
+  { fg: 'mut-card', bg: 'card', needs: 4.5, label: '次要字 · 卡片' },
+  { fg: 'accent-hi', bg: 'card', needs: 4.5, label: 'Hover 深紅字 · 卡片' },
+  { fg: 'ink', bg: 'card', needs: 4.5, label: '✕ 白字 · 卡片（示範不可用）' },
+  { fg: 'gold', bg: 'card', needs: 4.5, label: '✕ 金字 · 卡片（示範不可用）' },
+];
+
+// OKLCH 驗算快照（scripts/oklch-audit.py，2026-08-06）——固定色相對比，非即時計算。
+// ΔE 是跟「色相完全對齊錨點 --bg」的假想版本比，數字越小代表色相越貼。
+const OKLCH_AUDIT = [
+  { v: '--accent-hi', oklch: 'L0.19 C0.06 H25.4°', de: '0.00', verdict: 'pass', note: '完全同色相' },
+  { v: '--mut-card', oklch: 'L0.25 C0.08 H25.7°', de: '0.13', verdict: 'pass', note: '完全同色相' },
+  { v: '--bg', oklch: 'L0.33 C0.10 H24.9°', de: '—', verdict: 'pass', note: '錨點本身' },
+  { v: '--panel', oklch: 'L0.36 C0.11 H25.0°', de: '0.00', verdict: 'pass', note: '完全同色相' },
+  { v: '--chip', oklch: 'L0.39 C0.12 H25.0°', de: '0.00', verdict: 'pass', note: '完全同色相' },
+  { v: '--chip-hi', oklch: 'L0.43 C0.13 H24.7°', de: '0.00', verdict: 'pass', note: '完全同色相' },
+  { v: '--mut', oklch: 'L0.72 C0.05 H18.3°', de: '0.43', verdict: 'warn', note: '色相略偏暖，仍在人眼可辨識門檻（JND≈1.0）以下' },
+  { v: '--card', oklch: 'L0.76 C0.10 H19.6°', de: '0.94', verdict: 'warn', note: '色相略偏暖，同上、仍在 JND 以下' },
+];
+
+// 金色驗算（研究快照，2026-08-06）——哥德／維多利亞古董金、黃銅色票 vs 現行 --gold
+const GOLD_AUDIT = [
+  { name: '現行 --gold', hex: '#d4af37', oklch: 'L0.77 C0.14 H91°', ratio: '6.08:1', verdict: 'pass', note: '過——這支 hex 本身就是色彩資料庫裡「Gold (metallic)」的通用定義值，不是隨手調的' },
+  { name: '古董金 Antique Gold', hex: '#9c7a3c', oklch: 'L0.60 C0.09 H81°', ratio: '3.21:1', verdict: 'fail', note: '不過——哥德色票裡「更道地」的古董金，亮度不夠，當文字會直接失敗' },
+  { name: '古董黃銅 Antique Brass', hex: '#cd9575', oklch: 'L0.72 C0.08 H51°', ratio: '4.97:1', verdict: 'warn', note: '過，但色相偏到 H51°——讀起來更像玫瑰金／銅，不是金' },
+  { name: '傳統黃銅 Classic Brass', hex: '#b5a642', oklch: 'L0.72 C0.12 H101°', ratio: '5.18:1', verdict: 'warn', note: '過，色相跟現行很近（H101° vs H91°），是唯一稱得上「同一家族」的替代' },
+  { name: '紋章金 Heraldic Or', hex: '#ffd700', oklch: 'L0.89 C0.18 H95°', ratio: '9.12:1', verdict: 'warn', note: '過，但太亮太飽和——變成「獎盃金」，跟「金是稀缺點綴」的原則衝突' },
+];
+
+// 目前還沒收進 token 系統、散在 global.css 各處的紅／金 hex——供未來整併參考
+const BACKLOG = [
+  { hex: '#f0c850', where: '.search button:hover', note: '金的 hover 態，目前沒有對應 token（--gold 只有一階）' },
+  { hex: '#4a1010', where: '.who-note / .prose pre 背景', note: '介於 --mut-card 與 --bg 之間的深紅色塊，未命名' },
+  { hex: '#7a1414', where: '.search input::placeholder', note: '很接近 --chip，可能可以直接改用 var(--chip)' },
+  { hex: '#5a0e0e', where: '.who-card h3 span', note: '卡片上的極深紅小字，未命名' },
+];
+---
+
+<Layout title="Brand Guide" active="brand" description="STUDIO MAOCHINN 品牌與色彩規範——狂三紅色系的唯一真源">
+  <section class="bg-intro">
+    <p class="bg-eyebrow">STUDIO MAOCHINN</p>
+    <h1>Brand Guide</h1>
+    <p class="bg-lede">
+      這頁是全站顏色的<b>唯一真源</b>。以後要調色，先在這裡定案、量過對比，
+      再回填 <code>src/styles/global.css</code> 的 <code>:root</code>。
+      下面所有色塊與數字都是即時從目前生效的 CSS 變數算出來的——包含右下角
+      <b>🎨 TokenLab</b> 現場試的值——不是寫死的示意圖。
+    </p>
+  </section>
+
+  <nav class="bg-subnav">
+    {SECTIONS.map(({ id, label }) => (
+      <a href={`#${id}`}>{label}</a>
+    ))}
+  </nav>
+
+  <h2 class="sec" id="hero">品牌色 <span>Hero Colors</span></h2>
+  <div class="bg-hero-grid">
+    {HERO.map(({ v, zh, en, dark, note }) => (
+      <div class={`bg-hero-card ${dark ? 'dark' : 'light'}`} style={`background:var(${v})`}>
+        <div class="bg-hero-name"><b>{zh}</b><i>{en}</i></div>
+        <p>{note}</p>
+        <div class="bg-hero-meta">
+          <code class="bg-var">{v}</code>
+          <span data-hex={v}>—</span>
+          <span data-oklch={v}>—</span>
+        </div>
+      </div>
+    ))}
+  </div>
+  <p class="bg-p">
+    只有這兩色有名字，其餘色階走數字系統，不逐階取名——這是 NVIDIA（品牌只講「NVIDIA Green」，
+    其餘是 Green 100-900）、Material 3、Radix Colors 這代設計系統的共同做法：
+    <b>品牌需要 1-2 個記得住的名字，調色盤需要的是程式讀得懂的規則</b>，兩者不是同一份清單。
+  </p>
+
+  <h2 class="sec" id="architecture">色彩架構 <span>Primitive → Semantic → Component</span></h2>
+  <p class="bg-p">
+    現代設計系統（Material 3、IBM Carbon、Radix Colors、NVIDIA 自家的 Omniverse UI Kit）都不會只列一份顏色，
+    而是分三層，讓「換色」跟「換意義」變成兩件互不相干的事：
+  </p>
+  <div class="bg-arch">
+    <div class="bg-arch-col">
+      <b>1 · Primitive</b>
+      <p>原始色階，只回答「這是第幾階的紅」，不帶語意。下面的 <code>red-800</code>／<code>red-100</code> 那排。</p>
+    </div>
+    <div class="bg-arch-col">
+      <b>2 · Semantic</b>
+      <p>幫 Primitive 取一個「用途」名字——本站 <code>global.css</code> 現在的做法：<code>--bg</code>、<code>--card</code>、<code>--chip</code>。</p>
+    </div>
+    <div class="bg-arch-col">
+      <b>3 · Component</b>
+      <p>個別元件的專屬例外。本站目前<b>沒有</b>這層——按鈕、卡片都直接吃 Semantic token，元件還不夠多，先不強加這層。</p>
+    </div>
+  </div>
+
+  <h2 class="sec" id="dna">角色調性 <span>Character DNA → Design Principles</span></h2>
+  <div class="who">
+    <div class="who-card bg-principle">
+      <h3>單一色相 <span>ONE HUE</span></h3>
+      <p>整套紅落在同一個色相，沒有第二個紅色相偷跑進來。狂三不需要漸層取巧的紅，只需要一種紅，深淺决定語境。</p>
+    </div>
+    <div class="who-card bg-principle">
+      <h3>黑是結構，不是裝飾 <span>BLACK = STRUCTURE</span></h3>
+      <p>純黑只做線段、邊框、標記——狂三是「黑振袖 + 紅點綴」，黑色從不大面積鋪底配白字（1.64:1，讀不出來）。</p>
+    </div>
+    <div class="who-card bg-principle">
+      <h3>金是稀缺的 <span>GOLD IS SCARCE</span></h3>
+      <p>金＝她左眼的時鐘，全站唯一的強調色與連結色。用多了就不是重點——只在深紅系背景上當文字，卡片上永遠讓位給黑字。</p>
+    </div>
+    <div class="who-card bg-principle">
+      <h3>對比度決定深淺分工 <span>CONTRAST DRIVES THE SPLIT</span></h3>
+      <p>紅分兩層不是風格選擇：深紅只能配白字，卡片淡紅只能配黑字。這條線由 WCAG 算出來，不是肉眼喜好。</p>
+    </div>
+  </div>
+
+  <h2 class="sec" id="ratio">色彩比例 <span>70 · 20 · 10</span></h2>
+  <p class="bg-p">深紅為主、黑為結構、金為點綴——這是全站配色的固定比例，不是單一頁面（例如首頁 banner）的局部決定。</p>
+  <div class="bg-ratio">
+    <div class="bg-ratio-seg" style="flex:70; background:var(--bg);">
+      <b>70%</b><span>紅 · 主牆／面板／卡片</span>
+    </div>
+    <div class="bg-ratio-seg" style="flex:20; background:var(--accent); color:#fff;">
+      <b>20%</b><span>黑 · header／線段／結構</span>
+    </div>
+    <div class="bg-ratio-seg" style="flex:10; background:var(--gold);">
+      <b>10%</b><span>金 · 重點字／連結</span>
+    </div>
+  </div>
+  <p class="bg-p bg-note">
+    <b>10% 這個數字有出處，不是隨口喊的。</b>設計界通用的
+    <a href="https://www.freecodecamp.org/news/the-60-30-10-rule-in-design/" target="_blank" rel="noopener">60-30-10 法則</a>
+    （源自室內設計，被 UI／網頁設計整套借用）就是「主色 60%、次色 30%、強調色 10%」——
+    強調色故意壓在一成上下，用多了就不再是「強調」，會變成雜訊。本站把主色從 60% 拉到
+    70%（紅本來就是這站的主體，不是純背景），次色相應壓到 20%，但<b>強調色仍然卡在標準的 10%</b>
+    ——這條數字是站得住腳的，不是這次順口定的。
+  </p>
+
+  <h2 class="sec" id="scale">Primitive Scale <span>Kurumi Red · 深→淺</span></h2>
+  <p class="bg-p">
+    這套紅色 token 是分好幾個月、憑肉眼陸續調出來的——但驗算下來，除了 <code>--mut</code>
+    刻意去飽和之外，全部落在同一個色相，天生就是一條 ramp。按明度由深到淺編號
+    （越大越深，仿 Tailwind／Radix 的數字系統），之後要加新色階，沿這條線內插，不要另開色相。
+    <code>100</code> 到 <code>500</code> 之間刻意留白——現在沒有中間色階的實際需求，寫死一個沒人用的值沒意義。
+  </p>
+  <div class="bg-swatches">
+    {RAMP.map(({ v, num, role, note }) => (
+      <div class="bg-swatch">
+        <div class="bg-swatch-color" style={`background:var(${v})`}>
+          <span class="bg-num">{num}</span>
+        </div>
+        <div class="bg-swatch-info">
+          <code class="bg-var">{v}</code>
+          <b>{role}</b>
+          <span class="bg-hex" data-hex={v}>—</span>
+          <span class="bg-oklch" data-oklch={v}>—</span>
+          <p>{note}</p>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <p class="bg-p bg-note">
+    <b>{MUTED.v}</b>（{MUTED.role}）——{MUTED.note}。明度介在 ramp 中段，但彩度明顯較低，
+    所以獨立列出，不強行塞進主 ramp 的編號裡。
+  </p>
+  <div class="bg-swatches bg-swatches-sm">
+    <div class="bg-swatch">
+      <div class="bg-swatch-color" style={`background:var(${MUTED.v})`}></div>
+      <div class="bg-swatch-info">
+        <code class="bg-var">{MUTED.v}</code>
+        <b>{MUTED.role}</b>
+        <span class="bg-hex" data-hex={MUTED.v}>—</span>
+        <span class="bg-oklch" data-oklch={MUTED.v}>—</span>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="sec" id="neutrals">中性色 <span>Neutrals</span></h2>
+  <div class="bg-swatches bg-swatches-sm">
+    {NEUTRAL.map(({ v, role, note }) => (
+      <div class="bg-swatch">
+        <div class="bg-swatch-color" style={`background:var(${v}); border:1px solid #444;`}></div>
+        <div class="bg-swatch-info">
+          <code class="bg-var">{v}</code>
+          <b>{role}</b>
+          <span class="bg-hex" data-hex={v}>—</span>
+          <p>{note}</p>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <h2 class="sec" id="gold">金色驗算 <span>Gold · 哥德／維多利亞金屬金比對</span></h2>
+  <p class="bg-p">
+    紅色查完之後，同一輪也查了金色——哥德／維多利亞調性常見的「古董金」「黃銅」色票，
+    以及 <code>#d4af37</code> 這個 hex 本身在色彩資料庫裡的定位。結果跟紅色是相似的結論，
+    但理由不一樣：這次不是「色相剛好落在同一區」，是<b>更「道地」的古董金在目前的用法下直接掛掉</b>。
+  </p>
+  <table class="bg-table">
+    <thead><tr><th>候選</th><th>Hex</th><th>OKLCH</th><th>金字 · 頁面主牆</th><th>結論</th></tr></thead>
+    <tbody>
+      {GOLD_AUDIT.map(({ name, hex, oklch, ratio, verdict, note }) => (
+        <tr>
+          <td><span class="bg-chip-hex" style={`background:${hex}`}></span>{name}</td>
+          <td><code>{hex}</code></td>
+          <td class="bg-ratio-cell">{oklch}</td>
+          <td class="bg-ratio-cell">{ratio}</td>
+          <td class={`bg-pass-cell ${verdict}`}>{note}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+  <p class="bg-p bg-note">
+    結論：更「道地」的哥德古董金（Antique Gold）在現在的用法下（深紅背景上當文字）直接不過 AA，
+    要把它拉亮到能用，就會失去它「暗啞、做舊」的性格——等於繞一圈又回到現行 <code>#d4af37</code>
+    所在的亮度區間。現行金色沒有動：它本來就同時滿足「讀起來像古董金」跟「當文字能過 AA」，
+    這兩個條件在候選裡沒有別的 hex 同時滿足。
+  </p>
+
+  <h2 class="sec" id="inuse">在真實介面中 <span>In Real UI · 不是重畫的示意圖</span></h2>
+  <p class="bg-p">
+    下面這些不是照色票重畫的 mockup——用的是 <code>global.css</code> 裡真正的
+    <code>.g-card</code>／<code>.p-card</code>／<code>.chip</code>／<code>.btn</code> class，
+    跟首頁、圖集頁、部落格頁是同一份 CSS。改了 token，這裡跟正式頁面會同時變。
+  </p>
+  <div class="bg-inuse">
+    <div class="g-card bg-inuse-card">
+      <div class="cover">
+        <div class="text-cover">
+          <b class="tc-title">〈狂三 禮服〉Brand Guide 示範封面</b>
+          <i class="tc-mark">Studio Maochinn</i>
+        </div>
+        <span class="badge">R15</span>
+      </div>
+      <div class="cap">.g-card ＋ .text-cover——無圖文章用的純文字封面</div>
+    </div>
+    <div class="p-card bg-inuse-pcard">
+      <div class="p-title">.p-card 部落格文章卡片標題示範</div>
+      <div class="p-desc">.p-desc 用 --mut-card 當次要文字色——這裡是真的 CSS 在跑，不是截圖。</div>
+      <div class="p-meta"><span>2026-08-06</span><span>閱讀 3 分鐘</span></div>
+    </div>
+    <div class="bg-inuse-col">
+      <div class="chips">
+        <span class="chip">時崎狂三 <em>128</em></span>
+        <span class="chip">哥德蘿莉 <em>42</em></span>
+      </div>
+      <div class="btns">
+        <span class="btn pink">下載本子</span>
+        <span class="btn grey">上一頁</span>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="sec" id="oklch">感知色彩驗算 <span>OKLCH · 這代系統怎麼挑顏色</span></h2>
+  <p class="bg-p">
+    只用 HSL 驗算會失真——HSL 的色相在暗色、高彩度區間跟人眼感受對不太上，這正是 Material 3、
+    Radix Colors、shadcn 這波系統集體換成 <b>OKLCH</b>（感知均勻色彩空間）驗算顏色的原因。
+    下表把每個紅色 token 換算成 OKLCH，並跟「色相完全對齊錨點 <code>--bg</code>」的假想版本比較：
+  </p>
+  <table class="bg-table">
+    <thead><tr><th>Token</th><th>OKLCH（L・C・H）</th><th>與錨點色相差 ΔE</th><th>結論</th></tr></thead>
+    <tbody>
+      {OKLCH_AUDIT.map(({ v, oklch, de, verdict, note }) => (
+        <tr>
+          <td><code>{v}</code></td>
+          <td class="bg-ratio-cell">{oklch}</td>
+          <td class="bg-ratio-cell">{de}</td>
+          <td class={`bg-pass-cell ${verdict}`}>{note}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+  <p class="bg-p bg-note">
+    結論：這套「肉眼調了半年」的紅，換成感知色彩空間驗算依然成立——只有淡色的 <code>--card</code>／
+    <code>--mut</code> 色相略微偏暖（Δ≈5-6°），但差距在人眼可辨識門檻（JND≈1.0）以下，
+    <b>不值得為了數學乾淨去動它們</b>。這頁沒有因為這次重驗改任何一個現行 hex——
+    重新挑選過的結論就是：原本的選擇本來就是對的，只是沒被寫成系統。
+    數字快照自 <code>scripts/oklch-audit.py</code>（2026-08-06）。
+  </p>
+
+  <h2 class="sec" id="contrast">對比矩陣 <span>WCAG AA · 即時計算</span></h2>
+  <p class="bg-p">每一列都是頁面載入當下實際算出來的比值，不是抄舊筆記——改了 token，數字會跟著變。</p>
+  <table class="bg-table">
+    <thead><tr><th>配對</th><th>比值</th><th>AA (4.5:1)</th></tr></thead>
+    <tbody>
+      {PAIRS.map(({ fg, bg, label }) => (
+        <tr data-fg={fg} data-bg={bg}>
+          <td>{label}</td>
+          <td class="bg-ratio-cell">—</td>
+          <td class="bg-pass-cell">—</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <h2 class="sec" id="dodont">Do / Don't</h2>
+  <div class="bg-dd">
+    <div class="bg-dd-col">
+      <h4 class="bg-dd-h ok">✓ Do</h4>
+      <div class="bg-dd-demo" data-fg="ink" data-bg="bg" style="background:var(--bg); color:var(--ink);">白字在深紅牆上</div>
+      <div class="bg-dd-demo" data-fg="accent" data-bg="card" style="background:var(--card); color:var(--accent);">黑字在卡片紅上</div>
+      <div class="bg-dd-demo" data-fg="gold" data-bg="bg" style="background:var(--bg); color:var(--gold);">金字在深紅系背景上</div>
+    </div>
+    <div class="bg-dd-col">
+      <h4 class="bg-dd-h bad">✕ Don't</h4>
+      <div class="bg-dd-demo" data-fg="accent" data-bg="bg" style="background:var(--bg); color:var(--accent);">黑字在深紅牆上</div>
+      <div class="bg-dd-demo" data-fg="gold" data-bg="card" style="background:var(--card); color:var(--gold);">金字在卡片紅上</div>
+      <div class="bg-dd-demo" data-fg="ink" data-bg="card" style="background:var(--card); color:var(--ink);">白字在卡片紅上</div>
+    </div>
+  </div>
+
+  <h2 class="sec" id="optionb">跳脫既有選擇 <span>Option B · 查過資料後的另一個方向</span></h2>
+  <p class="bg-p">
+    查了 Bloodborne 這類哥德暗黑美術的實際色票、NVIDIA／OpenAI 的品牌色（兩家都只留
+    <b>一個</b>記得住的重點色，其餘就是近黑／純白）、還有 2026 年深色模式的通用建議
+    （避免大面積純黑、飽和紅要收斂到七八成飽和度）——結論是：上面「哥德紅」這條<b>色相</b>本身沒問題，
+    Bloodborne 實際的紅落在 H13–34°，現行 <code>--bg</code> 是 H25°，根本是同一個色相帶，不需要換。
+  </p>
+  <p class="bg-p">
+    真正跟現在不一樣的是<b>畫布的角色分工</b>。這些暗黑美術參考裡，紅幾乎都只是點綴，
+    真正鋪滿畫面的是近黑——不是純 <code>#000</code>（那些遊戲的黑其實都偏暖），是帶一點焦茶色的近黑。
+    現在這站是反過來：紅鋪底、黑只當點綴。以下是「近黑鋪底、紅收斂成重點色」的具體提案，
+    先算過對比、算過 OKLCH，但<b>還沒套用到任何一個現行 token</b>——純粹是拿研究結果具象化，
+    讓你可以直接比較兩個方向。
+  </p>
+
+  <div class="bg-mock">
+    <div class="bg-mock-header">mao<b>chinn</b><span class="bg-mock-nav">首頁 · 部落格 · Brand Guide</span></div>
+    <div class="bg-mock-body">
+      <h3>時崎狂三</h3>
+      <p>近黑鋪底，紅只在需要「被注意到」的地方出現——連結、按鈕、hover。</p>
+      <div class="bg-mock-row">
+        <span class="bg-mock-link">查看圖集 →</span>
+        <span class="bg-mock-btn">訂閱更新</span>
+      </div>
+      <div class="bg-mock-card">內容卡片維持淺紅＋黑字（跟現行一樣的道理：亮色卡片才扛得住黑字閱讀）</div>
+    </div>
+  </div>
+
+  <div class="bg-swatches">
+    <div class="bg-swatch">
+      <div class="bg-swatch-color" style="background:#0e0504"></div>
+      <div class="bg-swatch-info"><code class="bg-var">bg（畫布）</code><b>Oxblood Ink</b><span class="bg-hex">#0e0504</span><span class="bg-oklch">L0.13 C0.02 H30°</span></div>
+    </div>
+    <div class="bg-swatch">
+      <div class="bg-swatch-color" style="background:#1a0e0c"></div>
+      <div class="bg-swatch-info"><code class="bg-var">panel</code><b>次面板</b><span class="bg-hex">#1a0e0c</span><span class="bg-oklch">L0.18 C0.02 H30°</span></div>
+    </div>
+    <div class="bg-swatch">
+      <div class="bg-swatch-color" style="background:#2a1b18"></div>
+      <div class="bg-swatch-info"><code class="bg-var">chip</code><b>次面板・再高一階</b><span class="bg-hex">#2a1b18</span><span class="bg-oklch">L0.24 C0.02 H30°</span></div>
+    </div>
+    <div class="bg-swatch">
+      <div class="bg-swatch-color" style="background:#aa323d"></div>
+      <div class="bg-swatch-info"><code class="bg-var">accent</code><b>重點紅（大面積／非文字）</b><span class="bg-hex">#aa323d</span><span class="bg-oklch">L0.50 C0.155 H20°</span></div>
+    </div>
+    <div class="bg-swatch">
+      <div class="bg-swatch-color" style="background:#cc5258"></div>
+      <div class="bg-swatch-info"><code class="bg-var">accent-hi</code><b>重點紅（文字／連結安全版）</b><span class="bg-hex">#cc5258</span><span class="bg-oklch">L0.60 C0.155 H20°</span></div>
+    </div>
+    <div class="bg-swatch">
+      <div class="bg-swatch-color" style="background:#e4a4a5"></div>
+      <div class="bg-swatch-info"><code class="bg-var">card</code><b>內容卡片</b><span class="bg-hex">#e4a4a5</span><span class="bg-oklch">L0.78 C0.08 H18°</span></div>
+    </div>
+    <div class="bg-swatch">
+      <div class="bg-swatch-color" style="background:#98807c"></div>
+      <div class="bg-swatch-info"><code class="bg-var">mut</code><b>次要文字</b><span class="bg-hex">#98807c</span><span class="bg-oklch">L0.62 C0.03 H30°</span></div>
+    </div>
+  </div>
+
+  <table class="bg-table">
+    <thead><tr><th>對比</th><th>比值</th><th>結論</th></tr></thead>
+    <tbody>
+      <tr><td>白字 · bg</td><td class="bg-ratio-cell">20.15:1</td><td class="bg-pass-cell pass">✓ 過</td></tr>
+      <tr><td>金字 · bg</td><td class="bg-ratio-cell">9.58:1</td><td class="bg-pass-cell pass">✓ 過（比現行 6.08:1 更寬裕，畫布變暗了）</td></tr>
+      <tr><td>次要字 · bg</td><td class="bg-ratio-cell">5.48:1</td><td class="bg-pass-cell pass">✓ 過</td></tr>
+      <tr><td>重點紅文字（accent-hi）· bg</td><td class="bg-ratio-cell">4.72:1</td><td class="bg-pass-cell pass">✓ 過，但很勉強——紅字在近黑上先天不容易過 AA，這是「紅只當點綴不當內文色」的理由之一</td></tr>
+      <tr><td>黑字 · card</td><td class="bg-ratio-cell">10.15:1</td><td class="bg-pass-cell pass">✓ 過</td></tr>
+      <tr><td>金字 · card</td><td class="bg-ratio-cell">1.02:1</td><td class="bg-pass-cell fail">✕ 不過（跟現行同一條規則：卡片上金字會消失，維持黑字）</td></tr>
+    </tbody>
+  </table>
+
+  <p class="bg-p bg-note">
+    這一段是提案，<b>沒有套用到任何現行 token</b>，global.css 跟 TokenLab 都還是現行「哥德紅鋪底」那套。
+    想實際感受可以把上面這排 hex 貼進右下角 TokenLab 自己試（試完按 Reset 復原）。
+    研究依據：Bloodborne 美術色票、NVIDIA／OpenAI 官方品牌色、2026 深色模式設計趨勢文章。
+  </p>
+
+  <h2 class="sec" id="backlog">尚未收編 <span>Backlog · 散在 global.css 的孤兒色</span></h2>
+  <p class="bg-p">這些 hex 目前不是 token，只是曾經隨手寫死。列在這裡不代表現在要動它們——先看得見，之後要動再從這裡挑。</p>
+  <table class="bg-table">
+    <thead><tr><th>Hex</th><th>出現位置</th><th>備註</th></tr></thead>
+    <tbody>
+      {BACKLOG.map(({ hex, where, note }) => (
+        <tr>
+          <td><span class="bg-chip-hex" style={`background:${hex}`}></span><code>{hex}</code></td>
+          <td><code>{where}</code></td>
+          <td>{note}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <h2 class="sec" id="workflow">怎麼調色 <span>Workflow</span></h2>
+  <ol class="bg-flow">
+    <li>用右下角 <b>🎨 TokenLab</b> 現場試新值——這頁的 ramp／對比矩陣會即時反映（跨頁保留在 localStorage）。</li>
+    <li>對比矩陣沒有紅字（都過 AA）再定案。</li>
+    <li>大幅調色相或加新色階時，回頭跑一次 <code>python scripts/oklch-audit.py</code>，確認新色沒有偷偷偏離錨點色相。</li>
+    <li>TokenLab「Copy CSS」把最終值複製出來，貼進 <code>src/styles/global.css</code> 的 <code>:root</code>。</li>
+    <li>TokenLab「Reset」清掉暫存的試色，回到 global.css 的正式值。</li>
+    <li>回這頁重新整理，確認正式值也一樣過關。</li>
+  </ol>
+</Layout>
+
+<style>
+  .bg-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; margin: 0 0 10px; }
+  .bg-intro { max-width: 820px; margin: 4px 0 28px; }
+  .bg-intro h1 { font-size: clamp(42px, 7vw, 84px); font-weight: 900; margin: 0 0 18px; letter-spacing: -2px; line-height: 1; }
+  .bg-lede { color: #ddd; line-height: 1.85; font-size: 15px; max-width: 62ch; }
+  .bg-lede code { background: #4a1010; padding: 1px 6px; border-radius: 3px; font-family: var(--mono); font-size: 0.9em; color: #ffd0d0; }
+
+  .bg-subnav {
+    position: sticky; top: 58px; z-index: 40;
+    display: flex; gap: 4px; overflow-x: auto; white-space: nowrap;
+    background: rgba(0,0,0,.55); backdrop-filter: blur(6px);
+    border: 1px solid var(--line); border-radius: 6px;
+    padding: 8px 10px; margin-bottom: 40px;
+    scrollbar-width: thin;
+  }
+  .bg-subnav a { flex: 0 0 auto; font-size: 12px; font-weight: 700; color: #ddd; padding: 6px 12px; border-radius: 4px; }
+  .bg-subnav a:hover { background: var(--chip-hi); color: #fff; }
+  .bg-subnav a.on { background: var(--gold); color: #000; }
+  @media (max-width: 640px) { .bg-subnav { position: static; } }
+
+  /* 每個主要 section 標題前拉開距離，讓內容分區呼吸——仿品牌資源站的大段落節奏 */
+  h2.sec { margin-top: 64px; }
+  h2.sec#hero { margin-top: 0; }
+
+  .bg-p { max-width: 760px; color: #ccc; line-height: 1.8; font-size: 13px; margin: 0 0 16px; }
+  .bg-p code { background: #4a1010; padding: 1px 6px; border-radius: 3px; font-family: var(--mono); font-size: 0.92em; color: #ffd0d0; }
+  .bg-note { border-left: 2px solid var(--chip-hi); padding-left: 12px; }
+  .bg-note a { color: var(--gold); text-decoration: underline; }
+
+  .bg-mock { border: 1px solid #000; border-radius: 6px; overflow: hidden; margin-bottom: 20px; max-width: 640px; }
+  .bg-mock-header { background: #000; color: #fff; font-weight: 900; font-size: 15px; padding: 10px 16px; display: flex; align-items: center; gap: 16px; }
+  .bg-mock-header b { color: #cc5258; }
+  .bg-mock-nav { font-size: 11px; font-weight: 400; color: #aaa; letter-spacing: 0.5px; }
+  .bg-mock-body { background: #0e0504; padding: 22px 20px 26px; }
+  .bg-mock-body h3 { color: #fff; margin: 0 0 8px; font-size: 20px; font-weight: 900; }
+  .bg-mock-body > p { color: #98807c; font-size: 12.5px; line-height: 1.7; margin: 0 0 16px; max-width: 46ch; }
+  .bg-mock-row { display: flex; gap: 14px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
+  .bg-mock-link { color: #cc5258; font-weight: 700; font-size: 13px; }
+  .bg-mock-btn { background: #aa323d; color: #fff; font-weight: 700; font-size: 13px; padding: 8px 16px; border-radius: 3px; }
+  .bg-mock-card { background: #e4a4a5; color: #000; font-size: 12.5px; font-weight: 700; padding: 12px 14px; border-radius: 3px; line-height: 1.6; max-width: 420px; }
+
+  /* Hero Colors——放大到品牌資源站那種「大色塊」尺度，不是小卡片 */
+  .bg-hero-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; margin-bottom: 16px; }
+  .bg-hero-card {
+    border-radius: 8px; border: 1px solid var(--line); padding: 36px 30px 26px;
+    min-height: 240px; display: flex; flex-direction: column; justify-content: space-between; gap: 18px;
+  }
+  .bg-hero-card.dark { color: #fff; }
+  .bg-hero-card.light { color: #000; }
+  .bg-hero-name { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .bg-hero-name b { font-size: clamp(30px, 4vw, 44px); font-weight: 900; letter-spacing: -1px; }
+  .bg-hero-name i { font-style: normal; font-size: 12px; letter-spacing: 1.5px; opacity: 0.75; text-transform: uppercase; }
+  .bg-hero-card p { margin: 0; font-size: 13.5px; line-height: 1.75; max-width: 48ch; }
+  .bg-hero-meta { display: flex; gap: 12px; flex-wrap: wrap; font-family: var(--mono); font-size: 11.5px; opacity: 0.85; }
+
+  .bg-arch { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 26px; }
+  .bg-arch-col { border: 1px solid var(--line); border-radius: 4px; padding: 14px 16px; background: var(--panel); }
+  .bg-arch-col b { display: block; font-size: 13px; margin-bottom: 6px; color: var(--gold); }
+  .bg-arch-col p { margin: 0; font-size: 12.5px; line-height: 1.7; color: #ddd; }
+  .bg-arch-col code { background: #4a1010; padding: 1px 5px; border-radius: 3px; font-family: var(--mono); font-size: 0.9em; color: #ffd0d0; }
+
+  .bg-principle h3 span { display: block; font-size: 9px; letter-spacing: 1.5px; color: #5a0e0e; margin-top: 3px; text-transform: uppercase; }
+
+  .bg-ratio { display: flex; border-radius: 4px; overflow: hidden; border: 1px solid var(--line); margin-bottom: 26px; min-height: 64px; }
+  .bg-ratio-seg { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 8px 4px; color: #000; text-align: center; }
+  .bg-ratio-seg b { font-size: 18px; font-weight: 900; }
+  .bg-ratio-seg span { font-size: 10px; letter-spacing: 0.5px; }
+
+  .bg-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 8px; }
+  .bg-swatches-sm { grid-template-columns: repeat(auto-fill, minmax(220px, 300px)); margin-bottom: 26px; }
+  .bg-swatch { border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: var(--panel); }
+  .bg-swatch-color { height: 88px; position: relative; }
+  .bg-num { position: absolute; top: 8px; right: 10px; font-family: var(--mono); font-size: 12px; font-weight: 700; color: rgba(255,255,255,.75); background: rgba(0,0,0,.4); padding: 2px 7px; border-radius: 2px; }
+  .bg-swatch-info { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 2px; }
+  .bg-swatch-info b { font-size: 13px; }
+  .bg-var { font-family: var(--mono); font-size: 11px; color: var(--gold); }
+  .bg-hex, .bg-oklch { font-family: var(--mono); font-size: 11px; color: var(--mut); }
+  .bg-swatch-info p { margin: 6px 0 0; font-size: 12px; color: #ccc; line-height: 1.6; }
+
+  /* 在真實介面中——直接吃全站的 .g-card/.p-card/.chip/.btn，只調外層排版 */
+  .bg-inuse { display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start; margin-bottom: 26px; }
+  .bg-inuse-card { width: 210px; }
+  .bg-inuse-pcard { width: 280px; }
+  .bg-inuse-col { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 18px; display: flex; flex-direction: column; gap: 16px; min-width: 220px; }
+
+  .bg-table { width: 100%; border-collapse: collapse; margin-bottom: 32px; font-size: 13px; }
+  .bg-table th, .bg-table td { border: 0; border-bottom: 1px solid rgba(0,0,0,.3); padding: 11px 12px; text-align: left; }
+  .bg-table th { background: none; color: var(--mut); font-size: 10.5px; letter-spacing: 0.8px; text-transform: uppercase; font-weight: 700; border-bottom: 2px solid var(--line); }
+  .bg-ratio-cell { font-family: var(--mono); }
+  .bg-pass-cell.pass { color: #8fe08f; font-weight: 700; }
+  .bg-pass-cell.fail { color: #ff9d9d; font-weight: 700; }
+  .bg-pass-cell.warn { color: #e8c468; font-weight: 700; }
+  .bg-chip-hex { display: inline-block; width: 14px; height: 14px; border-radius: 2px; vertical-align: -2px; margin-right: 6px; border: 1px solid #555; }
+
+  .bg-dd { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 26px; }
+  .bg-dd-h { margin: 0 0 10px; font-size: 14px; }
+  .bg-dd-h.ok { color: #8fe08f; }
+  .bg-dd-h.bad { color: #ff9d9d; }
+  .bg-dd-demo { border-radius: 3px; padding: 14px 16px; margin-bottom: 8px; font-weight: 700; font-size: 14px; position: relative; border: 1px solid var(--line); }
+  .bg-dd-demo::after { content: attr(data-ratio); position: absolute; right: 10px; bottom: 6px; font-size: 10px; font-family: var(--mono); font-weight: 400; opacity: 0.75; }
+
+  .bg-flow { max-width: 640px; color: #ddd; line-height: 2; font-size: 13px; padding-left: 20px; }
+  .bg-flow code { background: #4a1010; padding: 1px 6px; border-radius: 3px; font-family: var(--mono); font-size: 0.92em; color: #ffd0d0; }
+
+  @media (max-width: 640px) {
+    .bg-dd { grid-template-columns: 1fr; }
+    .bg-inuse { flex-direction: column; }
+    .bg-inuse-card, .bg-inuse-pcard { width: 100%; max-width: 280px; }
+  }
+</style>
+
+<script>
+  function hexToRgb(hex: string): [number, number, number] {
+    const h = hex.trim().replace('#', '');
+    return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+  }
+  // WCAG 相對亮度用的門檻是 0.03928（規範自己這樣寫，跟真正的 sRGB EOTF 門檻 0.04045 不同），
+  // 對比度計算沿用 WCAG 的定義，OKLab 轉換另外用標準 sRGB 門檻，兩邊故意不共用同一個函式。
+  function linWcag(c: number) {
+    c /= 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  }
+  function luminance([r, g, b]: [number, number, number]) {
+    return 0.2126 * linWcag(r) + 0.7152 * linWcag(g) + 0.0722 * linWcag(b);
+  }
+  function contrast(a: [number, number, number], b: [number, number, number]) {
+    const la = luminance(a), lb = luminance(b);
+    const hi = Math.max(la, lb), lo = Math.min(la, lb);
+    return (hi + 0.05) / (lo + 0.05);
+  }
+
+  function srgbToLinear(c: number) {
+    c /= 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  }
+  function rgbToOklch([r, g, b]: [number, number, number]) {
+    const rl = srgbToLinear(r), gl = srgbToLinear(g), bl = srgbToLinear(b);
+    const l = 0.4122214708 * rl + 0.5363325363 * gl + 0.0514459929 * bl;
+    const m = 0.2119034982 * rl + 0.6806995451 * gl + 0.1073969566 * bl;
+    const s = 0.0883024619 * rl + 0.2817188376 * gl + 0.6299787005 * bl;
+    const l_ = Math.cbrt(l), m_ = Math.cbrt(m), s_ = Math.cbrt(s);
+    const L = 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_;
+    const a = 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_;
+    const b2 = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_;
+    const C = Math.hypot(a, b2);
+    let H = (Math.atan2(b2, a) * 180) / Math.PI;
+    if (H < 0) H += 360;
+    return { L, C, H };
+  }
+
+  function resolveVar(name: string): string {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return v || '#000000';
+  }
+  function resolveToken(nameNoPrefix: string): string {
+    return resolveVar('--' + nameNoPrefix);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1) 每個色塊的 hex / OKLCH 文字
+    document.querySelectorAll<HTMLElement>('[data-hex]').forEach((el) => {
+      const hex = resolveVar(el.dataset.hex!);
+      el.textContent = hex;
+    });
+    document.querySelectorAll<HTMLElement>('[data-oklch]').forEach((el) => {
+      const hex = resolveVar(el.dataset.oklch!);
+      const { L, C, H } = rgbToOklch(hexToRgb(hex));
+      el.textContent = `L${L.toFixed(2)} C${C.toFixed(2)} H${H.toFixed(0)}°`;
+    });
+
+    // 2) 對比矩陣表格
+    document.querySelectorAll<HTMLElement>('tr[data-fg][data-bg]').forEach((row) => {
+      const fg = hexToRgb(resolveToken(row.dataset.fg!));
+      const bg = hexToRgb(resolveToken(row.dataset.bg!));
+      const ratio = contrast(fg, bg);
+      const ratioCell = row.querySelector<HTMLElement>('.bg-ratio-cell')!;
+      const passCell = row.querySelector<HTMLElement>('.bg-pass-cell')!;
+      ratioCell.textContent = ratio.toFixed(2) + ':1';
+      const pass = ratio >= 4.5;
+      passCell.textContent = pass ? '✓ 過' : '✕ 不過';
+      passCell.className = 'bg-pass-cell ' + (pass ? 'pass' : 'fail');
+    });
+
+    // 3) Do/Don't 示範色塊右下角的比值
+    document.querySelectorAll<HTMLElement>('.bg-dd-demo[data-fg][data-bg]').forEach((el) => {
+      const fg = hexToRgb(resolveToken(el.dataset.fg!));
+      const bg = hexToRgb(resolveToken(el.dataset.bg!));
+      const ratio = contrast(fg, bg);
+      el.setAttribute('data-ratio', ratio.toFixed(2) + ':1');
+    });
+
+    // 4) sub-nav scroll-spy——目前捲到哪個 section 就亮哪個連結
+    const navLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('.bg-subnav a'));
+    const sections = Array.from(document.querySelectorAll<HTMLElement>('h2.sec[id]'));
+    if (navLinks.length && sections.length) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            const id = entry.target.id;
+            navLinks.forEach((a) => a.classList.toggle('on', a.getAttribute('href') === `#${id}`));
+          });
+        },
+        { rootMargin: '-96px 0px -75% 0px', threshold: 0 }
+      );
+      sections.forEach((s) => io.observe(s));
+    }
+  });
+</script>
